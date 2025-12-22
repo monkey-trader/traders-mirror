@@ -1,40 +1,29 @@
 # Traders Mirror
 
-[![codecov](https://codecov.io/gh/<USER>/<REPO>/branch/main/graph/badge.svg)](https://codecov.io/gh/<USER>/<REPO>)
+---
 
-> Ersetze `<USER>` und `<REPO>` durch deinen GitHub-Benutzernamen und das Repo auf GitHub, z.B. monkey-trader/traders-mirror
+## Use Case: Trading-Journal für Privatanleger & Trader
 
-## Projektüberblick
+**Traders Mirror** ist ein modernes Trading-Journal für Privatanleger und ambitionierte Trader. Ziel ist es, Trades strukturiert zu erfassen, auszuwerten und daraus zu lernen. Die App hilft, Handelsentscheidungen transparent zu dokumentieren und die eigene Performance zu verbessern.
 
-Traders Mirror ist eine React/TypeScript-Anwendung mit Onion Architecture und Domain-Driven Design (DDD).
+**Features:**
+- Schnelles Erfassen von Trades (Symbol, Entry, Size, Price, Notizen)
+- Übersichtliches Journal mit Filter- und Suchfunktion (erweiterbar)
+- Onion Architecture & Domain-Driven Design (DDD) für maximale Wartbarkeit
+- Strikte Trennung von Domain, Application, Infrastructure, Presentation
+- Moderne React UI mit CSS Modules
+- Testabdeckung (Vitest, Codecov, Coverage-Badge)
+- Automatisiertes Deployment auf GitHub Pages
 
-- **Test Coverage:** Automatisch mit Vitest und Codecov (siehe Badge oben)
-- **CI:** GitHub Actions (siehe `.github/workflows/ci.yml`)
-- **Coverage-Report:** Nach jedem Push/PR auf main automatisch auf [Codecov](https://codecov.io/)
-
-## Lokale Entwicklung
-
-```sh
-npm install
-npm run dev
-```
-
-## Tests & Coverage
-
-```sh
-npm run test:unit -- --coverage
-# HTML-Report: coverage/index.html
-```
-
-## Coverage Badge im README
-
-Der Badge oben zeigt die aktuelle Testabdeckung des main-Branches. Klicke auf den Badge, um den vollständigen Coverage-Report auf Codecov zu sehen.
-
-## Weitere Hinweise
-- Für private Repos: Lege ein `CODECOV_TOKEN` als Secret in den GitHub Actions Einstellungen an.
-- Für Public Repos: Kein Token nötig.
+**Zielgruppe:**
+- Privatanleger, Daytrader, Swingtrader, Trading-Interessierte
+- Entwickler, die eine saubere DDD/Onion-Architektur als Referenz suchen
 
 ---
 
-Siehe auch [CODECOV.md](./CODECOV.md) für Details zur Coverage-Integration.
+## Live-Demo (GitHub Pages)
+
+Die App ist jederzeit online erreichbar unter:
+
+➡️ **[Traders Mirror Live](https://monkey-trader.github.io/traders-mirror/)**
 
