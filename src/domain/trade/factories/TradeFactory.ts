@@ -18,11 +18,11 @@ export type TradeInput =
 export class TradeFactory {
   static create(input: TradeInput): Trade {
     // Normalize to primitives using VOs for validation
-    const symbol = (input as any).symbol
-    const entryDate = (input as any).entryDate
-    const size = (input as any).size
-    const price = (input as any).price
-    const notes = (input as any).notes
+    const symbol = input.symbol
+    const entryDate = input.entryDate
+    const size = input.size
+    const price = input.price
+    const notes = input.notes
 
     const symVo = symbol instanceof TradeSymbol ? symbol : new TradeSymbol(String(symbol))
     const dateVo = entryDate instanceof EntryDate ? entryDate : new EntryDate(entryDate as string | Date)
@@ -32,4 +32,3 @@ export class TradeFactory {
     return new Trade(symVo.toString(), dateVo.toString(), sizeVo.toNumber(), priceVo.toNumber(), notes)
   }
 }
-

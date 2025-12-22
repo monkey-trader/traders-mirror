@@ -1,9 +1,11 @@
+import { EntryDateInvalidError } from '../errors/DomainErrors'
+
 export class EntryDate {
   public readonly iso: string
 
   constructor(isoOrDate: string | Date) {
     const d = typeof isoOrDate === 'string' ? new Date(isoOrDate) : isoOrDate
-    if (Number.isNaN(d.getTime())) throw new Error('Entry date required')
+    if (Number.isNaN(d.getTime())) throw new EntryDateInvalidError()
     this.iso = d.toISOString()
   }
 
@@ -19,4 +21,3 @@ export class EntryDate {
     return this.iso === other.iso
   }
 }
-

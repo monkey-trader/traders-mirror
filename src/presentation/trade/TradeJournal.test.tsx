@@ -1,12 +1,15 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest'
 import React from 'react'
 import { render, fireEvent, screen } from '@testing-library/react'
+import {
+  SizeMustBePositiveError,
+} from '@/domain/trade/errors/DomainErrors'
 
 // Mock the DI container so the component uses our mocked service
 vi.mock('@/shared/di', () => {
   const mockService = {
     listTrades: vi.fn().mockResolvedValue([]),
-    addTrade: vi.fn().mockRejectedValue(new Error('Size must be positive')),
+    addTrade: vi.fn().mockRejectedValue(new SizeMustBePositiveError()),
   }
   return {
     default: {
@@ -26,7 +29,7 @@ beforeEach(() => {
 describe('TradeJournal error handling and flows', () => {
   test('shows field-level error when service throws a domain error (Size must be positive)', async () => {
     container.tradeService.listTrades.mockResolvedValueOnce([])
-    container.tradeService.addTrade.mockRejectedValueOnce(new Error('Size must be positive'))
+    container.tradeService.addTrade.mockRejectedValueOnce(new SizeMustBePositiveError())
 
     const { container: dom } = render(<TradeJournal />)
 

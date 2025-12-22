@@ -2,6 +2,15 @@ import React, { useEffect, useState } from 'react'
 import type { Trade } from '@/domain/trade/entities/Trade'
 import container from '@/shared/di'
 import styles from './TradeJournal.module.css'
+import {
+  SizeNotNumberError,
+  SizeMustBePositiveError,
+  PriceNotNumberError,
+  PriceMustBePositiveError,
+  EntryDateInvalidError,
+  SymbolRequiredError,
+  SymbolTooLongError,
+} from '@/domain/trade/errors/DomainErrors'
 
 const tradeService = container.tradeService
 
@@ -26,6 +35,7 @@ const messages = {
     pricePositive: 'Price must be positive',
     priceNumber: 'Price must be a number',
     failedAdd: 'Failed to add trade',
+    symbolTooLong: 'Symbol too long',
   },
 }
 
@@ -102,25 +112,43 @@ export function TradeJournal() {
       setFieldErrors({})
       setTrades(await tradeService.listTrades())
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : String(err)
-
-      // Map well-known domain/VO exception messages to specific field errors (i18n-ready)
-      const domainMappings: Record<string, { field: keyof FormState; msgKey: keyof typeof messages['en'] }> = {
-        'Size must be positive': { field: 'size', msgKey: 'sizePositive' },
-        'Size must be a number': { field: 'size', msgKey: 'sizeNumber' },
-        'Price must be positive': { field: 'price', msgKey: 'pricePositive' },
-        'Price must be a number': { field: 'price', msgKey: 'priceNumber' },
-        'Entry date required': { field: 'entryDate', msgKey: 'entryDateRequired' },
-        'Invalid date': { field: 'entryDate', msgKey: 'invalidDate' },
-        'Symbol required': { field: 'symbol', msgKey: 'symbolRequired' },
-      }
-
-      const mapping = domainMappings[message]
-      if (mapping) {
-        setFieldErrors((prev) => ({ ...prev, [mapping.field]: t(mapping.msgKey) }))
+      // Map domain error instances to specific field errors (i18n-ready)
+      if (err instanceof SizeMustBePositiveError) {
+        setFieldErrors((prev) => ({ ...prev, size: t('sizePositive') }))
         return
       }
 
+      if (err instanceof SizeNotNumberError) {
+        setFieldErrors((prev) => ({ ...prev, size: t('sizeNumber') }))
+        return
+      }
+
+      if (err instanceof PriceMustBePositiveError) {
+        setFieldErrors((prev) => ({ ...prev, price: t('pricePositive') }))
+        return
+      }
+
+      if (err instanceof PriceNotNumberError) {
+        setFieldErrors((prev) => ({ ...prev, price: t('priceNumber') }))
+        return
+      }
+
+      if (err instanceof EntryDateInvalidError) {
+        setFieldErrors((prev) => ({ ...prev, entryDate: t('invalidDate') }))
+        return
+      }
+
+      if (err instanceof SymbolRequiredError) {
+        setFieldErrors((prev) => ({ ...prev, symbol: t('symbolRequired') }))
+        return
+      }
+
+      if (err instanceof SymbolTooLongError) {
+        setFieldErrors((prev) => ({ ...prev, symbol: t('symbolTooLong') }))
+        return
+      }
+
+      const message = err instanceof Error ? err.message : String(err)
       setError(message ?? t('failedAdd'))
     }
   }

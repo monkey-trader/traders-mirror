@@ -21,6 +21,27 @@
 - Ports & Adapters: Schnittstellen (Ports) in Domain/Application, Implementierungen (Adapter) in Infrastructure.
 - Keine Business-Logik in UI-Komponenten.
 
+## Richtlinie für neue Klassen / Features: Domain-Exceptions, Value Objects & Factories
+- Wenn wir neue Klassen oder Features anlegen, sollten sie von Anfang an nach DDD-Prinzipien aufgebaut werden: Domain-Exceptions, Value Objects und eine Factory zur Normalisierung.
+- Value Objects
+  - Pro semantischem Feld eine eigene VO-Klasse (z.B. `Size`, `Price`, `EntryDate`, `TradeSymbol`).
+  - VO-Konstruktoren validieren und normalisieren (z.B. Trim/Uppercase für Symbole, toISOString für Dates).
+  - VOs werfen typisierte Domain-Errors (keine generischen `Error`-Strings).
+- Factories
+  - `Factory.create(input)` normalisiert unterschiedliche Input-Formen (primitives, VOs, DTOs) und verwendet VOs zur Validierung.
+  - Factory gibt stabile primitive API-Objekte/Entities zurück (z. B. `Trade` mit primitiven Feldern), damit die Application/Presentation-Schicht nicht von VOs abhängig ist.
+- Keine Verwendung von `any`
+  - `any` unterdrückt Typprüfungen und ist verboten. Verwende unions, `unknown` + Narrowing oder konkrete Typen.
+  - Beispiel: Statt `(input as any).size` verwende `input: TradeInput` mit korrekten Union-Typen und greife direkt auf `input.size` zu oder führe einen Type-Guard durch.
+- Typed Domain Errors
+  - Domain-Validierungen werfen spezifische Fehlerklassen (z. B. `SizeMustBePositiveError`, `EntryDateInvalidError`).
+  - Presentation-Layer verwendet `instanceof` um Fehler zu erkennen und in Feld- oder globale Fehlermeldungen zu übersetzen (i18n-ready).
+- `import type`
+  - Exportiere Schnittstellen als `export type` (z. B. `TradeRepository`) und importiere sie in Services/Adapter mit `import type { ... }`.
+  - Klassen/VOs/Fehlerklassen bleiben normale `import`-Statements (Runtime benötigt sie).
+- Tests
+  - TDD: Für jede VO/Factory/Service Tests anlegen. Tests sollten sowohl Happy-Path als auch Validierungs-Fehler (`instanceof` Domain-Errors) prüfen.
+
 ## Coding Standards
 - TypeScript: Strikt, keine Verwendung von `any`.
 - React: Funktionale Komponenten, Hooks.
