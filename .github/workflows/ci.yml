@@ -27,7 +27,7 @@ jobs:
       - name: Lint
         run: npm run lint
       - name: Run unit tests (Vitest)
-        run: npm run test:unit -- --run --coverage
+        run: npm run test:unit
       - name: Build
         run: npm run build
       - name: Upload artifact (pages)
