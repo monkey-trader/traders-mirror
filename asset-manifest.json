@@ -1,0 +1,10 @@
+{
+  "files": {
+    "main.js": "/traders-mirror/static/js/main.d8c32f68.js",
+    "index.html": "/traders-mirror/index.html",
+    "main.d8c32f68.js.map": "/traders-mirror/static/js/main.d8c32f68.js.map"
+  },
+  "entrypoints": [
+    "static/js/main.d8c32f68.js"
+  ]
+}
