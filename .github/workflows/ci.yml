@@ -27,7 +27,12 @@ jobs:
       - name: Lint
         run: npm run lint
       - name: Run unit tests (Vitest)
-        run: npm run test:unit -- --run
+        run: npm run test:unit -- --run --coverage
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage/lcov.info
+          token: ${{ secrets.CODECOV_TOKEN }}
       - name: Build
         run: npm run build
       - name: Upload artifact (pages)
