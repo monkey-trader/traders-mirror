@@ -1,8 +1,8 @@
 // Composition root / dependency wiring (minimal placeholder)
 // Extend this to wire real adapters and services for the app.
 
-import { InMemoryTradeRepository } from '../../infrastructure/trade/repositories/InMemoryTradeRepository'
-import { TradeService } from '../../application/trade/services/TradeService'
+import { InMemoryTradeRepository } from '@/infrastructure/trade/repositories/InMemoryTradeRepository'
+import { TradeService } from '@/application/trade/services/TradeService'
 
 const tradeRepository = new InMemoryTradeRepository()
 const tradeService = new TradeService(tradeRepository)
