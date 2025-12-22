@@ -1,3 +1,4 @@
+import { describe, test, expect } from 'vitest'
 import { TradeService } from './TradeService'
 import { InMemoryTradeRepository } from '../../../infrastructure/trade/repositories/InMemoryTradeRepository'
 
