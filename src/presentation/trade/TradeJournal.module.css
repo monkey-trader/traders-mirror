@@ -1,0 +1,19 @@
+.container {
+  padding: 12px;
+  font-family: sans-serif;
+}
+.form {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.table th, .table td {
+  border: 1px solid #ddd;
+  padding: 6px;
+  text-align: left;
+}
