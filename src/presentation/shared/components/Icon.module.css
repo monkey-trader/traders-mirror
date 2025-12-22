@@ -1,0 +1,6 @@
+/* Icon wrapper for simple sizing and alignment */
+.icon {
+  display: inline-block;
+  vertical-align: middle;
+}
+

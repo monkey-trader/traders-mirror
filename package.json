@@ -4,10 +4,10 @@
   "private": true,
   "homepage": "https://monkey-trader.github.io/traders-mirror",
   "scripts": {
-    "start": "react-scripts start",
-    "dev": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
+    "start": "craco start",
+    "dev": "craco start",
+    "build": "craco build",
+    "test": "craco test",
     "test:unit": "vitest",
     "lint": "eslint 'src/**/*.{ts,tsx,js,jsx}' --max-warnings=0 || true",
     "format": "prettier --write 'src/**/*.{ts,tsx,js,jsx,json,css,md}'",
@@ -21,6 +21,7 @@
     "react-scripts": "5.0.1"
   },
   "devDependencies": {
+    "@craco/craco": "^7.1.0",
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^14.0.0",
     "@types/react": "18.2.6",
