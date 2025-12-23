@@ -55,7 +55,6 @@ jobs:
             This PR updates the generated PNGs for PlantUML diagrams changed in this branch.
             The images are generated automatically from the corresponding `.puml` files.
           labels: automatic,docs
-          path: docs/diagrams/**
-          # Do not create a PR if there are no changes
-          empty-commit: false
-
+          add-paths: |
+            docs/diagrams/**
+          delete-branch: true
