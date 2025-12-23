@@ -81,6 +81,7 @@ describe('TradeJournal error handling and flows', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /Add Trade/i }))
 
+
     // The trade row should appear
     const cell = await screen.findByText('AAPL')
     expect(cell).toBeTruthy()
