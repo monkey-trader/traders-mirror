@@ -1,7 +1,7 @@
 module.exports = {
   root: true,
   parser: '@typescript-eslint/parser',
-  plugins: ['@typescript-eslint'],
+  plugins: ['@typescript-eslint', 'local-rules'],
   env: {
     browser: true,
     node: true,
@@ -13,7 +13,9 @@ module.exports = {
     project: './tsconfig.json',
   },
   rules: {
-    'no-short-vo-names': ['warn', { max: 3 }],
+    // Use the local plugin which re-exports rules from `tools/eslint-rules` so the
+    // rule is discoverable by react-scripts/CRA during the production build.
+    'local-rules/no-short-vo-names': ['warn', { max: 3 }],
   },
   settings: {},
 }
