@@ -94,7 +94,7 @@ Beispiel-Pfade:
 - Siehe `docs/diagrams/` für die PlantUML-Quellen der Architektur- und Sequenzdiagramme.
 
 == Diagramme (Best Practice)
-Die Diagramme werden als PlantUML-Quellen im Verzeichnis `docs/diagrams/` gehalten. Best Practice ist, die `.puml`-Quellen direkt in AsciiDoc einzubetten oder per `plantuml::[]` Macro einzubinden, damit `asciidoctor-diagram` die Diagramme beim Rendern erzeugt.
+Die Diagramme werden als PlantUML-Quellen im Verzeichnis `docs/diagrams/` gehalten. Best Practice ist, die `.puml`-Quellen direkt in AsciiDoc einzubetten oder per plantuml-macro einzubinden, damit `asciidoctor-diagram` die Diagramme beim Rendern erzeugt.
 
 Beispiel: Die folgenden Direktiven binden die vorhandenen .puml-Dateien ein und erzeugen PNG/SVG beim Build:
 
