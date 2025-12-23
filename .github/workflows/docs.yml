@@ -17,7 +17,7 @@ jobs:
 
       - name: Build docs with Docker (asciidoctor + asciidoctor-diagram)
         run: |
-          docker run --rm -v "${{ github.workspace }}:/documents" asciidoctor/docker-asciidoctor \
+          docker run --rm -v "${{ github.workspace }}:/documents" -w /documents asciidoctor/docker-asciidoctor \
             asciidoctor -r asciidoctor-diagram -D docs/build docs/ARCHITECTURE.adoc
 
       - name: Upload docs artifact
