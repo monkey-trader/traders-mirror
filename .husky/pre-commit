@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+node ./scripts/plantuml-build.mjs || (echo 'PlantUML build failed' && exit 1); git add docs/build/assets/diagrams/*.png 2>/dev/null || true
