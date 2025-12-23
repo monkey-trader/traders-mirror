@@ -48,7 +48,9 @@ jobs:
       - name: Create Pull Request with generated images
         uses: peter-evans/create-pull-request@v5
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          # Prefer a user PAT stored in secrets.ACTIONS_PAT (needs 'repo' + 'workflow' scopes) so the action can create PRs even when organization/repo settings restrict GITHUB_TOKEN.
+          # If not set, fall back to the default github.token (may be blocked by repo settings).
+          token: ${{ secrets.ACTIONS_PAT || github.token }}
           commit-message: "chore(docs): update generated diagram PNGs"
           branch: "auto/diagrams-generated-${{ github.sha }}"
           title: "chore(docs): update generated diagram PNGs"
@@ -59,3 +61,9 @@ jobs:
           add-paths: |
             docs/diagrams/**
           delete-branch: true
+
+# Notes:
+# - To allow this workflow to create PRs automatically in all environments, create a Personal Access Token (classic) with the "repo" scope (and "workflow" if needed)
+#   and add it to this repository's secrets as `ACTIONS_PAT` (Settings -> Secrets and variables -> Actions -> New repository secret).
+# - Alternatively, an admin can enable "Allow GitHub Actions to create and approve pull requests" / grant Actions write permissions in
+#   Settings -> Actions -> General -> Workflow permissions for the repo/organization.
