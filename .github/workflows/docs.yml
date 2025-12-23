@@ -26,8 +26,12 @@ jobs:
           ls -la docs || true
 
       - name: Build docs with asciidoctor-diagram
+        env:
+          GITHUB_WORKSPACE: ${{ github.workspace }}
         run: |
-          asciidoctor -r asciidoctor-diagram -D docs/build docs/ARCHITECTURE.adoc --trace
+          echo "GITHUB_WORKSPACE=$GITHUB_WORKSPACE"
+          ls -la "$GITHUB_WORKSPACE" || true
+          asciidoctor -r asciidoctor-diagram -D "$GITHUB_WORKSPACE/docs/build" "$GITHUB_WORKSPACE/docs/ARCHITECTURE.adoc" --trace
 
       - name: Upload docs artifact
         uses: actions/upload-artifact@v4
