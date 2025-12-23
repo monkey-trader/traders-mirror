@@ -3,8 +3,8 @@ import { TradeSymbol } from './TradeSymbol'
 
 describe('TradeSymbol VO', () => {
   test('accepts and normalizes valid symbol', () => {
-    const s = new TradeSymbol(' aapl ')
-    expect(s.toString()).toBe('AAPL')
+    const tradeSymbol = new TradeSymbol(' aapl ')
+    expect(tradeSymbol.toString()).toBe('AAPL')
   })
 
   test('throws for empty symbol', () => {

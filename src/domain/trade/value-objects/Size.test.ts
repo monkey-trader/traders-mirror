@@ -3,8 +3,8 @@ import { Size } from './Size';
 
 describe('Size VO', () => {
   test('accepts positive size', () => {
-    const s = new Size(2);
-    expect(s.toNumber()).toBe(2);
+    const sizeVo = new Size(2);
+    expect(sizeVo.toNumber()).toBe(2);
   });
 
   test('throws for non-number', () => {

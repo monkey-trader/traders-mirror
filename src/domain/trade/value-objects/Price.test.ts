@@ -3,8 +3,8 @@ import { Price } from './Price'
 
 describe('Price VO', () => {
   test('accepts positive number', () => {
-    const p = new Price(123.45)
-    expect(p.toNumber()).toBe(123.45)
+    const priceVo = new Price(123.45)
+    expect(priceVo.toNumber()).toBe(123.45)
   })
 
   test('throws for non-number', () => {
