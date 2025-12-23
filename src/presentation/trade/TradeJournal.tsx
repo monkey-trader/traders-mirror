@@ -53,47 +53,48 @@ export function TradeJournal() {
   }, [])
 
   const validateField = (name: keyof FormState, value: unknown): string | null => {
-    switch (name) {
-      case 'symbol': {
-        const v = String(value ?? '')
-        if (!v || v.trim() === '') return t('symbolRequired')
-        return null
-      }
-      case 'entryDate': {
-        const v = String(value ?? '')
-        if (!v || v.trim() === '') return t('entryDateRequired')
-        // Basic date sanity check
-        const d = new Date(v)
-        if (Number.isNaN(d.getTime())) return t('invalidDate')
-        return null
-      }
-      case 'size': {
-        const num = Number(value as unknown)
-        if (!Number.isFinite(num)) return t('sizeNumber')
-        if (num <= 0) return t('sizePositive')
-        return null
-      }
-      case 'price': {
-        const num = Number(value as unknown)
-        if (!Number.isFinite(num)) return t('priceNumber')
-        if (num <= 0) return t('pricePositive')
-        return null
-      }
-      default:
-        return null
+    // explicit if/else to avoid lexical declarations in switch case blocks
+    if (name === 'symbol') {
+      const v = String(value ?? '')
+      if (!v || v.trim() === '') return t('symbolRequired')
+      return null
     }
+
+    if (name === 'entryDate') {
+      const v = String(value ?? '')
+      if (!v || v.trim() === '') return t('entryDateRequired')
+      // Basic date sanity check
+      const d = new Date(v)
+      if (Number.isNaN(d.getTime())) return t('invalidDate')
+      return null
+    }
+
+    if (name === 'size') {
+      const num = Number(value)
+      if (!Number.isFinite(num)) return t('sizeNumber')
+      if (num <= 0) return t('sizePositive')
+      return null
+    }
+
+    if (name === 'price') {
+      const num = Number(value)
+      if (!Number.isFinite(num)) return t('priceNumber')
+      if (num <= 0) return t('pricePositive')
+      return null
+    }
+
+    return null
   }
 
   const validateAll = (): FormErrors => {
     // Build the errors object explicitly to avoid iteration edge-cases in tests
-    const errors: FormErrors = {
+    return {
       symbol: validateField('symbol', form.symbol),
       entryDate: validateField('entryDate', form.entryDate),
       size: validateField('size', form.size),
       price: validateField('price', form.price),
       notes: null,
     }
-    return errors
   }
 
   const handleAdd = async (e: React.FormEvent) => {

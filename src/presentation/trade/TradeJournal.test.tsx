@@ -28,8 +28,8 @@ beforeEach(() => {
 
 describe('TradeJournal error handling and flows', () => {
   test('shows field-level error when service throws a domain error (Size must be positive)', async () => {
-    container.tradeService.listTrades.mockResolvedValueOnce([])
-    container.tradeService.addTrade.mockRejectedValueOnce(new SizeMustBePositiveError())
+    vi.mocked(container.tradeService.listTrades).mockResolvedValueOnce([])
+    vi.mocked(container.tradeService.addTrade).mockRejectedValueOnce(new SizeMustBePositiveError())
 
     const { container: dom } = render(<TradeJournal />)
 
@@ -60,12 +60,12 @@ describe('TradeJournal error handling and flows', () => {
 
   test('success flow: trade is added and appears in the list', async () => {
     // initial list empty
-    container.tradeService.listTrades.mockResolvedValueOnce([])
+    vi.mocked(container.tradeService.listTrades).mockResolvedValueOnce([])
     // make addTrade succeed
-    container.tradeService.addTrade.mockResolvedValueOnce(undefined)
+    vi.mocked(container.tradeService.addTrade).mockResolvedValueOnce(undefined)
     // after adding, listTrades returns the added trade
     const added = { symbol: 'AAPL', entryDate: '2025-12-22T10:00', size: 1, price: 100, notes: 'ok' }
-    container.tradeService.listTrades.mockResolvedValueOnce([added])
+    vi.mocked(container.tradeService.listTrades).mockResolvedValueOnce([added])
 
     const { container: dom } = render(<TradeJournal />)
 
@@ -82,13 +82,13 @@ describe('TradeJournal error handling and flows', () => {
     fireEvent.click(screen.getByRole('button', { name: /Add Trade/i }))
 
     // The trade row should appear
-    const cell = await screen.findByText((content, element) => content === 'AAPL')
+    const cell = await screen.findByText('AAPL')
     expect(cell).toBeTruthy()
   })
 
   test('shows field error for invalid entry date and does not call service', async () => {
-    container.tradeService.listTrades.mockResolvedValueOnce([])
-    container.tradeService.addTrade.mockResolvedValueOnce(undefined)
+    vi.mocked(container.tradeService.listTrades).mockResolvedValueOnce([])
+    vi.mocked(container.tradeService.addTrade).mockResolvedValueOnce(undefined)
 
     const { container: dom } = render(<TradeJournal />)
 
@@ -109,6 +109,6 @@ describe('TradeJournal error handling and flows', () => {
     const entryError = await screen.findByText((content) => content.includes('Entry date required') || content.includes('Invalid date'))
     expect(entryError).toBeTruthy()
     // service.addTrade should not have been called
-    expect(container.tradeService.addTrade).not.toHaveBeenCalled()
+    expect(vi.mocked(container.tradeService.addTrade)).not.toHaveBeenCalled()
   })
 })

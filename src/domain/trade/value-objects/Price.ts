@@ -4,7 +4,7 @@ export class Price {
   public readonly amount: number
 
   constructor(amount: number) {
-    if (typeof amount !== 'number' || Number.isNaN(amount)) throw new PriceNotNumberError()
+    if (Number.isNaN(amount)) throw new PriceNotNumberError()
     if (amount <= 0) throw new PriceMustBePositiveError()
     this.amount = Number(amount)
   }

@@ -8,7 +8,6 @@ describe('Price VO', () => {
   })
 
   test('throws for non-number', () => {
-    // @ts-expect-error testing runtime behavior
     expect(() => new Price(NaN)).toThrow('Price must be a number')
   })
 
