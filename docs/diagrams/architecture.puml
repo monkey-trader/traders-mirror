@@ -4,6 +4,7 @@ skinparam componentStyle rectangle
 
 package "Presentation" {
   [TradeJournal.tsx] as UI
+  [ErrorMapper\nsrc/presentation/trade/errorMapper.ts] as ErrorMapper
 }
 
 package "Application" {
@@ -26,6 +27,7 @@ package "Infrastructure" {
 
 'Relationships (Ports & Adapters)
 UI --> Service : use
+UI --> ErrorMapper : map errors
 Service --> Factory : create / validate
 Factory --> VOs : normalize / validate
 Service --> Ports : depends on (import type)
@@ -38,10 +40,11 @@ Factory ..> DomainEntity : creates
 
 note left of UI
 Presentation: React + CSS Modules
+
+- Validation and mapping of domain errors to field/global messages happens in Presentation layer (ErrorMapper)
 end note
 
 note right of AdapterRepo
 Infrastructure: Adapters implement Ports
 end note
 @enduml
-

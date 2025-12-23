@@ -9,6 +9,7 @@ participant "ValueObjects\n(Size/Price/TradeSymbol)" as VOs
 participant "Trade Entity\n(src/domain/trade/entities/Trade.ts)" as Entity
 participant "TradeRepository (port)\n(src/domain/trade/interfaces/TradeRepository.ts)" as RepoPort
 participant "InMemoryTradeRepository\n(src/infrastructure/trade/repositories/InMemoryTradeRepository.ts)" as RepoImpl
+participant "ErrorMapper\n(src/presentation/trade/errorMapper.ts)" as ErrorMapper
 
 User -> UI: fill form + submit
 UI -> Service: addTrade(payload)
@@ -22,7 +23,9 @@ RepoImpl -> RepoPort: implements
 Service -> UI: success / error
 
 alt Validation error
-Factory --> Service: throw DomainError (typed)
-Service --> UI: map error (instanceof) -> field/global message
+  Factory --> Service: throw DomainError (typed)
+  Service --> UI: return error
+  UI -> ErrorMapper: map DomainError -> field/global message (presentation)
+  ErrorMapper --> UI: fieldErrors / message
 end
 @enduml

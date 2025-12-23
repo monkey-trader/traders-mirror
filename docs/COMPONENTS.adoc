@@ -4,12 +4,13 @@
 :icons: font
 :plantuml:
 
-Dieser Abschnitt dokumentiert die wiederverwendbaren Presentation-Komponenten, die unter `src/presentation/shared/components` liegen. Ziel ist eine kompakte API-Referenz (Props), Hinweise zur Implementation und zum Testen sowie ein visuelles Diagramm, das ihre Rolle im System zeigt.
+Dieser Abschnitt dokumentiert die wiederverwendbaren Presentation-Komponenten, die unter `src/presentation/shared/components` liegen. Ziel ist eine kompakte API-Referenz (Props), Hinweise zur Implementation und zum Testen sowie ein visuelles Diagramm, das ihre Rolle im Systems zeigt.
 
 == Übersicht
 Die folgenden Komponenten werden derzeit als "Shared Components" verwendet:
 - Button (`src/presentation/shared/components/Button.tsx`)
 - Icon (`src/presentation/shared/components/Icon.tsx`)
+- ErrorMapper (`src/presentation/trade/errorMapper.ts`) – Präsentations-Utility zum Mappen typisierter Domain-Errors auf Feld- oder globale Fehlermeldungen (i18n-ready).
 
 == Diagramm
 Das PlantUML-Diagramm visualisiert die Beziehung der Shared Components zur Presentation- und Application-Schicht.
@@ -74,6 +75,21 @@ Beschreibung::
 === Tests
 - Snapshot/Render-Tests für verschiedene Icon-Namen und Größen.
 - Accessibility: `aria-hidden` vs `aria-label` Verhalten prüfen.
+
+== ErrorMapper
+Pfad: `src/presentation/trade/errorMapper.ts`
+
+Beschreibung::
+- Utility in der Presentation-Schicht, das typisierte Domain-Fehler (`DomainErrors`) auf Präsentations-Feldfehler (z. B. `size`) oder eine globale, i18n-fähige Fehlermeldung mapped.
+- Hält die `TradeJournal.tsx`-Komponente schlank und testbar.
+
+=== Verhalten
+- Input: `err: unknown` (z. B. DomainError-Instanz)
+- Output: `{ fieldErrors?: Partial<Record<string, string>>; message?: string }`
+- Bekannte Domain-Fehler liefern `fieldErrors`, unbekannte Fehler liefern eine generische `message`.
+
+=== Tests
+- Unit-Tests prüfen, dass jede Domain-Error-Klasse korrekt auf das erwartete Feld gemappt wird und dass unbekannte Fehler eine allgemeine Nachricht zurückgeben.
 
 == Implementierungs-Hinweise
 - Komponenten sollen rein Präsentationslogik enthalten — keine Business-Logik.

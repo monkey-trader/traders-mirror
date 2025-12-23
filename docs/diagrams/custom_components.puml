@@ -4,6 +4,7 @@ skinparam componentStyle rectangle
 
 package "Presentation" {
   [TradeJournal] as TJ
+  [ErrorMapper\nsrc/presentation/trade/errorMapper.ts] as ErrorMapper
 
   package "Shared Components" {
     [Button] as Btn
@@ -28,6 +29,7 @@ package "Infrastructure" {
 TJ --> TS : uses
 TJ --> Btn : composes / uses
 TJ --> Ic : uses
+TJ --> ErrorMapper : maps domain errors -> field messages
 TS --> Repo : persists
 TS --> TradeEntity : creates/validates
 TradeEntity --> VOs : composes
