@@ -33,8 +33,10 @@ Die App ist jederzeit online erreichbar unter:
 
 Die Projekt-Dokumentation und Architekturübersicht findest du im `docs/`-Ordner.
 
-- ARCHITECTURE (AsciiDoc): `docs/ARCHITECTURE.adoc`
-- Gerenderte HTML-Version: `docs/build/ARCHITECTURE.html` (nach `npm run docs:build`)
+- ARCHITECTURE (AsciiDoc): `docs/ARCHITECTURE.adoc` (auch gerenderte HTML: `docs/build/ARCHITECTURE.html`)
+- CONTRIBUTING: `docs/CONTRIBUTING.adoc` (Beitragsleitfaden)
+- COMPONENTS: `docs/COMPONENTS.adoc` (Shared Presentation-Components: Button, Icon)
+- Weitere Docs / README: `docs/README.adoc`
 - PlantUML-Quellen: `docs/diagrams/` (z. B. `architecture.puml`, `sequence_trade_flow.puml`, `custom_components.puml`)
 - Generierte Diagramme: `docs/diagrams/*.png` und `docs/build/assets/diagrams/*.png`
 
