@@ -28,7 +28,6 @@ link:https://monkey-trader.github.io/traders-mirror/[Traders Mirror Live]
 - link:docs/COMPONENTS.adoc[Components (Shared Presentation Components)]
 - link:docs/CONTRIBUTING.adoc[Contributing Guide]
 - link:docs/README.adoc[Docs Home]
-- link:docs/build/index.html[Gerenderte HTML-Dokumentation (docs/build/index.html)]
 
 == PlantUML / Diagrams
 Die Quell-Dateien für Diagramme befinden sich in `docs/diagrams/`. Gerenderte PNGs liegen in `docs/diagrams/` und `docs/build/assets/diagrams/`.
