@@ -2,6 +2,7 @@
 :toc:
 :toclevels: 2
 :icons: font
+:plantuml:
 
 Dieser Abschnitt dokumentiert die wiederverwendbaren Presentation-Komponenten, die unter `src/presentation/shared/components` liegen. Ziel ist eine kompakte API-Referenz (Props), Hinweise zur Implementation und zum Testen sowie ein visuelles Diagramm, das ihre Rolle im System zeigt.
 
@@ -99,4 +100,3 @@ Die CI-Action `.github/workflows/render-puml.yml` sorgt dafür, dass beim Änder
 
 == Weiteres
 Wenn du möchtest, erweitere ich diese Datei um weitere Shared Components (z. B. Input, Modal) und generiere eine kleine Referenz-Tabelle automatisch aus den Prop-Typen (kann ich per statischem TypeScript-Parser/AST extrahieren, wenn du das willst).
-

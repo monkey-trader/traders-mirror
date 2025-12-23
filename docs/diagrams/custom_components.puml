@@ -4,6 +4,11 @@ skinparam componentStyle rectangle
 
 package "Presentation" {
   [TradeJournal] as TJ
+
+  package "Shared Components" {
+    [Button] as Btn
+    [Icon] as Ic
+  }
 }
 
 package "Application" {
@@ -21,9 +26,26 @@ package "Infrastructure" {
 
 ' Dependencies
 TJ --> TS : uses
+TJ --> Btn : composes / uses
+TJ --> Ic : uses
 TS --> Repo : persists
 TS --> TradeEntity : creates/validates
 TradeEntity --> VOs : composes
+
+' Component descriptions (notes)
+note right of Btn
+  Button component
+  - Reusable UI element
+  - Props: onClick, variant, size
+  - Uses CSS Module: Button.module.css
+end note
+
+note right of Ic
+  Icon component
+  - SVG-based icons
+  - Props: name, size, ariaLabel
+  - Uses CSS Module: Icon.module.css
+end note
 
 ' Add a small notes box for architecture
 note right of TS
@@ -37,4 +59,3 @@ note left of Repo
 end note
 
 @enduml
-
