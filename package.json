@@ -18,7 +18,9 @@
     "docs:clean": "rm -rf docs/build",
     "docs:plantuml": "node --experimental-specifier-resolution=node ./scripts/plantuml-build.mjs",
     "docs:asciidoc": "node --experimental-specifier-resolution=node ./scripts/asciidoc-build.mjs",
-    "docs:build": "npm run docs:clean && npm run docs:plantuml && npm run docs:asciidoc"
+    "docs:build": "npm run docs:clean && npm run docs:plantuml && npm run docs:asciidoc",
+
+    "docs:docker-build": "docker run --rm -v \"$(pwd)\":/documents -w /documents asciidoctor/docker-asciidoctor asciidoctor -r asciidoctor-diagram -a plantuml=true -D docs/build docs/ARCHITECTURE.adoc --trace"
   },
   "dependencies": {
     "react": "^18.2.0",

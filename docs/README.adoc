@@ -14,6 +14,7 @@
 
 2. Build:
   - npm run docs:build
+  - oder (schneller Docker-Wrap): npm run docs:docker-build
 
 3. Resultate:
   - Siehe `docs/build/index.html` oder `docs/build/` Ordner (je nach Konfiguration)
@@ -31,9 +32,13 @@ Für die zuverlässigste und reproduzierbare Rendering-Pipeline empfehle ich das
 Beispiel (lokal, macOS / Linux):
 
 ```bash
+# npm-script (Docker wrapper)
+npm run docs:docker-build
+
+# oder direkt (copy-paste):
 # from project root
 docker run --rm -v "$(pwd)":/documents asciidoctor/docker-asciidoctor \
-  asciidoctor -r asciidoctor-diagram -D docs/build docs/ARCHITECTURE.adoc
+  asciidoctor -r asciidoctor-diagram -a plantuml=true -D docs/build docs/ARCHITECTURE.adoc
 ```
 
 Windows (PowerShell):
