@@ -27,3 +27,22 @@ Die App ist jederzeit online erreichbar unter:
 
 ➡️ **[Traders Mirror Live](https://monkey-trader.github.io/traders-mirror/)**
 
+---
+
+## Documentation
+
+Die Projekt-Dokumentation und Architekturübersicht findest du im `docs/`-Ordner.
+
+- ARCHITECTURE (AsciiDoc): `docs/ARCHITECTURE.adoc`
+- Gerenderte HTML-Version: `docs/build/ARCHITECTURE.html` (nach `npm run docs:build`)
+- PlantUML-Quellen: `docs/diagrams/` (z. B. `architecture.puml`, `sequence_trade_flow.puml`, `custom_components.puml`)
+- Generierte Diagramme: `docs/diagrams/*.png` und `docs/build/assets/diagrams/*.png`
+
+Tipp: Um die Diagramme automatisch zu (re)generieren und die HTML-Dokumentation zu bauen, führe lokal aus:
+
+```bash
+npm ci
+npm run docs:build
+```
+
+Die CI-Action `.github/workflows/render-puml.yml` rendert `.puml`-Dateien zu PNGs und öffnet optional einen Pull Request mit den generierten Bildern (wenn du ein PAT in `ACTIONS_PAT` hinterlegst oder Actions das Erstellen von PRs erlaubt).

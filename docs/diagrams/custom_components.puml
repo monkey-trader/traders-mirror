@@ -1,0 +1,40 @@
+@startuml
+' Custom components diagram for Traders Mirror
+skinparam componentStyle rectangle
+
+package "Presentation" {
+  [TradeJournal] as TJ
+}
+
+package "Application" {
+  [TradeService] as TS
+}
+
+package "Domain" {
+  [Trade Entity] as TradeEntity
+  [Value Objects] as VOs
+}
+
+package "Infrastructure" {
+  [InMemoryTradeRepository] as Repo
+}
+
+' Dependencies
+TJ --> TS : uses
+TS --> Repo : persists
+TS --> TradeEntity : creates/validates
+TradeEntity --> VOs : composes
+
+' Add a small notes box for architecture
+note right of TS
+  Use-case orchestration
+  (Application layer)
+end note
+
+note left of Repo
+  Adapter/Repository
+  (Infrastructure)
+end note
+
+@enduml
+

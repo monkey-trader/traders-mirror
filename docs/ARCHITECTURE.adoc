@@ -113,3 +113,14 @@ endif::plantuml[]
 ifndef::plantuml[]
 image::diagrams/sequence_trade_flow.png[alt="Add Trade Sequence",align="center"]
 endif::plantuml[]
+
+== Custom Components
+Dieses Kapitel zeigt unsere maßgeschneiderten UI-/Präsentations-Komponenten und wie sie sich in die Onion-Schichten einfügen. Das Diagramm visualisiert die wichtigsten Komponenten und deren Beziehungen zu Application- und Infrastructure-Layern.
+
+ifdef::plantuml[]
+plantuml::diagrams/custom_components.puml[format="png", alt="Custom Components Diagram"]
+endif::plantuml[]
+
+ifndef::plantuml[]
+image::diagrams/custom_components.png[alt="Custom Components Diagram",align="center"]
+endif::plantuml[]
