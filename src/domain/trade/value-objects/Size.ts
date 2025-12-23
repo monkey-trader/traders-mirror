@@ -1,4 +1,4 @@
-import { SizeNotNumberError, SizeMustBePositiveError } from '../errors/DomainErrors'
+import { SizeNotNumberError, SizeMustBePositiveError } from '@/domain/trade/errors/DomainErrors'
 
 export class Size {
   public readonly amount: number

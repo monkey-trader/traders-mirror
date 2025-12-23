@@ -1,4 +1,4 @@
-import { SymbolRequiredError, SymbolTooLongError } from '../errors/DomainErrors'
+import { SymbolRequiredError, SymbolTooLongError } from '@/domain/trade/errors/DomainErrors'
 
 export class TradeSymbol {
   public readonly value: string

@@ -1,9 +1,9 @@
-import { Trade } from '../entities/Trade'
-import { TradeSymbol } from '../value-objects/TradeSymbol'
-import { EntryDate } from '../value-objects/EntryDate'
-import { Price } from '../value-objects/Price'
-import { Size } from '../value-objects/Size'
-import type { TradeProps } from '../entities/Trade'
+import { Trade } from '@/domain/trade/entities/Trade'
+import { TradeSymbol } from '@/domain/trade/value-objects/TradeSymbol'
+import { EntryDate } from '@/domain/trade/value-objects/EntryDate'
+import { Price } from '@/domain/trade/value-objects/Price'
+import { Size } from '@/domain/trade/value-objects/Size'
+import type { TradeProps } from '@/domain/trade/entities/Trade'
 
 export type TradeInput =
   | TradeProps

@@ -1,7 +1,7 @@
 import { TradeSymbol } from '../value-objects/TradeSymbol'
 import { EntryDate } from '../value-objects/EntryDate'
 import { Price } from '../value-objects/Price'
-import { Size } from '../value-objects/Size'
+import { Size } from '@/domain/trade/value-objects/Size'
 
 export class Trade {
   // keep original public API types for compatibility

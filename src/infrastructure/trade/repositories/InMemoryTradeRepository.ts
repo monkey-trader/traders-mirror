@@ -1,5 +1,5 @@
-import type { Trade } from '../../../domain/trade/entities/Trade'
-import type { TradeRepository } from '../../../domain/trade/interfaces/TradeRepository'
+import type { Trade } from '@/domain/trade/entities/Trade'
+import type { TradeRepository } from '@/domain/trade/interfaces/TradeRepository'
 
 export class InMemoryTradeRepository implements TradeRepository {
   private trades: Trade[] = []

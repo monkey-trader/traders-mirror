@@ -164,7 +164,7 @@ export function TradeJournal() {
       </header>
 
       <section className={styles.card}>
-        <form onSubmit={handleAdd} className={styles.form} aria-label="Add trade form">
+        <form onSubmit={handleAdd} className={styles.form} aria-label="Add trade form" noValidate>
           <div>
             <input
               className={styles.input}

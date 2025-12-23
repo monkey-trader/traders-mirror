@@ -1,4 +1,4 @@
-import { PriceNotNumberError, PriceMustBePositiveError } from '../errors/DomainErrors'
+import { PriceNotNumberError, PriceMustBePositiveError } from '@/domain/trade/errors/DomainErrors'
 
 export class Price {
   public readonly amount: number

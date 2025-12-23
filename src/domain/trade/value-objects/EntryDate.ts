@@ -1,4 +1,4 @@
-import { EntryDateInvalidError } from '../errors/DomainErrors'
+import { EntryDateInvalidError } from '@/domain/trade/errors/DomainErrors'
 
 export class EntryDate {
   public readonly iso: string
