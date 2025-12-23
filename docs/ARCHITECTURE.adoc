@@ -98,6 +98,18 @@ Die Diagramme werden als PlantUML-Quellen im Verzeichnis `docs/diagrams/` gehalt
 
 Beispiel: Die folgenden Direktiven binden die vorhandenen .puml-Dateien ein und erzeugen PNG/SVG beim Build:
 
+ifdef::plantuml[]
 plantuml::diagrams/architecture.puml[format="png", alt="Architecture Diagram"]
+endif::plantuml[]
 
+ifndef::plantuml[]
+image::diagrams/architecture.png[alt="Architecture Diagram",align="center"]
+endif::plantuml[]
+
+ifdef::plantuml[]
 plantuml::diagrams/sequence_trade_flow.puml[format="png", alt="Add Trade Sequence"]
+endif::plantuml[]
+
+ifndef::plantuml[]
+image::diagrams/sequence_trade_flow.png[alt="Add Trade Sequence",align="center"]
+endif::plantuml[]

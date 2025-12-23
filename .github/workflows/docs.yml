@@ -31,7 +31,7 @@ jobs:
         run: |
           echo "GITHUB_WORKSPACE=$GITHUB_WORKSPACE"
           ls -la "$GITHUB_WORKSPACE" || true
-          asciidoctor -r asciidoctor-diagram -D "$GITHUB_WORKSPACE/docs/build" "$GITHUB_WORKSPACE/docs/ARCHITECTURE.adoc" --trace
+          asciidoctor -r asciidoctor-diagram -a plantuml=true -D "$GITHUB_WORKSPACE/docs/build" "$GITHUB_WORKSPACE/docs/ARCHITECTURE.adoc" --trace
 
       - name: "Upload docs artifact"
         uses: actions/upload-artifact@v4
