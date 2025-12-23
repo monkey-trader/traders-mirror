@@ -1,30 +1,19 @@
 module.exports = {
   root: true,
   parser: '@typescript-eslint/parser',
-  plugins: ['react', 'react-hooks', '@typescript-eslint'],
-  extends: [
-    'eslint:recommended',
-    'plugin:react/recommended',
-    'plugin:react-hooks/recommended',
-    'plugin:@typescript-eslint/recommended',
-    'prettier'
-  ],
-  settings: {
-    react: {
-      version: 'detect'
-    }
-  },
+  plugins: ['@typescript-eslint'],
   env: {
     browser: true,
-    es2021: true,
     node: true,
-    jest: true
+    es2021: true,
+  },
+  parserOptions: {
+    ecmaVersion: 2021,
+    sourceType: 'module',
+    project: './tsconfig.json',
   },
   rules: {
-    'react/prop-types': 'off',
-    // temporarily disable unused-vars to avoid false positives for TS constructor shorthand
-    'no-unused-vars': 'off',
-    // Temporarily disable to avoid build-time ESLint failures from unresolved plugin
-    '@typescript-eslint/ban-ts-comment': 'off'
-  }
+    'no-short-vo-names': ['warn', { max: 3 }],
+  },
+  settings: {},
 }

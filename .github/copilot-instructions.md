@@ -230,3 +230,23 @@ export function TradeJournal() {
   )
 }
 ```
+
+// Use Value Objects to validate and normalize but re-expose primitives to keep API stable
+// IMPORTANT: do not use short variable names like `s` or `p`. Use explicit, descriptive names.
+// Good:
+//     const tradeSymbol = new TradeSymbol(symbol)
+//     const entityDate = new EntryDate(entryDate)
+//     const size = new Size(Number(size))
+//     const price = new Price(Number(price))
+// Bad (avoid):
+//     const s = new TradeSymbol(symbol)
+//     const d = new EntryDate(entryDate)
+//     const p = new Price(Number(price))
+
+// Factory example that returns primitives to keep the Application/Presentation API stable:
+// const tradeDTO = {
+//   symbol: tradeSymbol.value, // primitive string
+//   entryDate: entityDate.toISOString(), // primitive string
+//   size: size.value, // primitive number
+//   price: price.value, // primitive number
+// }

@@ -12,22 +12,22 @@ export class Trade {
   public notes?: string
 
   constructor(
-    symbol: string,
-    entryDate: string,
-    size: number,
-    price: number,
+    symbolInput: string,
+    entryDateInput: string,
+    sizeInput: number,
+    priceInput: number,
     notes?: string
   ) {
     // Use Value Objects to validate and normalize but re-expose primitives to keep API stable
-    const s = new TradeSymbol(symbol)
-    const d = new EntryDate(entryDate)
-    const sz = new Size(Number(size))
-    const p = new Price(Number(price))
+    const tradeSymbol = new TradeSymbol(symbolInput)
+    const entityDate = new EntryDate(entryDateInput)
+    const sizeVo = new Size(Number(sizeInput))
+    const priceVo = new Price(Number(priceInput))
 
-    this.symbol = s.toString()
-    this.entryDate = d.toString()
-    this.size = sz.toNumber()
-    this.price = p.toNumber()
+    this.symbol = tradeSymbol.toString()
+    this.entryDate = entityDate.toString()
+    this.size = sizeVo.toNumber()
+    this.price = priceVo.toNumber()
     this.notes = notes
   }
 }
