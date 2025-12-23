@@ -39,6 +39,13 @@
 - Typed Domain Errors
   - Domain-Validierungen werfen spezifische Fehlerklassen (z. B. `SizeMustBePositiveError`, `EntryDateInvalidError`).
   - Presentation-Layer verwendet `instanceof` um Fehler zu erkennen und in Feld- oder globale Fehlermeldungen zu übersetzen (i18n-ready).
+- Bei neuen Feature-Klassen: ErrorMapper & Validation
+  - NEU: Für jede neue Feature-Domäne / Feature-Klasse muss neben der Domain-Implementation auch eine Presentation-spezifische Error-Mapper- und eine Validation-Klasse angelegt werden.
+  - Konvention:
+    - `src/presentation/<feature>/errorMapper.ts` — mappt Domain-Error-Codes/Instanzen zu Field-Errors bzw. globalen Messages.
+    - `src/presentation/<feature>/validation.ts` — UI-Form-Validation (types + validateAll) für die entsprechenden Forms/Inputs.
+    - Tests: `src/presentation/<feature>/errorMapper.test.ts` und `src/presentation/<feature>/validation.test.ts` (Vitest).
+  - Ziel: Präsentationslogik (Mapping + UI-Validation) soll klar getrennt und testbar sein; Komponenten bleiben schlank.
 - `import type`
   - Exportiere Schnittstellen als `export type` (z. B. `TradeRepository`) und importiere sie in Services/Adapter mit `import type { ... }`.
   - Klassen/VOs/Fehlerklassen bleiben normale `import`-Statements (Runtime benötigt sie).
