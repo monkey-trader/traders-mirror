@@ -15,10 +15,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Debug: list repo root and docs
+        run: |
+          pwd
+          ls -la
+          echo '--- docs dir ---'
+          ls -la docs || true
+
       - name: Build docs with Docker (asciidoctor + asciidoctor-diagram)
         run: |
           docker run --rm -v "${{ github.workspace }}:/documents" -w /documents asciidoctor/docker-asciidoctor \
-            asciidoctor -r asciidoctor-diagram -D docs/build docs/ARCHITECTURE.adoc
+            sh -c "pwd; ls -la; asciidoctor -r asciidoctor-diagram -D docs/build docs/ARCHITECTURE.adoc --trace"
 
       - name: Upload docs artifact
         uses: actions/upload-artifact@v4
