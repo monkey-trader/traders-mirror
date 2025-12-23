@@ -1,0 +1,50 @@
+= Traders Mirror
+:toc:
+:toclevels: 2
+
+--
+
+== Use Case: Trading-Journal für Privatanleger & Trader
+
+*Traders Mirror* ist ein modernes Trading-Journal für Privatanleger und ambitionierte Trader. Ziel ist es, Trades strukturiert zu erfassen, auszuwerten und daraus zu lernen. Die App hilft, Handelsentscheidungen transparent zu dokumentieren und die eigene Performance zu verbessern.
+
+== Features
+- Schnelles Erfassen von Trades (Symbol, Entry, Size, Price, Notizen)
+- Übersichtliches Journal mit Filter- und Suchfunktion (erweiterbar)
+- Onion Architecture & Domain-Driven Design (DDD) für maximale Wartbarkeit
+- Strikte Trennung von Domain, Application, Infrastructure, Presentation
+- Moderne React UI mit CSS Modules
+- Testabdeckung (Vitest, Codecov, Coverage-Badge)
+- Automatisiertes Deployment auf GitHub Pages
+
+== Live-Demo
+Die App ist online unter:
+
+link:https://monkey-trader.github.io/traders-mirror/[Traders Mirror Live]
+
+== Documentation (navigierbar)
+
+- link:docs/ARCHITECTURE.adoc[Architecture (AsciiDoc)]
+- link:docs/COMPONENTS.adoc[Components (Shared Presentation Components)]
+- link:docs/CONTRIBUTING.adoc[Contributing Guide]
+- link:docs/README.adoc[Docs Home]
+- link:docs/build/index.html[Gerenderte HTML-Dokumentation (docs/build/index.html)]
+
+== PlantUML / Diagrams
+Die Quell-Dateien für Diagramme befinden sich in `docs/diagrams/`. Gerenderte PNGs liegen in `docs/diagrams/` und `docs/build/assets/diagrams/`.
+
+== How to build docs locally
+[source,bash]
+----
+npm ci
+npm run docs:build
+----
+
+== Hinweise
+- Die Onion-Architektur und DDD-Konventionen sind in `docs/ARCHITECTURE.adoc` dokumentiert.
+- Komponenten-API & Tests sind in `docs/COMPONENTS.adoc` beschrieben.
+
+--
+
+> Hinweis: Die ursprüngliche `README.md` wurde in AsciiDoc konvertiert und ist jetzt `README.adoc`.
+
