@@ -140,11 +140,22 @@
 }
 
 .error {
-  background: rgba(255,0,0,0.04);
-  border: 1px solid rgba(255,0,0,0.08);
-  padding: 8px 12px;
-  border-radius: 8px;
-  color: salmon;
+  /* Replaced previous subtle salmon styling with a clearer error box for visibility */
+  background: #b00020; /* deep red background */
+  border: 1px solid rgba(176,0,32,0.18);
+  padding: 10px 12px;
+  border-radius: 6px;
+  color: #ffffff;
+}
+
+/* Field-level inline error (used under inputs) */
+.fieldError {
+  color: #b00020; /* text color */
+  background: rgba(176,0,32,0.06); /* light red tint */
+  padding: 6px 8px;
+  border-radius: 4px;
+  font-size: 13px;
+  margin-top: 6px;
 }
 
 /* responsive */
