@@ -1,0 +1,28 @@
+name: Build Docs
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'docs/**'
+      - 'src/**'
+      - '.github/workflows/**'
+
+jobs:
+  build-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build docs with Docker (asciidoctor + asciidoctor-diagram)
+        run: |
+          docker run --rm -v "${{ github.workspace }}:/documents" asciidoctor/docker-asciidoctor \
+            asciidoctor -r asciidoctor-diagram -D docs/build docs/ARCHITECTURE.adoc
+
+      - name: Upload docs artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-docs
+          path: docs/build
+

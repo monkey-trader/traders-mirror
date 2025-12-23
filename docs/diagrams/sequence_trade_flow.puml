@@ -1,0 +1,28 @@
+@startuml sequence_trade_flow
+title Add Trade - Sequence (Presentation -> Application -> Domain -> Repository)
+
+actor User
+participant "TradeJournal\n(React UI)" as UI
+participant "TradeService\n(src/application/trade/services/TradeService.ts)" as Service
+participant "TradeFactory\n(src/domain/trade/factories/TradeFactory.ts)" as Factory
+participant "ValueObjects\n(Size/Price/TradeSymbol)" as VOs
+participant "Trade Entity\n(src/domain/trade/entities/Trade.ts)" as Entity
+participant "TradeRepository (port)\n(src/domain/trade/interfaces/TradeRepository.ts)" as RepoPort
+participant "InMemoryTradeRepository\n(src/infrastructure/trade/repositories/InMemoryTradeRepository.ts)" as RepoImpl
+
+User -> UI: fill form + submit
+UI -> Service: addTrade(payload)
+Service -> Factory: Factory.create(payload)
+Factory -> VOs: validate + normalize (Size, Price, TradeSymbol, EntryDate)
+VOs --> Factory: validated primitives
+Factory -> Entity: new Trade(...)
+Factory --> Service: return Trade DTO/Entity
+Service -> RepoPort: repo.save(trade)
+RepoImpl -> RepoPort: implements
+Service -> UI: success / error
+
+alt Validation error
+Factory --> Service: throw DomainError (typed)
+Service --> UI: map error (instanceof) -> field/global message
+end
+@enduml

@@ -13,7 +13,12 @@
     "format": "prettier --write 'src/**/*.{ts,tsx,js,jsx,json,css,md}'",
     "eject": "react-scripts eject",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d build"
+    "deploy": "gh-pages -d build",
+
+    "docs:clean": "rm -rf docs/build",
+    "docs:plantuml": "node --experimental-specifier-resolution=node ./scripts/plantuml-build.mjs",
+    "docs:asciidoc": "node --experimental-specifier-resolution=node ./scripts/asciidoc-build.mjs",
+    "docs:build": "npm run docs:clean && npm run docs:plantuml && npm run docs:asciidoc"
   },
   "dependencies": {
     "react": "^18.2.0",
