@@ -1,0 +1,40 @@
+name: Build Docs
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'docs/**'
+      - 'src/**'
+      - '.github/workflows/**'
+
+jobs:
+  build-docs:
+    runs-on: ubuntu-latest
+    # Run the whole job inside the asciidoctor Docker image for reliability
+    container:
+      image: asciidoctor/docker-asciidoctor:latest
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: "Debug: list repo root and docs (inside container)"
+        run: |
+          pwd
+          ls -la
+          echo '--- docs dir ---'
+          ls -la docs || true
+
+      - name: "Build docs with asciidoctor-diagram"
+        env:
+          GITHUB_WORKSPACE: ${{ github.workspace }}
+        run: |
+          echo "GITHUB_WORKSPACE=$GITHUB_WORKSPACE"
+          ls -la "$GITHUB_WORKSPACE" || true
+          asciidoctor -r asciidoctor-diagram -a plantuml=true -D "$GITHUB_WORKSPACE/docs/build" "$GITHUB_WORKSPACE/docs/ARCHITECTURE.adoc" --trace
+
+      - name: "Upload docs artifact"
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-docs
+          path: docs/build

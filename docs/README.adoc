@@ -1,0 +1,58 @@
+= Docs README
+
+== Quickstart: Build & View
+
+=== Voraussetzungen
+- Node.js >= 16
+- npm or yarn
+- Java 11+ (für PlantUML)
+- Optional: Graphviz (für Graphviz-Diagramme)
+
+=== Lokales Build (empfohlen)
+1. Install:
+  - npm ci
+
+2. Build:
+  - npm run docs:build
+  - oder (schneller Docker-Wrap): npm run docs:docker-build
+
+3. Resultate:
+  - Siehe `docs/build/index.html` oder `docs/build/` Ordner (je nach Konfiguration)
+  - Gerenderte Diagramme liegen in `docs/build/assets/diagrams/`
+
+=== Einzelne Schritte (Alternativ)
+- PlantUML (nur Diagramme):
+  - npm run docs:plantuml
+- AsciiDoc -> HTML (ohne Diagramme):
+  - npm run docs:asciidoc
+
+== Docker (empfohlen für reproduzierbare Builds)
+Für die zuverlässigste und reproduzierbare Rendering-Pipeline empfehle ich das offizielle `asciidoctor/docker-asciidoctor` Image mit `asciidoctor-diagram`. Dieses Image enthält Asciidoctor, PlantUML und die benötigten Laufzeitabhängigkeiten.
+
+Beispiel (lokal, macOS / Linux):
+
+```bash
+# npm-script (Docker wrapper)
+npm run docs:docker-build
+
+# oder direkt (copy-paste):
+# from project root
+docker run --rm -v "$(pwd)":/documents asciidoctor/docker-asciidoctor \
+  asciidoctor -r asciidoctor-diagram -a plantuml=true -D docs/build docs/ARCHITECTURE.adoc
+```
+
+Windows (PowerShell):
+
+```powershell
+docker run --rm -v "${PWD}:/documents" asciidoctor/docker-asciidoctor \
+  asciidoctor -r asciidoctor-diagram -D docs/build docs/ARCHITECTURE.adoc
+```
+
+Das erzeugt voll gerenderte HTML-Dateien in `docs/build/` inklusive eingebetteter/erzeugter Diagramme.
+
+== CI Integration (Best Practice)
+Verwende Docker in CI, um Umgebungsabhängigkeiten (Java, Graphviz, PlantUML) zu vermeiden. Beispiel für GitHub Actions: siehe `.github/workflows/docs.yml` (im Repo). Der Workflow nutzt das `asciidoctor/docker-asciidoctor` Image, rendert die AsciiDoc-Datei in `docs/build` und lädt das Ergebnis als Artifact hoch.
+
+== Troubleshooting
+- Wenn Diagramme fehlen: Prüfe, dass `asciidoctor-diagram` geladen wurde (`-r asciidoctor-diagram`) oder verwende das Docker-Image, das die Extension bereits enthält.
+- Wenn du lokale Node-Scripts bevorzugst, installiere `asciidoctor.js` und ggf. `asciidoctor-diagram` (Aufwand/Kompatibilität kann höher sein).

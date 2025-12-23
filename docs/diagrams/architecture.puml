@@ -1,0 +1,47 @@
+' Architecture: Onion / Ports & Adapters
+@startuml architecture
+skinparam componentStyle rectangle
+
+package "Presentation" {
+  [TradeJournal.tsx] as UI
+}
+
+package "Application" {
+  [TradeService.ts] as Service
+  [Use-Cases] as UseCases
+}
+
+package "Domain" {
+  [Entities\nTrade.ts] as DomainEntity
+  [ValueObjects\nSize.ts\nPrice.ts\nTradeSymbol.ts] as VOs
+  [Factories\nTradeFactory.ts] as Factory
+  [Domain Errors\nDomainErrors.ts] as Errors
+  [Interfaces\nTradeRepository.ts] as Ports
+}
+
+package "Infrastructure" {
+  [InMemoryTradeRepository.ts] as AdapterRepo
+  [External Adapters] as Ext
+}
+
+'Relationships (Ports & Adapters)
+UI --> Service : use
+Service --> Factory : create / validate
+Factory --> VOs : normalize / validate
+Service --> Ports : depends on (import type)
+AdapterRepo ..> Ports : implements
+AdapterRepo --> Ext : persist/store
+
+' Layer boundaries (onion-like)
+Service ..> DomainEntity : orchestrates
+Factory ..> DomainEntity : creates
+
+note left of UI
+Presentation: React + CSS Modules
+end note
+
+note right of AdapterRepo
+Infrastructure: Adapters implement Ports
+end note
+@enduml
+
