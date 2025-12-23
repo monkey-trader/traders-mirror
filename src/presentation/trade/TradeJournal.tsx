@@ -13,6 +13,7 @@ export function TradeJournal() {
   const [form, setForm] = useState<FormState>({ symbol: '', entryDate: '', size: 0, price: 0, notes: '' })
   const [error, setError] = useState<string | null>(null)
   const [fieldErrors, setFieldErrors] = useState<FormErrors>({})
+  const [statusFilter, setStatusFilter] = useState<'ALL' | string>('ALL')
 
   useEffect(() => {
     tradeService.listTrades().then(setTrades)
@@ -43,6 +44,8 @@ export function TradeJournal() {
       setError(mapped.message ?? (err instanceof Error ? err.message : String(err)))
     }
   }
+
+  const filteredTrades = statusFilter === 'ALL' ? trades : trades.filter((t) => t.status === String(statusFilter))
 
   return (
     <div className={styles.container}>
@@ -127,6 +130,17 @@ export function TradeJournal() {
 
         {error && <div role="alert" className={styles.error} style={{ marginBottom: 12 }}>{error}</div>}
 
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
+          <select value={statusFilter} onChange={e => setStatusFilter(e.target.value as any)} style={{ padding: '6px 8px', borderRadius: 6, background: 'var(--panel-bg)', color: 'var(--text)' }}>
+            <option value="ALL">ALL</option>
+            <option value="OPEN">OPEN</option>
+            <option value="PENDING">PENDING</option>
+            <option value="FILLED">FILLED</option>
+            <option value="CANCELLED">CANCELLED</option>
+            <option value="CLOSED">CLOSED</option>
+          </select>
+        </div>
+
         <div className={styles.tableWrap}>
           <table className={styles.table}>
             <thead>
@@ -136,21 +150,23 @@ export function TradeJournal() {
                 <th>Size</th>
                 <th>Price</th>
                 <th>Notes</th>
+                <th>Status</th>
               </tr>
             </thead>
             <tbody>
-              {trades.length === 0 ? (
+              {filteredTrades.length === 0 ? (
                 <tr>
-                  <td className={styles.empty} colSpan={5}>No trades yet. Add your first trade above.</td>
+                  <td className={styles.empty} colSpan={6}>No trades yet. Add your first trade above.</td>
                 </tr>
               ) : (
-                trades.map((t, i) => (
+                filteredTrades.map((t, i) => (
                   <tr key={i}>
                     <td>{t.symbol}</td>
                     <td>{t.entryDate}</td>
                     <td>{t.size}</td>
                     <td>{t.price}</td>
                     <td>{t.notes}</td>
+                    <td>{t.status}</td>
                   </tr>
                 ))
               )}

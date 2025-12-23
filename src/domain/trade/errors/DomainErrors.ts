@@ -55,3 +55,10 @@ export class SymbolTooLongError extends DomainError {
     this.name = 'SymbolTooLongError'
   }
 }
+
+export class StatusInvalidError extends DomainError {
+  constructor(message = 'Invalid status') {
+    super(message, 'STATUS_INVALID')
+    this.name = 'StatusInvalidError'
+  }
+}

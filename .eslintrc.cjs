@@ -13,9 +13,7 @@ module.exports = {
     project: './tsconfig.json',
   },
   rules: {
-    // Use the local plugin which re-exports rules from `tools/eslint-rules` so the
-    // rule is discoverable by react-scripts/CRA during the production build.
-    'local-rules/no-short-vo-names': ['warn', { max: 3 }],
+    // local custom rules removed — use builtin or shared plugins instead
   },
   settings: {},
 }

@@ -6,6 +6,7 @@ describe('Trade entity', () => {
     expect(t.symbol).toBe('AAPL')
     expect(t.size).toBe(1)
     expect(t.price).toBe(150.5)
+    expect(t.status).toBe('OPEN')
   })
 
   test('throws when symbol is missing', () => {
