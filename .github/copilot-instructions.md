@@ -9,8 +9,11 @@
 - Versionierung erfolgt nach [SemVer](https://semver.org/lang/de/): MAJOR.MINOR.PATCH
 - Commits immer mit sprechender Nachricht und Prefix versehen.
 - Nach jedem Commit: `git push` ausführen.
-- Für jedes neue Feature oder Modul immer einen eigenen Branch eröffnen:
+- Für jedes neues Feature oder Modul immer einen eigenen Branch eröffnen:
   - Branch-Muster: `feature/<beschreibung>`
+
+- WICHTIG: Führ Commits nur aus, wenn der Benutzer ausdrücklich dazu auffordert. Keine automatischen Commits ohne Bestätigung.
+- NEU: Vor jedem Commit aktualisiere und generiere bitte zuerst alle betroffenen Dokumentationen und PlantUML-Diagramme (`.puml`), z. B. `docs/*` und `docs/diagrams/*`, damit die committeten Artefakte Dokumentation und Diagramme konsistent halten.
 
 - WICHTIG: Führ Commits nur aus, wenn der Benutzer ausdrücklich dazu auffordert. Keine automatischen Commits ohne Bestätigung.
 

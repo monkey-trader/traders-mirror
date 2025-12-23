@@ -14,13 +14,12 @@
     "eject": "react-scripts eject",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build",
-
     "docs:clean": "rm -rf docs/build",
     "docs:plantuml": "node --experimental-specifier-resolution=node ./scripts/plantuml-build.mjs",
     "docs:asciidoc": "node --experimental-specifier-resolution=node ./scripts/asciidoc-build.mjs",
     "docs:build": "npm run docs:clean && npm run docs:plantuml && npm run docs:asciidoc",
-
-    "docs:docker-build": "docker run --rm -v \"$(pwd)\":/documents -w /documents asciidoctor/docker-asciidoctor asciidoctor -r asciidoctor-diagram -a plantuml=true -D docs/build docs/ARCHITECTURE.adoc --trace"
+    "docs:docker-build": "docker run --rm -v \"$(pwd)\":/documents -w /documents asciidoctor/docker-asciidoctor asciidoctor -r asciidoctor-diagram -a plantuml=true -D docs/build docs/ARCHITECTURE.adoc --trace",
+    "prepare": "husky install"
   },
   "dependencies": {
     "react": "^18.2.0",
@@ -40,6 +39,7 @@
     "eslint-plugin-react": "^7.0.0",
     "eslint-plugin-react-hooks": "^4.0.0",
     "gh-pages": "^6.3.0",
+    "husky": "^8.0.3",
     "prettier": "^2.0.0",
     "typescript": "4.9.5",
     "vitest": "^1.0.0"

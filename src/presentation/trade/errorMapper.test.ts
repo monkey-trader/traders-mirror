@@ -8,6 +8,7 @@ import {
   EntryDateInvalidError,
   SymbolRequiredError,
   SymbolTooLongError,
+  DomainError,
 } from '@/domain/trade/errors/DomainErrors'
 
 describe('presentation/trade/errorMapper', () => {
@@ -26,5 +27,10 @@ describe('presentation/trade/errorMapper', () => {
     expect(mapped.fieldErrors).toBeUndefined()
     expect(mapped.message).toBeDefined()
   })
-})
 
+  it('maps by error.code when present', () => {
+    const fake = new DomainError('fake', 'SIZE_MUST_BE_POSITIVE')
+    const mapped = mapDomainErrorToFieldErrors(fake)
+    expect(mapped.fieldErrors).toHaveProperty('size')
+  })
+})
