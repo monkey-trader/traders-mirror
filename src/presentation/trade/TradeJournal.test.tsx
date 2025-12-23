@@ -64,7 +64,7 @@ describe('TradeJournal error handling and flows', () => {
     // make addTrade succeed
     vi.mocked(container.tradeService.addTrade).mockResolvedValueOnce(undefined)
     // after adding, listTrades returns the added trade
-    const added = { symbol: 'AAPL', entryDate: '2025-12-22T10:00', size: 1, price: 100, notes: 'ok' }
+    const added = { symbol: 'AAPL', entryDate: '2025-12-22T10:00', size: 1, price: 100, notes: 'ok', status: 'OPEN' }
     vi.mocked(container.tradeService.listTrades).mockResolvedValueOnce([added])
 
     const { container: dom } = render(<TradeJournal />)
