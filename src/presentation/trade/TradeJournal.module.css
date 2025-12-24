@@ -332,14 +332,20 @@
 }
 
 .tpInput {
-  width: 70px;
-  font-size: 13px;
-  padding: 3px 6px;
+  background: transparent;
+  border: none;
   border-radius: 4px;
-  border: 1px solid var(--muted);
-  background: #181f2a;
-  color: var(--text);
-  margin-left: 6px;
+  color: var(--color-text, #e6e6e6);
+  font-size: 1rem;
+  padding: 4px 8px;
+  outline: none;
+  min-width: 70px;
+  transition: background 0.2s;
+}
+
+.tpInput:focus {
+  background: rgba(255,255,255,0.04);
+  box-shadow: 0 0 0 1.5px var(--color-primary, #00bcd4);
 }
 
 .statusDropdown {

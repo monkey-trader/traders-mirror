@@ -300,11 +300,14 @@ export function TradeJournal() {
     return filtered
   }, [marketFilter, tradeStatusFilter])
 
+  // State für Positionsdaten (editierbar)
+  const [positions, setPositions] = useState<TradeRow[]>(MOCK_TRADES)
+
   // Für Positions: nur offene Trades des aktuellen Marktes
   const openPositions = useMemo(() => {
-    if (marketFilter === 'All') return MOCK_TRADES.filter(t => t.status === 'OPEN')
-    return MOCK_TRADES.filter(t => t.status === 'OPEN' && t.market === marketFilter)
-  }, [marketFilter])
+    if (marketFilter === 'All') return positions.filter(t => t.status === 'OPEN')
+    return positions.filter(t => t.status === 'OPEN' && t.market === marketFilter)
+  }, [marketFilter, positions])
 
   // responsive fallback: switch to single-column grid when container is too narrow
   const containerRef = useRef<HTMLDivElement | null>(null)
@@ -372,6 +375,25 @@ export function TradeJournal() {
     // TODO: State-Update/Backend-Call: Status auf SL-HIT setzen
   }
 
+  // Editierbare Felder für alle Positions-Spalten
+  const [editFields, setEditFields] = useState<{ [tradeId: string]: Partial<Record<keyof TradeRow, boolean>> }>({})
+
+  const handleEditFieldClick = (tradeId: string, key: keyof TradeRow) => {
+    setEditFields(prev => ({
+      ...prev,
+      [tradeId]: { ...prev[tradeId], [key]: true }
+    }))
+  }
+  const handleEditFieldBlur = (tradeId: string, key: keyof TradeRow, value: any) => {
+    setEditFields(prev => ({
+      ...prev,
+      [tradeId]: { ...prev[tradeId], [key]: false }
+    }))
+    setPositions(prev => prev.map(row =>
+      row.id === tradeId ? { ...row, [key]: value } : row
+    ))
+  }
+
   return (
     <Layout>
       <div className={styles.headerRow}>
@@ -433,7 +455,7 @@ export function TradeJournal() {
                   <th style={{ width: 40 }}></th>
                   <th>Symbol</th>
                   <th>Side</th>
-                  <th>Size</th>
+                  <th>Position</th>
                   <th>Entry</th>
                   <th>SL</th>
                   <th>Margin</th>
@@ -458,33 +480,178 @@ export function TradeJournal() {
                             {isExpanded ? '▾' : '▸'}
                           </span>
                         </td>
+                        {/* Symbol */}
                         <td className={styles.symbolCell}>
-                          <span className={styles.symbol}>{t.symbol}</span>
+                          {editFields[t.id]?.symbol ? (
+                            <input
+                              className={styles.input}
+                              type="text"
+                              autoFocus
+                              defaultValue={t.symbol}
+                              onBlur={e => handleEditFieldBlur(t.id, 'symbol', e.target.value)}
+                            />
+                          ) : (
+                            <span
+                              className={styles.symbol}
+                              tabIndex={0}
+                              style={{ cursor: 'pointer' }}
+                              onClick={() => handleEditFieldClick(t.id, 'symbol')}
+                            >
+                              {t.symbol}
+                            </span>
+                          )}
                         </td>
-                        <td className={t.side === 'LONG' ? styles.sideLong : styles.sideShort}>{t.side}</td>
-                        <td>{t.size}</td>
-                        <td>{t.entry ?? '-'}</td>
-                        <td>{t.sl ?? '-'}</td>
-                        <td>{t.margin ?? '-'}</td>
-                        <td>{t.leverage ?? '-'}</td>
+                        {/* Side */}
                         <td>
-                          <span className={t.pnl >= 0 ? styles.plPositive : styles.plNegative}>
-                            {t.pnl.toFixed(2)}
-                          </span>
+                          {editFields[t.id]?.side ? (
+                            <select
+                              className={styles.input}
+                              autoFocus
+                              defaultValue={t.side}
+                              onBlur={e => handleEditFieldBlur(t.id, 'side', e.target.value)}
+                            >
+                              <option value="LONG">LONG</option>
+                              <option value="SHORT">SHORT</option>
+                            </select>
+                          ) : (
+                            <span
+                              className={t.side === 'LONG' ? styles.sideLong : styles.sideShort}
+                              tabIndex={0}
+                              style={{ cursor: 'pointer' }}
+                              onClick={() => handleEditFieldClick(t.id, 'side')}
+                            >
+                              {t.side}
+                            </span>
+                          )}
                         </td>
+                        {/* Size */}
                         <td>
-                          <select
-                            className={styles.statusDropdown}
-                            value={t.status}
-                            onChange={(e) =>
-                              handleChangeStatus(t, e.target.value as TradeRow['status'])
-                            }
-                          >
-                            <option value="OPEN">OPEN</option>
-                            <option value="CLOSED">CLOSED</option>
-                            <option value="FILLED">FILLED</option>
-                          </select>
+                          {editFields[t.id]?.size ? (
+                            <input
+                              className={styles.input}
+                              type="number"
+                              autoFocus
+                              defaultValue={t.size}
+                              onBlur={e => handleEditFieldBlur(t.id, 'size', Number(e.target.value))}
+                            />
+                          ) : (
+                            <span
+                              tabIndex={0}
+                              style={{ cursor: 'pointer' }}
+                              onClick={() => handleEditFieldClick(t.id, 'size')}
+                            >
+                              {t.size}
+                            </span>
+                          )}
                         </td>
+                        {/* Entry */}
+                        <td>
+                          {editFields[t.id]?.entry ? (
+                            <input
+                              className={styles.input}
+                              type="text"
+                              autoFocus
+                              defaultValue={t.entry ?? ''}
+                              onBlur={e => handleEditFieldBlur(t.id, 'entry', e.target.value)}
+                            />
+                          ) : (
+                            <span
+                              tabIndex={0}
+                              style={{ cursor: 'pointer' }}
+                              onClick={() => handleEditFieldClick(t.id, 'entry')}
+                            >
+                              {t.entry ?? '-'}
+                            </span>
+                          )}
+                        </td>
+                        {/* SL */}
+                        <td>
+                          {editFields[t.id]?.sl ? (
+                            <input
+                              className={styles.input}
+                              type="text"
+                              autoFocus
+                              defaultValue={t.sl ?? ''}
+                              onBlur={e => handleEditFieldBlur(t.id, 'sl', e.target.value)}
+                            />
+                          ) : (
+                            <span
+                              tabIndex={0}
+                              style={{ cursor: 'pointer' }}
+                              onClick={() => handleEditFieldClick(t.id, 'sl')}
+                            >
+                              {t.sl ?? '-'}
+                            </span>
+                          )}
+                        </td>
+                        {/* Margin */}
+                        <td>
+                          {editFields[t.id]?.margin ? (
+                            <input
+                              className={styles.input}
+                              type="text"
+                              autoFocus
+                              defaultValue={t.margin ?? ''}
+                              onBlur={e => handleEditFieldBlur(t.id, 'margin', e.target.value)}
+                            />
+                          ) : (
+                            <span
+                              tabIndex={0}
+                              style={{ cursor: 'pointer' }}
+                              onClick={() => handleEditFieldClick(t.id, 'margin')}
+                            >
+                              {t.margin ?? '-'}
+                            </span>
+                          )}
+                        </td>
+                        {/* Leverage */}
+                        <td>
+                          {editFields[t.id]?.leverage ? (
+                            <input
+                              className={styles.input}
+                              type="text"
+                              autoFocus
+                              defaultValue={t.leverage ?? ''}
+                              onBlur={e => handleEditFieldBlur(t.id, 'leverage', e.target.value)}
+                            />
+                          ) : (
+                            <span
+                              tabIndex={0}
+                              style={{ cursor: 'pointer' }}
+                              onClick={() => handleEditFieldClick(t.id, 'leverage')}
+                            >
+                              {t.leverage ?? '-'}
+                            </span>
+                          )}
+                        </td>
+                        {/* P&L */}
+                        <td>
+                          <span className={t.pnl >= 0 ? styles.plPositive : styles.plNegative}>{t.pnl.toFixed(2)}</span>
+                        </td>
+                        {/* Status */}
+                        <td>
+                          {editFields[t.id]?.status ? (
+                            <select
+                              className={styles.input}
+                              autoFocus
+                              defaultValue={t.status}
+                              onBlur={e => handleEditFieldBlur(t.id, 'status', e.target.value)}
+                            >
+                              <option value="OPEN">OPEN</option>
+                              <option value="CLOSED">CLOSED</option>
+                              <option value="FILLED">FILLED</option>
+                            </select>
+                          ) : (
+                            <span
+                              tabIndex={0}
+                              style={{ cursor: 'pointer' }}
+                              onClick={() => handleEditFieldClick(t.id, 'status')}
+                            >
+                              {t.status}
+                            </span>
+                          )}
+                        </td>
+                        {/* Actions */}
                         <td>
                           <button className={styles.slBeBtn} onClick={() => handleSetSLtoBE(t)}>
                             SL-BE
@@ -502,6 +669,7 @@ export function TradeJournal() {
                           </a>
                         </td>
                       </tr>
+                      {/* Expandierte Zeilen: TP1, TP2, TP3, Notes editierbar */}
                       {isExpanded && (
                         <>
                           <tr className={styles.secondaryRow}>
@@ -509,30 +677,66 @@ export function TradeJournal() {
                               <div className={styles.positionExpandGrid}>
                                 <label>
                                   TP1:
-                                  <input
-                                    className={styles.tpInput}
-                                    type="text"
-                                    defaultValue={t.tp1 ?? ''}
-                                    onBlur={(e) => handleEditTP(t, 'tp1', e.target.value)}
-                                  />
+                                  {editFields[t.id]?.tp1 ? (
+                                    <input
+                                      className={styles.tpInput}
+                                      type="text"
+                                      autoFocus
+                                      defaultValue={t.tp1 ?? ''}
+                                      onBlur={e => handleEditFieldBlur(t.id, 'tp1', e.target.value)}
+                                    />
+                                  ) : (
+                                    <span
+                                      className={styles.tpInput}
+                                      tabIndex={0}
+                                      style={{ cursor: 'pointer', display: 'inline-block' }}
+                                      onClick={() => handleEditFieldClick(t.id, 'tp1')}
+                                    >
+                                      {t.tp1 ?? '-'}
+                                    </span>
+                                  )}
                                 </label>
                                 <label>
                                   TP2:
-                                  <input
-                                    className={styles.tpInput}
-                                    type="text"
-                                    defaultValue={t.tp2 ?? ''}
-                                    onBlur={(e) => handleEditTP(t, 'tp2', e.target.value)}
-                                  />
+                                  {editFields[t.id]?.tp2 ? (
+                                    <input
+                                      className={styles.tpInput}
+                                      type="text"
+                                      autoFocus
+                                      defaultValue={t.tp2 ?? ''}
+                                      onBlur={e => handleEditFieldBlur(t.id, 'tp2', e.target.value)}
+                                    />
+                                  ) : (
+                                    <span
+                                      className={styles.tpInput}
+                                      tabIndex={0}
+                                      style={{ cursor: 'pointer', display: 'inline-block' }}
+                                      onClick={() => handleEditFieldClick(t.id, 'tp2')}
+                                    >
+                                      {t.tp2 ?? '-'}
+                                    </span>
+                                  )}
                                 </label>
                                 <label>
                                   TP3:
-                                  <input
-                                    className={styles.tpInput}
-                                    type="text"
-                                    defaultValue={t.tp3 ?? ''}
-                                    onBlur={(e) => handleEditTP(t, 'tp3', e.target.value)}
-                                  />
+                                  {editFields[t.id]?.tp3 ? (
+                                    <input
+                                      className={styles.tpInput}
+                                      type="text"
+                                      autoFocus
+                                      defaultValue={t.tp3 ?? ''}
+                                      onBlur={e => handleEditFieldBlur(t.id, 'tp3', e.target.value)}
+                                    />
+                                  ) : (
+                                    <span
+                                      className={styles.tpInput}
+                                      tabIndex={0}
+                                      style={{ cursor: 'pointer', display: 'inline-block' }}
+                                      onClick={() => handleEditFieldClick(t.id, 'tp3')}
+                                    >
+                                      {t.tp3 ?? '-'}
+                                    </span>
+                                  )}
                                 </label>
                               </div>
                             </td>
@@ -540,7 +744,24 @@ export function TradeJournal() {
                           <tr className={styles.secondaryRow}>
                             <td colSpan={11}>
                               <div className={styles.secondaryNotesRow}>
-                                <strong>Notes:</strong> {t.notes ?? '-'}
+                                <strong>Notes:</strong>{' '}
+                                {editFields[t.id]?.notes ? (
+                                  <input
+                                    className={styles.input}
+                                    type="text"
+                                    autoFocus
+                                    defaultValue={t.notes ?? ''}
+                                    onBlur={e => handleEditFieldBlur(t.id, 'notes', e.target.value)}
+                                  />
+                                ) : (
+                                  <span
+                                    tabIndex={0}
+                                    style={{ cursor: 'pointer' }}
+                                    onClick={() => handleEditFieldClick(t.id, 'notes')}
+                                  >
+                                    {t.notes ?? '-'}
+                                  </span>
+                                )}
                               </div>
                             </td>
                           </tr>
