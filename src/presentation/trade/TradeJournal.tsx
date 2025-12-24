@@ -394,6 +394,11 @@ export function TradeJournal() {
     ))
   }
 
+  // Hilfsfunktion zum Öffnen der Analyse-Seite im neuen Tab
+  function handleAnalyseClick(symbol: string) {
+    window.open(`/analyse?symbol=${encodeURIComponent(symbol)}`, '_blank', 'noopener,noreferrer');
+  }
+
   return (
     <Layout>
       <div className={styles.headerRow}>
@@ -659,14 +664,13 @@ export function TradeJournal() {
                           <button className={styles.slHitBtn} onClick={() => handleSetSLHit(t)}>
                             SL-HIT
                           </button>
-                          <a
-                            className={styles.analysisBadge}
-                            href={`/analyse?symbol=${encodeURIComponent(t.symbol)}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                          <button
+                            className={styles.analysisBadgeBtn}
+                            type="button"
+                            onClick={() => handleAnalyseClick(t.symbol)}
                           >
                             Analyse
-                          </a>
+                          </button>
                         </td>
                       </tr>
                       {/* Expandierte Zeilen: TP1, TP2, TP3, Notes editierbar */}
@@ -822,14 +826,13 @@ export function TradeJournal() {
                           <td>{t.size}</td>
                           <td className={t.pnl >= 0 ? styles.plPositive : styles.plNegative}>{t.pnl.toFixed(2)}</td>
                           <td>
-                            <a
-                              className={styles.analysisBadge}
-                              href={`/analyse?symbol=${encodeURIComponent(t.symbol)}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
+                            <button
+                              className={styles.analysisBadgeBtn}
+                              type="button"
+                              onClick={() => handleAnalyseClick(t.symbol)}
                             >
                               Analyse
-                            </a>
+                            </button>
                           </td>
                         </tr>
 

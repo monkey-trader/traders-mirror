@@ -4,6 +4,8 @@
   --surface: #07121a;
   --text: #e6eef8;
   --muted: #9fb0c6;
+  --color-text: #e6e6e6;
+  --color-primary: #00bcd4;
 }
 
 html, body, #root {
