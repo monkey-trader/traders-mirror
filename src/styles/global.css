@@ -27,8 +27,8 @@ a {
 
 /* Utility container to give a max-width and padding */
 .app-container {
-  max-width: 1080px;
+  /* Fluid/clamped width: grows on big screens but stays readable */
+  max-width: clamp(1200px, 92vw, 1800px);
   margin: 0 auto;
-  padding: 16px;
+  padding: 16px 24px;
 }
-

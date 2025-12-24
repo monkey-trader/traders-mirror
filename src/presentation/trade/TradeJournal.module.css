@@ -1,0 +1,458 @@
+.grid {
+  display: grid;
+  /* left column flexible but constrained, right column uses remaining space */
+  /* clamp(min, preferred, max) keeps the left column readable while allowing the table to grow */
+  grid-template-columns: clamp(280px, 22vw, 420px) 1fr;
+  gap: 18px;
+  /* create isolated stacking context so z-index between columns behaves predictably */
+  isolation: isolate;
+}
+
+/* Ensure left column stays in the normal document flow by default so it does not overlay the table.
+   The table will have a higher stacking context so table content isn't hidden by the left column. */
+.left {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+  position: static; /* normal flow */
+  z-index: auto;
+  background: linear-gradient(180deg, rgba(7,12,18,0.92), rgba(7,12,18,0.88));
+  padding: 14px;
+  border-radius: 12px;
+}
+
+/* make sure direct children of .left (cards/forms) create their own stacking context when needed */
+.left > * {
+  position: static;
+  z-index: auto;
+  background-clip: padding-box; /* avoid shadows bleeding */
+}
+
+/* Remove the forced overlay in compact mode — compact will simply stack vertically without z-index tricks */
+.grid.gridCompact .left {
+  position: static;
+  z-index: auto;
+}
+
+.grid.gridCompact .left > * {
+  position: static;
+  z-index: auto;
+}
+
+/* ensure right column can show overflow in compact mode (table will scroll under document flow) */
+.grid.gridCompact .right {
+  overflow: visible;
+}
+
+/* ensure right column content is clipped to its area so the table never visually overflows under the left column */
+.right {
+  display: grid;
+  gap: 18px;
+  min-width: 0; /* allow overflow within .tableWrap instead of pushing the whole grid */
+  position: relative;
+  z-index: 1;
+  overflow: hidden; /* clip any visual overflow so left column is always unobstructed */
+}
+
+.form {
+  display: grid;
+  gap: 12px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.positionsPlaceholder {
+  color: var(--muted);
+  padding: 16px 0;
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filterPills {
+  display: flex;
+  gap: 8px;
+}
+
+/* lower the table shadow and make the table not visually bleed into left column */
+.table {
+  position: relative;
+  z-index: 20;
+  width: 100%;
+  min-width: 900px; /* ensure table columns don't collapse and cause overlaps */
+  border-collapse: collapse;
+  background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(2,8,23,0.28);
+}
+
+/* Ensure tableWrap creates a proper clipping/scrolling container */
+.tableWrap {
+  overflow: auto;
+  max-height: 72vh; /* allow more vertical space */
+  width: 100%;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 8px; /* breathing room for last row */
+}
+
+.table thead tr {
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+
+.table th {
+  text-align: left;
+  padding: 12px 10px;
+  color: var(--muted);
+  font-size: 13px;
+  position: sticky;
+  top: 0;
+  background: rgba(4,8,12,0.92);
+  backdrop-filter: blur(6px);
+  z-index: 25; /* stay above rows */
+}
+
+.table td {
+  padding: 12px 10px;
+  border-top: 1px solid rgba(255,255,255,0.02);
+  vertical-align: middle;
+}
+
+/* make sure expanded rows and hover states don't visually overlap sticky header */
+.mainRow:hover {
+  background: linear-gradient(90deg, rgba(14,165,164,0.03), rgba(255,255,255,0.01));
+}
+
+.mainRowExpanded {
+  background: linear-gradient(90deg, rgba(14,165,164,0.04), rgba(255,255,255,0.02));
+}
+
+.mainRowExpanded td {
+  position: relative; /* keep expanded content within stacking context */
+}
+
+.chevCell {
+  width: 40px;
+  text-align: center;
+  padding: 0 6px;
+}
+
+.chev {
+  color: var(--muted);
+  font-size: 14px;
+  display: inline-block;
+}
+
+/* reduce table padding slightly when expanded for compact look */
+.mainRowExpanded td {
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+.symbolCell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.symbol {
+  padding: 6px 10px;
+  background: rgba(14,165,164,0.08);
+  color: var(--text);
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.externalBtn {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.sideLong {
+  color: #69f0ae;
+  font-weight: 700;
+}
+
+.sideShort {
+  color: #ff6b6b;
+  font-weight: 700;
+}
+
+.plPositive {
+  color: #7ef18a;
+  font-weight: 700;
+}
+
+.plNegative {
+  color: #ff6b6b;
+  font-weight: 700;
+}
+
+.secondaryRow td {
+  padding: 8px 10px 18px 10px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.003));
+}
+
+.secondaryInner {
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.secondaryLeft {
+  color: var(--muted);
+  font-size: 13px;
+  min-width: 220px;
+}
+
+.secondaryRight {
+  color: var(--muted);
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  gap: 8px 22px;
+  font-size: 13px;
+}
+
+.marketHeader {
+  margin: 8px 0 12px 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, rgba(14,165,164,0.02), rgba(255,255,255,0.003));
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.statusOpen {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(110,231,183,0.08);
+  color: #69f0ae;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.statusClosed {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.02);
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.filterPill {
+  padding: 6px 10px;
+  border-radius: 10px;
+}
+
+.secondaryDetailsRow {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 12px 18px;
+  margin-bottom: 10px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.secondaryNotesRow {
+  grid-column: 1 / -1;
+  background: rgba(14,165,164,0.04);
+  border-radius: 6px;
+  padding: 10px 12px 8px 12px;
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.positionsList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.positionItem {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: rgba(14,165,164,0.06);
+  border-radius: 6px;
+  padding: 7px 10px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.positionExpandRow {
+  margin-top: 10px;
+  padding: 10px 12px 8px 32px;
+  background: rgba(14,165,164,0.04);
+  border-radius: 6px;
+}
+
+.positionExpandGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr) 120px;
+  gap: 10px 18px;
+  align-items: end;
+}
+
+.tpInput {
+  width: 70px;
+  font-size: 13px;
+  padding: 3px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--muted);
+  background: #181f2a;
+  color: var(--text);
+  margin-left: 6px;
+}
+
+.statusDropdown {
+  font-size: 13px;
+  padding: 4px 8px;
+  border-radius: 5px;
+  background: #181f2a;
+  color: var(--text);
+  border: 1px solid var(--muted);
+  margin-left: 2px;
+}
+
+.analysisBadge {
+  display: inline-block;
+  background: linear-gradient(90deg, #0ea5e9 60%, #06b6d4 100%);
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  border-radius: 16px;
+  padding: 5px 16px;
+  margin-left: 8px;
+  margin-top: 2px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(6,182,212,0.10);
+  border: none;
+  transition: background 0.18s, box-shadow 0.18s;
+  text-decoration: none;
+}
+
+.analysisBadge:hover {
+  background: linear-gradient(90deg, #06b6d4 60%, #0ea5e9 100%);
+  box-shadow: 0 4px 16px rgba(6,182,212,0.18);
+}
+
+/* responsive tweaks */
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .row {
+    grid-template-columns: 1fr;
+  }
+
+  .table {
+    min-width: 680px; /* allow horizontal scroll but keep columns readable */
+  }
+
+  .secondaryInner {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
+/* Ultra-wide tweaks: make table header slightly larger and increase gaps for readability */
+@media (min-width: 1600px) {
+  .table th {
+    font-size: 14px;
+    padding: 14px 12px;
+  }
+
+  .table td {
+    padding: 14px 12px;
+  }
+
+  .secondaryRight {
+    gap: 10px 32px;
+  }
+}
+
+.gridCompact {
+  grid-template-columns: 1fr !important;
+}
+
+.slBeBtn {
+  background: linear-gradient(90deg, #fef9c3 60%, #fef08a 100%);
+  color: #665c00;
+  font-weight: 700;
+  font-size: 13px;
+  border-radius: 16px;
+  padding: 5px 16px;
+  margin-right: 6px;
+  margin-top: 2px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(250,204,21,0.06);
+  border: none;
+  transition: background 0.18s, box-shadow 0.18s, transform 0.12s;
+  text-decoration: none;
+  outline: none;
+}
+.slBeBtn:hover {
+  background: linear-gradient(90deg, #fef08a 60%, #fef9c3 100%);
+  box-shadow: 0 4px 16px rgba(250,204,21,0.10);
+  transform: translateY(-2px) scale(1.04);
+}
+.slHitBtn {
+  background: linear-gradient(90deg, #fee2e2 60%, #fecaca 100%);
+  color: #991b1b;
+  font-weight: 700;
+  font-size: 13px;
+  border-radius: 16px;
+  padding: 5px 16px;
+  margin-right: 6px;
+  margin-top: 2px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(239,68,68,0.06);
+  border: none;
+  transition: background 0.18s, box-shadow 0.18s, transform 0.12s;
+  text-decoration: none;
+  outline: none;
+}
+.slHitBtn:hover {
+  background: linear-gradient(90deg, #fecaca 60%, #fee2e2 100%);
+  box-shadow: 0 4px 16px rgba(239,68,68,0.10);
+  transform: translateY(-2px) scale(1.04);
+}
