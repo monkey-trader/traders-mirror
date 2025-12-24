@@ -3,13 +3,16 @@
 
 import { InMemoryTradeRepository } from '@/infrastructure/trade/repositories/InMemoryTradeRepository'
 import { TradeService } from '@/application/trade/services/TradeService'
+import { TradeEvaluationService } from '@/application/trade/services/TradeEvaluationService'
 
 const tradeRepository = new InMemoryTradeRepository()
 const tradeService = new TradeService(tradeRepository)
+const tradeEvaluationService = new TradeEvaluationService(tradeRepository)
 
 export const container = {
   tradeService,
   tradeRepository,
+  tradeEvaluationService,
 }
 
 export type AppContainer = typeof container
