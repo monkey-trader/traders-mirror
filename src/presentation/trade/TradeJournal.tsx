@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import type { Trade } from '@/domain/trade/entities/Trade'
 import container from '@/shared/di'
 import styles from './TradeJournal.module.css'
+import { useToast } from '@/presentation/shared/Toast'
 import type { FormState, FormErrors } from './validation'
 import { validateAll } from './validation'
 import { mapDomainErrorToFieldErrors } from './errorMapper'
@@ -18,6 +19,7 @@ export function TradeJournal() {
   const [marketSymbol, setMarketSymbol] = useState<string>('')
   const [marketPrice, setMarketPrice] = useState<number>(0)
   const [beMap, setBeMap] = useState<Record<string, boolean>>({})
+  const { showToast, ToastElement } = useToast()
 
   useEffect(() => {
     tradeService.listTrades().then(setTrades)
@@ -60,6 +62,7 @@ export function TradeJournal() {
       setStopLoss('')
       setFieldErrors({})
       setTrades(await tradeService.listTrades())
+      showToast('Trade added', 'success')
     } catch (err: unknown) {
       const mapped = mapDomainErrorToFieldErrors(err)
       if (mapped.fieldErrors) {
@@ -67,7 +70,9 @@ export function TradeJournal() {
         return
       }
 
-      setError(mapped.message ?? (err instanceof Error ? err.message : String(err)))
+      const msg = mapped.message ?? (err instanceof Error ? err.message : String(err))
+      setError(msg)
+      showToast(String(msg), 'error')
     }
   }
 
@@ -78,8 +83,10 @@ export function TradeJournal() {
       const ev = await container.tradeEvaluationService.moveStopToBreakEven(trade)
       // refresh trades list after applying
       setTrades(await tradeService.listTrades())
+      if (ev) showToast('Stop moved to Break-Even', 'success')
     } catch (err) {
       console.error('Failed to move SL to BE', err)
+      showToast('Failed to move SL to BE', 'error')
     }
   }
 
@@ -93,82 +100,109 @@ export function TradeJournal() {
       </header>
 
       <section className={styles.card}>
+        <div className={styles.formHeaderNote} title="Stop Loss can be moved to BE by user action; BE counts as a win in summary by default">Tip: Stop Loss can later be moved to Break-Even (BE) via the UI.</div>
         <form onSubmit={handleAdd} className={styles.form} aria-label="Add trade form" noValidate>
-          <div>
-            <input
-              className={styles.input}
-              placeholder="Symbol"
-              value={form.symbol}
-              onChange={(e) => setForm({ ...form, symbol: e.target.value })}
-              aria-describedby={fieldErrors.symbol ? 'symbol-error' : undefined}
-              required
-            />
-            {fieldErrors.symbol && (
-              <div id="symbol-error" role="alert" className={styles.fieldError}>{fieldErrors.symbol}</div>
-            )}
-          </div>
+          <div className={styles.formGrid}>
+            <div>
+              <label className={styles.label} htmlFor="symbol-input"><span className={styles.labelText}>Symbol</span>
+                <input
+                  id="symbol-input"
+                  className={styles.input}
+                  title="Symbol: enter the trade symbol, e.g. AAPL"
+                  placeholder="Symbol"
+                  value={form.symbol}
+                  onChange={(e) => setForm({ ...form, symbol: e.target.value })}
+                  aria-describedby={fieldErrors.symbol ? 'symbol-error' : undefined}
+                  required
+                />
+              </label>
+              {fieldErrors.symbol && (
+                <div id="symbol-error" role="alert" className={styles.fieldError}>{fieldErrors.symbol}</div>
+              )}
+            </div>
 
-          <div>
-            <input
-              className={styles.input}
-              type="datetime-local"
-              value={form.entryDate}
-              onChange={(e) => setForm({ ...form, entryDate: e.target.value })}
-              aria-describedby={fieldErrors.entryDate ? 'entryDate-error' : undefined}
-              required
-            />
-            {fieldErrors.entryDate && (
-              <div id="entryDate-error" role="alert" className={styles.fieldError}>{fieldErrors.entryDate}</div>
-            )}
-          </div>
+            <div>
+              <label className={styles.label} htmlFor="entry-input"><span className={styles.labelText}>Entry Date</span>
+                <input
+                  id="entry-input"
+                  className={styles.input}
+                  type="datetime-local"
+                  title="Entry date/time of the trade (local)"
+                  value={form.entryDate}
+                  onChange={(e) => setForm({ ...form, entryDate: e.target.value })}
+                  aria-describedby={fieldErrors.entryDate ? 'entryDate-error' : undefined}
+                  required
+                />
+              </label>
+              {fieldErrors.entryDate && (
+                <div id="entryDate-error" role="alert" className={styles.fieldError}>{fieldErrors.entryDate}</div>
+              )}
+            </div>
 
-          <div>
-            <input
-              className={styles.input}
-              type="number"
-              placeholder="Size"
-              value={String(form.size)}
-              onChange={(e) => setForm({ ...form, size: Number(e.target.value) })}
-              aria-describedby={fieldErrors.size ? 'size-error' : undefined}
-              required
-            />
-            {fieldErrors.size && (
-              <div id="size-error" role="alert" className={styles.fieldError}>{fieldErrors.size}</div>
-            )}
-          </div>
+            <div>
+              <label className={styles.label} htmlFor="size-input"><span className={styles.labelText}>Size</span>
+                <input
+                  id="size-input"
+                  className={styles.input}
+                  type="number"
+                  title="Position size / quantity (positive number)"
+                  placeholder="Size"
+                  value={String(form.size)}
+                  onChange={(e) => setForm({ ...form, size: Number(e.target.value) })}
+                  aria-describedby={fieldErrors.size ? 'size-error' : undefined}
+                  required
+                />
+              </label>
+              {fieldErrors.size && (
+                <div id="size-error" role="alert" className={styles.fieldError}>{fieldErrors.size}</div>
+              )}
+            </div>
 
-          <div>
-            <input
-              className={styles.input}
-              type="number"
-              placeholder="Price"
-              value={String(form.price)}
-              onChange={(e) => setForm({ ...form, price: Number(e.target.value) })}
-              aria-describedby={fieldErrors.price ? 'price-error' : undefined}
-              required
-            />
-            {fieldErrors.price && (
-              <div id="price-error" role="alert" className={styles.fieldError}>{fieldErrors.price}</div>
-            )}
-          </div>
+            <div>
+              <label className={styles.label} htmlFor="price-input"><span className={styles.labelText}>Price</span>
+                <input
+                  id="price-input"
+                  className={styles.input}
+                  type="number"
+                  title="Entry price for the trade"
+                  placeholder="Price"
+                  value={String(form.price)}
+                  onChange={(e) => setForm({ ...form, price: Number(e.target.value) })}
+                  aria-describedby={fieldErrors.price ? 'price-error' : undefined}
+                  required
+                />
+              </label>
+              {fieldErrors.price && (
+                <div id="price-error" role="alert" className={styles.fieldError}>{fieldErrors.price}</div>
+              )}
+            </div>
 
-          <div>
-            <input
-              className={styles.input}
-              type="number"
-              placeholder="Stop Loss"
-              value={stopLoss}
-              onChange={(e) => setStopLoss(e.target.value)}
-            />
-          </div>
+            <div>
+              <label className={styles.label} htmlFor="stop-input"><span className={styles.labelText}>Stop Loss</span>
+                <input
+                  id="stop-input"
+                  className={styles.input}
+                  type="number"
+                  title="Initial Stop Loss price (optional). Can be set above or below entry depending on strategy."
+                  placeholder="Stop Loss"
+                  value={stopLoss}
+                  onChange={(e) => setStopLoss(e.target.value)}
+                />
+              </label>
+            </div>
 
-          <div>
-            <input
-              className={styles.input}
-              placeholder="Notes"
-              value={form.notes}
-              onChange={(e) => setForm({ ...form, notes: e.target.value })}
-            />
+            <div>
+              <label className={styles.label} htmlFor="notes-input"><span className={styles.labelText}>Notes</span>
+                <input
+                  id="notes-input"
+                  className={styles.input}
+                  title="Optional notes about the trade"
+                  placeholder="Notes"
+                  value={form.notes}
+                  onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                />
+              </label>
+            </div>
           </div>
 
           <button className={styles.button} type="submit">Add Trade</button>
@@ -178,8 +212,8 @@ export function TradeJournal() {
 
         <div className={styles.controls}>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            <input placeholder="Market Symbol" value={marketSymbol} onChange={e => setMarketSymbol(e.target.value)} className={styles.input} />
-            <input placeholder="Market Price" type="number" value={String(marketPrice)} onChange={e => setMarketPrice(Number(e.target.value))} className={styles.input} />
+            <input title="Symbol to run market tick for" placeholder="Market Symbol" value={marketSymbol} onChange={e => setMarketSymbol(e.target.value)} className={styles.input} />
+            <input title="Current market price to evaluate against targets" placeholder="Market Price" type="number" value={String(marketPrice)} onChange={e => setMarketPrice(Number(e.target.value))} className={styles.input} />
             <button onClick={runMarketTick} className={styles.button}>Run Market Tick</button>
           </div>
           <select
@@ -250,6 +284,7 @@ export function TradeJournal() {
            </tbody>
          </table>
        </div>
+       {ToastElement}
      </section>
    </div>
  )

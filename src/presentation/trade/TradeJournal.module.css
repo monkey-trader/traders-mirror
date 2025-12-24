@@ -47,6 +47,12 @@
   border-radius: 12px;
   padding: 16px;
   box-shadow: 0 6px 18px rgba(3,6,12,0.6);
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 40px rgba(3,6,12,0.6);
 }
 
 .form {
@@ -93,6 +99,30 @@
 .button:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 30px rgba(124,219,255,0.08);
+}
+
+.button[disabled], .button:disabled {
+  opacity: 0.52;
+  cursor: not-allowed;
+  filter: grayscale(0.05);
+  transform: none;
+  box-shadow: none;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(160px, 1fr));
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+@media (max-width: 900px) {
+  .formGrid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 520px) {
+  .formGrid { grid-template-columns: 1fr; }
 }
 
 .tableWrap {
@@ -156,6 +186,37 @@
   border-radius: 4px;
   font-size: 13px;
   margin-top: 6px;
+}
+
+.formHeaderNote {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.targets {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.targetItem {
+  background: var(--glass);
+  color: var(--muted);
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 4px 8px;
+  background: rgba(126,252,143,0.12);
+  color: var(--accent-2);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 /* responsive */
