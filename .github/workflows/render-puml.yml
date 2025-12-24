@@ -1,0 +1,69 @@
+name: Auto-render PlantUML and create PR
+
+on:
+  push:
+    paths:
+      - 'docs/diagrams/**/*.puml'
+  pull_request:
+    paths:
+      - 'docs/diagrams/**/*.puml'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  render-and-pr:
+    name: Render .puml -> PNG and create PR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install PlantUML / Graphviz / Java
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y plantuml graphviz default-jre
+
+      - name: Render PlantUML files
+        run: |
+          node --version || true
+          ls -la docs/diagrams || true
+          node --experimental-specifier-resolution=node ./scripts/plantuml-build.mjs
+
+      - name: Copy generated PNGs to docs/diagrams (fallback)
+        run: |
+          mkdir -p docs/diagrams
+          cp -v docs/build/assets/diagrams/*.png docs/diagrams/ || true
+          git status --porcelain || true
+
+      - name: Create Pull Request with generated images
+        uses: peter-evans/create-pull-request@v5
+        with:
+          # Prefer a user PAT stored in secrets.ACTIONS_PAT (needs 'repo' + 'workflow' scopes) so the action can create PRs even when organization/repo settings restrict GITHUB_TOKEN.
+          # If not set, fall back to the default github.token (may be blocked by repo settings).
+          token: ${{ secrets.ACTIONS_PAT || github.token }}
+          commit-message: "chore(docs): update generated diagram PNGs"
+          branch: "auto/diagrams-generated-${{ github.sha }}"
+          title: "chore(docs): update generated diagram PNGs"
+          body: |
+            This PR updates the generated PNGs for PlantUML diagrams changed in this branch.
+            The images are generated automatically from the corresponding `.puml` files.
+          labels: automatic,docs
+          add-paths: |
+            docs/diagrams/**
+          delete-branch: true
+
+# Notes:
+# - To allow this workflow to create PRs automatically in all environments, create a Personal Access Token (classic) with the "repo" scope (and "workflow" if needed)
+#   and add it to this repository's secrets as `ACTIONS_PAT` (Settings -> Secrets and variables -> Actions -> New repository secret).
+# - Alternatively, an admin can enable "Allow GitHub Actions to create and approve pull requests" / grant Actions write permissions in
+#   Settings -> Actions -> General -> Workflow permissions for the repo/organization.

@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      - name: Install dependencies
+        # konservativer Fallback: versuche `npm ci`, falls das fehlschlägt greife auf `npm install` zurück
+        # Das ist nur ein temporärer Workaround, bitte Lockfile langfristig reparieren
+        run: npm ci || npm install
+      - name: Lint
+        run: npm run lint
+      - name: Run unit tests (Vitest)
+        run: npm run test:unit
+      - name: Build
+        run: npm run build
+      - name: Upload artifact (pages)
+        uses: actions/upload-artifact@v4
+        with:
+          name: pages
+          path: ./build
+      # Skipping upload-pages-artifact and deploy-pages actions because they
+      # transitively depend on deprecated artifact actions; using a direct
+      # gh-pages branch push as a reliable fallback instead.
+      - name: Deploy to `gh-pages` branch (fallback)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          REPO="https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git"
+          tmpdir=$(mktemp -d)
+          git clone --branch gh-pages --single-branch "$REPO" "$tmpdir" || (
+            git clone "$REPO" "$tmpdir"
+            cd "$tmpdir"
+            git checkout --orphan gh-pages
+          )
+          rm -rf "$tmpdir"/*
+          cp -r ./build/* "$tmpdir"/
+          cd "$tmpdir"
+          git add --all
+          if git diff --staged --quiet; then
+            echo "No changes to deploy"
+          else
+            git commit -m "chore(pages): deploy ${{ github.sha }}"
+            git push origin gh-pages --force
+          fi
+
+  # Deploy directly in the build job to avoid cross-job deprecated-action issues
+  # (upload-pages-artifact + deploy-pages run after the build completes)
