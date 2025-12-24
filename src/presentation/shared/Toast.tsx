@@ -24,7 +24,7 @@ export function useToast(ttl = 4000) {
   }, [])
 
   const ToastElement = (
-    <div aria-live="polite" aria-atomic="true">
+    <div className={styles['toasts-wrapper']} aria-live="polite" aria-atomic="true">
       {toasts.map((t) => (
         <div key={t.id} className={`${styles.toast} ${styles[t.type]}`} role="status">
           <span>{t.msg}</span>

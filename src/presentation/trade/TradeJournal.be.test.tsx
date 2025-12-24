@@ -55,6 +55,10 @@ describe('TradeJournal BE button', () => {
     const button = await screen.findByRole('button', { name: /Move SL → BE/i })
     fireEvent.click(button)
 
+    // modal should open - click Confirm
+    const confirm = await screen.findByRole('button', { name: /Confirm/i })
+    fireEvent.click(confirm)
+
     // ensure evaluation service called
     expect(vi.mocked(container.tradeEvaluationService.moveStopToBreakEven)).toHaveBeenCalled()
 

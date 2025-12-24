@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import type { Trade } from '@/domain/trade/entities/Trade'
 import container from '@/shared/di'
 import styles from './TradeJournal.module.css'
+import FieldInput from '@/presentation/shared/components/FieldInput'
 import { useToast } from '@/presentation/shared/Toast'
 import type { FormState, FormErrors } from './validation'
 import { validateAll } from './validation'
@@ -18,7 +19,10 @@ export function TradeJournal() {
   const [statusFilter, setStatusFilter] = useState<'ALL' | string>('ALL')
   const [marketSymbol, setMarketSymbol] = useState<string>('')
   const [marketPrice, setMarketPrice] = useState<number>(0)
-  const [beMap, setBeMap] = useState<Record<string, boolean>>({})
+  const [beMap, setBeMap] = useState<Record<string, { canMoveToBreakEven: boolean; beThreshold?: number; stopTarget?: any }>>({})
+  const [showConfirm, setShowConfirm] = useState<boolean>(false)
+  const [confirmTrade, setConfirmTrade] = useState<Trade | null>(null)
+  const [lastTick, setLastTick] = useState<{ symbol: string; price: number; at: string } | null>(null)
   const { showToast, ToastElement } = useToast()
 
   useEffect(() => {
@@ -29,14 +33,44 @@ export function TradeJournal() {
     if (!marketSymbol) return
     try {
       const results = await container.tradeEvaluationService.onMarketTick(marketSymbol, Number(marketPrice))
-      const map: Record<string, boolean> = {}
+      setLastTick({ symbol: marketSymbol, price: Number(marketPrice), at: new Date().toISOString() })
+      const map: Record<string, { canMoveToBreakEven: boolean; beThreshold?: number; stopTarget?: any }> = {}
       // build keys consistent with row keys
       for (const r of results) {
         const t = r.trade
-        const key = t.symbol + '|' + (t.entryDate ?? '') + '|' + String(trades.indexOf(t))
-        map[key] = r.candidate.canMoveToBreakEven
+        // deterministic composite key: symbol|entryDate|size|price
+        const key = `${t.symbol}|${t.entryDate ?? ''}|${t.size}|${t.price}`
+        map[key] = { canMoveToBreakEven: r.candidate.canMoveToBreakEven, beThreshold: r.candidate.beThreshold, stopTarget: r.candidate.stopTarget }
       }
       setBeMap(map)
+    } catch (err) {
+      console.error('Market tick failed', err)
+    }
+  }
+
+  // Helper to run market tick for a given symbol and price programmatically
+  const runMarketTickFor = async (symbol: string, price: number, autoOpenConfirm = true) => {
+    setMarketSymbol(symbol)
+    setMarketPrice(price)
+    setLastTick({ symbol, price: Number(price), at: new Date().toISOString() })
+    try {
+      const results = await container.tradeEvaluationService.onMarketTick(symbol, Number(price))
+      const map: Record<string, { canMoveToBreakEven: boolean; beThreshold?: number; stopTarget?: any }> = {}
+      for (const r of results) {
+        const t = r.trade
+        const key = `${t.symbol}|${t.entryDate ?? ''}|${t.size}|${t.price}`
+        map[key] = { canMoveToBreakEven: r.candidate.canMoveToBreakEven, beThreshold: r.candidate.beThreshold, stopTarget: r.candidate.stopTarget }
+      }
+      setBeMap(map)
+      // If autoOpenConfirm and a candidate for the provided symbol/price is available, open confirmation
+      if (autoOpenConfirm) {
+        // find the first trade in results that can move
+        const found = results.find((r) => r.candidate.canMoveToBreakEven)
+        if (found) {
+          setConfirmTrade(found.trade)
+          setShowConfirm(true)
+        }
+      }
     } catch (err) {
       console.error('Market tick failed', err)
     }
@@ -62,6 +96,11 @@ export function TradeJournal() {
       setStopLoss('')
       setFieldErrors({})
       setTrades(await tradeService.listTrades())
+      // auto-run market tick for new trade if marketSymbol and marketPrice are set
+      if (marketSymbol && marketPrice && marketSymbol === form.symbol) {
+        // run tick to see quickly if BE is available for the newly created trade
+        await runMarketTickFor(marketSymbol, marketPrice, false)
+      }
       showToast('Trade added', 'success')
     } catch (err: unknown) {
       const mapped = mapDomainErrorToFieldErrors(err)
@@ -83,11 +122,23 @@ export function TradeJournal() {
       const ev = await container.tradeEvaluationService.moveStopToBreakEven(trade)
       // refresh trades list after applying
       setTrades(await tradeService.listTrades())
+      setShowConfirm(false)
+      setConfirmTrade(null)
       if (ev) showToast('Stop moved to Break-Even', 'success')
     } catch (err) {
       console.error('Failed to move SL to BE', err)
       showToast('Failed to move SL to BE', 'error')
     }
+  }
+
+  const openConfirmForTrade = (trade: Trade) => {
+    setConfirmTrade(trade)
+    setShowConfirm(true)
+  }
+
+  const cancelConfirm = () => {
+    setShowConfirm(false)
+    setConfirmTrade(null)
   }
 
   return (
@@ -104,104 +155,39 @@ export function TradeJournal() {
         <form onSubmit={handleAdd} className={styles.form} aria-label="Add trade form" noValidate>
           <div className={styles.formGrid}>
             <div>
-              <label className={styles.label} htmlFor="symbol-input"><span className={styles.labelText}>Symbol</span>
-                <input
-                  id="symbol-input"
-                  className={styles.input}
-                  title="Symbol: enter the trade symbol, e.g. AAPL"
-                  placeholder="Symbol"
-                  value={form.symbol}
-                  onChange={(e) => setForm({ ...form, symbol: e.target.value })}
-                  aria-describedby={fieldErrors.symbol ? 'symbol-error' : undefined}
-                  required
-                />
-              </label>
+              <FieldInput id="symbol-input" label="Symbol" title="Symbol: enter the trade symbol, e.g. AAPL" placeholder="Symbol" value={form.symbol} onChange={(e) => setForm({ ...form, symbol: e.target.value })} aria-describedby={fieldErrors.symbol ? 'symbol-error' : undefined} required />
               {fieldErrors.symbol && (
                 <div id="symbol-error" role="alert" className={styles.fieldError}>{fieldErrors.symbol}</div>
               )}
             </div>
 
             <div>
-              <label className={styles.label} htmlFor="entry-input"><span className={styles.labelText}>Entry Date</span>
-                <input
-                  id="entry-input"
-                  className={styles.input}
-                  type="datetime-local"
-                  title="Entry date/time of the trade (local)"
-                  value={form.entryDate}
-                  onChange={(e) => setForm({ ...form, entryDate: e.target.value })}
-                  aria-describedby={fieldErrors.entryDate ? 'entryDate-error' : undefined}
-                  required
-                />
-              </label>
+              <FieldInput id="entry-input" label="Entry Date" type="datetime-local" title="Entry date/time of the trade (local)" value={form.entryDate} onChange={(e) => setForm({ ...form, entryDate: e.target.value })} aria-describedby={fieldErrors.entryDate ? 'entryDate-error' : undefined} required />
               {fieldErrors.entryDate && (
                 <div id="entryDate-error" role="alert" className={styles.fieldError}>{fieldErrors.entryDate}</div>
               )}
             </div>
 
             <div>
-              <label className={styles.label} htmlFor="size-input"><span className={styles.labelText}>Size</span>
-                <input
-                  id="size-input"
-                  className={styles.input}
-                  type="number"
-                  title="Position size / quantity (positive number)"
-                  placeholder="Size"
-                  value={String(form.size)}
-                  onChange={(e) => setForm({ ...form, size: Number(e.target.value) })}
-                  aria-describedby={fieldErrors.size ? 'size-error' : undefined}
-                  required
-                />
-              </label>
+              <FieldInput id="size-input" label="Size" type="number" title="Position size / quantity (positive number)" placeholder="Size" value={String(form.size)} onChange={(e) => setForm({ ...form, size: Number(e.target.value) })} aria-describedby={fieldErrors.size ? 'size-error' : undefined} required />
               {fieldErrors.size && (
                 <div id="size-error" role="alert" className={styles.fieldError}>{fieldErrors.size}</div>
               )}
             </div>
 
             <div>
-              <label className={styles.label} htmlFor="price-input"><span className={styles.labelText}>Price</span>
-                <input
-                  id="price-input"
-                  className={styles.input}
-                  type="number"
-                  title="Entry price for the trade"
-                  placeholder="Price"
-                  value={String(form.price)}
-                  onChange={(e) => setForm({ ...form, price: Number(e.target.value) })}
-                  aria-describedby={fieldErrors.price ? 'price-error' : undefined}
-                  required
-                />
-              </label>
+              <FieldInput id="price-input" label="Price" type="number" title="Entry price for the trade" placeholder="Price" value={String(form.price)} onChange={(e) => setForm({ ...form, price: Number(e.target.value) })} aria-describedby={fieldErrors.price ? 'price-error' : undefined} required />
               {fieldErrors.price && (
                 <div id="price-error" role="alert" className={styles.fieldError}>{fieldErrors.price}</div>
               )}
             </div>
 
             <div>
-              <label className={styles.label} htmlFor="stop-input"><span className={styles.labelText}>Stop Loss</span>
-                <input
-                  id="stop-input"
-                  className={styles.input}
-                  type="number"
-                  title="Initial Stop Loss price (optional). Can be set above or below entry depending on strategy."
-                  placeholder="Stop Loss"
-                  value={stopLoss}
-                  onChange={(e) => setStopLoss(e.target.value)}
-                />
-              </label>
+              <FieldInput id="stop-input" label="Stop Loss" type="number" title="Initial Stop Loss price (optional). Can be set above or below entry depending on strategy." placeholder="Stop Loss" value={stopLoss} onChange={(e) => setStopLoss(e.target.value)} />
             </div>
 
             <div>
-              <label className={styles.label} htmlFor="notes-input"><span className={styles.labelText}>Notes</span>
-                <input
-                  id="notes-input"
-                  className={styles.input}
-                  title="Optional notes about the trade"
-                  placeholder="Notes"
-                  value={form.notes}
-                  onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                />
-              </label>
+              <FieldInput id="notes-input" label="Notes" title="Optional notes about the trade" placeholder="Notes" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
             </div>
           </div>
 
@@ -215,6 +201,9 @@ export function TradeJournal() {
             <input title="Symbol to run market tick for" placeholder="Market Symbol" value={marketSymbol} onChange={e => setMarketSymbol(e.target.value)} className={styles.input} />
             <input title="Current market price to evaluate against targets" placeholder="Market Price" type="number" value={String(marketPrice)} onChange={e => setMarketPrice(Number(e.target.value))} className={styles.input} />
             <button onClick={runMarketTick} className={styles.button}>Run Market Tick</button>
+            {lastTick && (
+              <div className={styles.lastTick}>Last tick: {lastTick.symbol} @ {lastTick.price} ({new Date(lastTick.at).toLocaleTimeString()})</div>
+            )}
           </div>
           <select
              value={statusFilter}
@@ -251,8 +240,9 @@ export function TradeJournal() {
                 </tr>
               ) : (
                 filteredTrades.map((t, i) => {
-                  const key = t.symbol + '|' + (t.entryDate ?? '') + '|' + String(i)
-                  const isBe = Boolean(beMap[key])
+                  const key = `${t.symbol}|${t.entryDate ?? ''}|${t.size}|${t.price}`
+                  const beInfo = beMap[key]
+                  const isBe = Boolean(beInfo?.canMoveToBreakEven)
                   return (
                     <tr key={i}>
                       <td>{t.symbol}</td>
@@ -273,19 +263,41 @@ export function TradeJournal() {
                           <div className={styles.targetItem}>—</div>
                         )}
                         <div style={{ marginTop: 6 }}>
-                          <button onClick={() => handleMoveToBE(t)} className={styles.button} disabled={!isBe} title={isBe ? 'Move stop to Break-Even' : 'BE not available'}>Move SL → BE</button>
-                          {isBe && <span className={styles.badge} data-testid={`be-badge-${i}`}>BE Available</span>}
+                          <button onClick={() => openConfirmForTrade(t)} className={styles.button} disabled={!isBe} title={isBe ? 'Move stop to Break-Even' : 'BE not available'}>Move SL → BE</button>
+                          {beInfo && (
+                            <span className={styles.badge} data-testid={`be-badge-${i}`} title={beInfo.beThreshold ? `BE threshold: ${beInfo.beThreshold}` : undefined}>
+                              {beInfo.canMoveToBreakEven ? 'BE Available' : 'BE: ' + (typeof beInfo.beThreshold === 'number' ? Number(beInfo.beThreshold).toLocaleString() : '—')}
+                            </span>
+                          )}
+                          {/* Quick helper: set market inputs to this trade's threshold and run tick */}
+                          {beInfo?.beThreshold && (
+                            <button className={styles.smallButton} onClick={async () => { await runMarketTickFor(t.symbol, beInfo.beThreshold!, true) }} style={{ marginLeft: 8 }}>Use BE threshold</button>
+                          )}
                         </div>
-                      </td>
-                   </tr>
-                 )
-               })
+                       </td>
+                    </tr>
+                  )
+                })
              )}
            </tbody>
          </table>
        </div>
        {ToastElement}
+
+       {/* Confirmation modal for Move SL -> BE */}
+       {showConfirm && confirmTrade && (
+         <div className={styles.modalOverlay} role="dialog" aria-modal="true">
+           <div className={styles.modal}>
+             <h3>Move Stop to Break-Even?</h3>
+             <p>Trade {confirmTrade!.symbol} at {confirmTrade!.entryDate} — this will set the stop price to entry price.</p>
+             <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+               <button className={styles.button} onClick={() => handleMoveToBE(confirmTrade!)}>Confirm</button>
+               <button className={styles.button} onClick={cancelConfirm}>Cancel</button>
+             </div>
+           </div>
+         </div>
+       )}
      </section>
    </div>
  )
-}
+ }
