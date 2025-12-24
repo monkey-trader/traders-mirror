@@ -1,0 +1,30 @@
+.statusOpen {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(110,231,183,0.08);
+  color: #69f0ae;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.statusClosed {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.02);
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.statusFilled {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(203,213,225,0.06);
+  color: #60a5fa;
+  font-weight: 700;
+  font-size: 12px;
+}
+

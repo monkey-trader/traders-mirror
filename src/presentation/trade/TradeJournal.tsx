@@ -4,6 +4,8 @@ import { Card } from '@/presentation/shared/components/Card/Card'
 import { Button } from '@/presentation/shared/components/Button/Button'
 import { Input } from '@/presentation/shared/components/Input/Input'
 import { SideSelect, SideBadge, SideValue } from '@/presentation/shared/components/SideSelect/SideSelect'
+import { StatusSelect } from '@/presentation/shared/components/StatusSelect/StatusSelect'
+import { StatusBadge } from '@/presentation/shared/components/StatusBadge/StatusBadge'
 import styles from './TradeJournal.module.css'
 
 type TradeRow = {
@@ -304,11 +306,72 @@ export function TradeJournal() {
   // State für Positionsdaten (editierbar)
   const [positions, setPositions] = useState<TradeRow[]>(MOCK_TRADES)
 
+  // Editierbare Felder für alle Positions-Spalten
+  const [editFields, setEditFields] = useState<{ [tradeId: string]: Partial<Record<keyof TradeRow, boolean>> }>({})
+  // keep ids pinned temporarily after status change so they don't vanish immediately from open list
+  const [pinnedStatusIds, setPinnedStatusIds] = useState<Set<string>>(new Set())
+  const pinnedTimers = useRef<Map<string, number>>(new Map())
+
+  // Handlers for editing fields (restored)
+  const handleEditFieldClick = (tradeId: string, key: keyof TradeRow) => {
+    setEditFields(prev => ({
+      ...prev,
+      [tradeId]: { ...prev[tradeId], [key]: true }
+    }))
+  }
+  const handleEditFieldBlur = (tradeId: string, key: keyof TradeRow, value: any) => {
+    // if status changed and filter would remove the row immediately, pin it briefly so the user sees the change
+    if (key === 'status') {
+      setPositions(prev => prev.map(row => row.id === tradeId ? { ...row, [key]: value } : row))
+
+      // if current filter is OPEN and new status is not OPEN, pin for 2s
+      if (tradeStatusFilter === 'OPEN' && value !== 'OPEN') {
+        setPinnedStatusIds(prev => {
+          const next = new Set(prev)
+          next.add(tradeId)
+          return next
+        })
+        // clear any existing timer
+        const existing = pinnedTimers.current.get(tradeId)
+        if (existing) window.clearTimeout(existing)
+        const id = window.setTimeout(() => {
+          setPinnedStatusIds(prev => {
+            const next = new Set(prev)
+            next.delete(tradeId)
+            return next
+          })
+          pinnedTimers.current.delete(tradeId)
+        }, 2000)
+        pinnedTimers.current.set(tradeId, id)
+      }
+
+      setEditFields(prev => ({
+        ...prev,
+        [tradeId]: { ...prev[tradeId], [key]: false }
+      }))
+      return
+    }
+
+    setEditFields(prev => ({
+      ...prev,
+      [tradeId]: { ...prev[tradeId], [key]: false }
+    }))
+    setPositions(prev => prev.map(row =>
+      row.id === tradeId ? { ...row, [key]: value } : row
+    ))
+  }
+
   // Für Positions: nur offene Trades des aktuellen Marktes
   const openPositions = useMemo(() => {
-    if (marketFilter === 'All') return positions.filter(t => t.status === 'OPEN')
-    return positions.filter(t => t.status === 'OPEN' && t.market === marketFilter)
-  }, [marketFilter, positions])
+    // keep trades visible while their status field is being edited so the row doesn't vanish mid-edit
+    // and also keep pinned ids visible for a short time after status changes
+    return positions.filter(t => {
+      const isOpenForFilter = t.status === 'OPEN' && (marketFilter === 'All' || t.market === marketFilter)
+      const beingEdited = !!(editFields[t.id]?.status)
+      const pinned = pinnedStatusIds.has(t.id)
+      return isOpenForFilter || beingEdited || pinned
+    })
+  }, [marketFilter, positions, editFields, pinnedStatusIds])
 
   // responsive fallback: switch to single-column grid when container is too narrow
   const containerRef = useRef<HTMLDivElement | null>(null)
@@ -367,24 +430,6 @@ export function TradeJournal() {
     // TODO: State-Update/Backend-Call: Status auf SL-HIT setzen
   }
 
-  // Editierbare Felder für alle Positions-Spalten
-  const [editFields, setEditFields] = useState<{ [tradeId: string]: Partial<Record<keyof TradeRow, boolean>> }>({})
-
-  const handleEditFieldClick = (tradeId: string, key: keyof TradeRow) => {
-    setEditFields(prev => ({
-      ...prev,
-      [tradeId]: { ...prev[tradeId], [key]: true }
-    }))
-  }
-  const handleEditFieldBlur = (tradeId: string, key: keyof TradeRow, value: any) => {
-    setEditFields(prev => ({
-      ...prev,
-      [tradeId]: { ...prev[tradeId], [key]: false }
-    }))
-    setPositions(prev => prev.map(row =>
-      row.id === tradeId ? { ...row, [key]: value } : row
-    ))
-  }
 
   // Handler für das Hinzufügen eines neuen Trades
   const [form, setForm] = useState({
@@ -665,24 +710,20 @@ export function TradeJournal() {
                         {/* Status */}
                         <td>
                           {editFields[t.id]?.status ? (
-                            <select
-                              className={styles.input}
-                              autoFocus
-                              defaultValue={t.status}
-                              onBlur={e => handleEditFieldBlur(t.id, 'status', e.target.value)}
-                            >
-                              <option value="OPEN">OPEN</option>
-                              <option value="CLOSED">CLOSED</option>
-                              <option value="FILLED">FILLED</option>
-                            </select>
+                            <StatusSelect
+                              value={t.status}
+                              onChange={(v) => handleEditFieldBlur(t.id, 'status', v)}
+                              ariaLabel={`Edit status for ${t.symbol}`}
+                              compact
+                              colored
+                              onBlur={() => setEditFields(prev => ({ ...prev, [t.id]: { ...prev[t.id], status: false } }))}
+                            />
                           ) : (
-                            <span
-                              tabIndex={0}
-                              style={{ cursor: 'pointer' }}
+                            <StatusBadge
+                              value={t.status}
+                              className={styles.statusBadge}
                               onClick={() => handleEditFieldClick(t.id, 'status')}
-                            >
-                              {t.status}
-                            </span>
+                            />
                           )}
                         </td>
                         {/* Actions */}
@@ -847,9 +888,7 @@ export function TradeJournal() {
                             <span className={styles.symbol}>{t.symbol}</span>
                           </td>
                           <td>
-                            <span className={t.status === 'OPEN' ? styles.statusOpen : styles.statusClosed}>
-                              {t.status}
-                            </span>
+                            <StatusBadge value={t.status} />
                           </td>
                           <td className={t.side === 'LONG' ? styles.sideLong : styles.sideShort}>{t.side}</td>
                           <td>{t.size}</td>
