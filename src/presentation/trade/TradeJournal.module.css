@@ -208,6 +208,29 @@
   font-weight: 700;
 }
 
+/* small pill next to the side select to visually show LONG/SHORT color */
+.sideBadge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.02);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  min-width: 44px;
+  text-align: center;
+}
+
+/* stronger visual background for badge variants */
+.sideBadge.sideLong {
+  background: rgba(105,240,174,0.10);
+  color: #69f0ae;
+}
+.sideBadge.sideShort {
+  background: rgba(255,107,107,0.10);
+  color: #ff6b6b;
+}
+
 .plPositive {
   color: #7ef18a;
   font-weight: 700;

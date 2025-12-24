@@ -3,6 +3,7 @@ import { Layout } from '@/presentation/shared/components/Layout/Layout'
 import { Card } from '@/presentation/shared/components/Card/Card'
 import { Button } from '@/presentation/shared/components/Button/Button'
 import { Input } from '@/presentation/shared/components/Input/Input'
+import { SideSelect, SideBadge, SideValue } from '@/presentation/shared/components/SideSelect/SideSelect'
 import styles from './TradeJournal.module.css'
 
 type TradeRow = {
@@ -361,15 +362,6 @@ export function TradeJournal() {
     alert(`SL für ${trade.symbol} auf Break Even (${trade.entry}) gesetzt und Status auf SL-HIT gesetzt (Demo)`)
     // TODO: State-Update/Backend-Call: SL setzen und Status auf SL-HIT
   }
-  const handleEditTP = (trade: TradeRow, tpKey: 'tp1'|'tp2'|'tp3', value: string) => {
-    alert(`TP geändert: ${tpKey} = ${value} für ${trade.symbol} (Demo)`)
-    // TODO: State-Update/Backend-Call
-  }
-  // Handler für Statuswechsel
-  const handleChangeStatus = (trade: TradeRow, newStatus: TradeRow['status']) => {
-    alert(`Status für ${trade.symbol} geändert zu ${newStatus} (Demo)`)
-    // TODO: State-Update/Backend-Call
-  }
   const handleSetSLHit = (trade: TradeRow) => {
     alert(`Status für ${trade.symbol} auf SL-HIT gesetzt (Demo)`)
     // TODO: State-Update/Backend-Call: Status auf SL-HIT setzen
@@ -392,6 +384,35 @@ export function TradeJournal() {
     setPositions(prev => prev.map(row =>
       row.id === tradeId ? { ...row, [key]: value } : row
     ))
+  }
+
+  // Handler für das Hinzufügen eines neuen Trades
+  const [form, setForm] = useState({
+    symbol: '',
+    entryDate: '',
+    size: 0,
+    price: 0,
+    side: 'LONG' as SideValue,
+    notes: ''
+  })
+
+
+  const handleAdd = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const newTrade: TradeRow = {
+      id: crypto.randomUUID(),
+      symbol: form.symbol,
+      entryDate: form.entryDate,
+      size: Number(form.size),
+      price: Number(form.price),
+      side: form.side as 'LONG' | 'SHORT',
+      notes: form.notes,
+      market: "Crypto",
+      status: 'OPEN',
+      pnl: 0,
+    }
+    setPositions(prev => [newTrade, ...prev])
+    setForm({ symbol: '', entryDate: '', size: 0, price: 0, side: 'LONG', notes: '' })
   }
 
   // Hilfsfunktion zum Öffnen der Analyse-Seite im neuen Tab
@@ -431,7 +452,7 @@ export function TradeJournal() {
       <div ref={containerRef} className={compactGrid ? `${styles.grid} ${styles.gridCompact}` : styles.grid}>
         <div className={styles.left}>
           <Card title="New Trade">
-            <form className={styles.form} onSubmit={(e) => e.preventDefault()}>
+            <form className={styles.form} onSubmit={handleAdd}>
               <div className={styles.row}>
                 <Input label="Symbol" placeholder="e.g. AAPL" />
                 <Input label="Entry Date" type="datetime-local" />
@@ -444,6 +465,17 @@ export function TradeJournal() {
 
               <div className={styles.row}>
                 <Input label="Notes" />
+              </div>
+
+              <div className={styles.row}>
+                <label className={styles.label} htmlFor="side">Side</label>
+                <SideSelect
+                  value={form.side as SideValue}
+                  onChange={(v) => setForm({ ...form, side: v })}
+                  ariaLabel="New trade side"
+                  showBadge={false}
+                  colored
+                />
               </div>
 
               <div className={styles.actions}>
@@ -509,24 +541,21 @@ export function TradeJournal() {
                         {/* Side */}
                         <td>
                           {editFields[t.id]?.side ? (
-                            <select
-                              className={styles.input}
-                              autoFocus
-                              defaultValue={t.side}
-                              onBlur={e => handleEditFieldBlur(t.id, 'side', e.target.value)}
-                            >
-                              <option value="LONG">LONG</option>
-                              <option value="SHORT">SHORT</option>
-                            </select>
+                            <SideSelect
+                              value={t.side}
+                              onChange={(v) => setPositions(prev => prev.map(row => row.id === t.id ? { ...row, side: v } : row))}
+                              ariaLabel={`Edit side for ${t.symbol}`}
+                              showBadge={false}
+                              compact
+                              colored
+                              onBlur={() => setEditFields(prev => ({ ...prev, [t.id]: { ...prev[t.id], side: false } }))}
+                            />
                           ) : (
-                            <span
-                              className={t.side === 'LONG' ? styles.sideLong : styles.sideShort}
-                              tabIndex={0}
-                              style={{ cursor: 'pointer' }}
+                            <SideBadge
+                              value={t.side}
+                              className={styles.sideBadge}
                               onClick={() => handleEditFieldClick(t.id, 'side')}
-                            >
-                              {t.side}
-                            </span>
+                            />
                           )}
                         </td>
                         {/* Size */}

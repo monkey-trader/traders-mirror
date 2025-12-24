@@ -13,6 +13,7 @@ describe('TradeFactory', () => {
       entryDate: '2023-01-01T00:00:00Z',
       size: 10,
       price: 100,
+      side: 'LONG',
       notes: 'Test'
     })
     expect(trade.symbol.value).toBe('AAPL')
@@ -24,26 +25,25 @@ describe('TradeFactory', () => {
 
   it('should throw on invalid symbol', () => {
     expect(() => TradeFactory.create({
-      id: '1', symbol: '', entryDate: '2023-01-01T00:00:00Z', size: 10, price: 100
+      id: '1', symbol: '', entryDate: '2023-01-01T00:00:00Z', size: 10, price: 100, side: 'LONG'
     })).toThrow(TradeSymbolInvalidError)
   })
 
   it('should throw on invalid entryDate', () => {
     expect(() => TradeFactory.create({
-      id: '1', symbol: 'AAPL', entryDate: 'invalid', size: 10, price: 100
+      id: '1', symbol: 'AAPL', entryDate: 'invalid', size: 10, price: 100, side: 'LONG'
     })).toThrow(EntryDateInvalidError)
   })
 
   it('should throw on invalid size', () => {
     expect(() => TradeFactory.create({
-      id: '1', symbol: 'AAPL', entryDate: '2023-01-01T00:00:00Z', size: 0, price: 100
+      id: '1', symbol: 'AAPL', entryDate: '2023-01-01T00:00:00Z', size: 0, price: 100, side: 'LONG'
     })).toThrow(SizeMustBePositiveError)
   })
 
   it('should throw on invalid price', () => {
     expect(() => TradeFactory.create({
-      id: '1', symbol: 'AAPL', entryDate: '2023-01-01T00:00:00Z', size: 10, price: 0
+      id: '1', symbol: 'AAPL', entryDate: '2023-01-01T00:00:00Z', size: 10, price: 0, side: 'LONG'
     })).toThrow(PriceMustBePositiveError)
   })
 })
-

@@ -3,6 +3,7 @@ import { Price } from '../valueObjects/Price'
 import { Size } from '../valueObjects/Size'
 import { EntryDate } from '../valueObjects/EntryDate'
 import { TradeSymbol } from '../valueObjects/TradeSymbol'
+import { Side } from '../valueObjects/Side'
 
 export type TradeInput = {
   id: string
@@ -10,6 +11,7 @@ export type TradeInput = {
   entryDate: string
   size: number
   price: number
+  side: string
   notes?: string
 }
 
@@ -21,6 +23,7 @@ export class TradeFactory {
       new EntryDate(input.entryDate),
       new Size(input.size),
       new Price(input.price),
+      new Side(input.side),
       input.notes
     )
   }
@@ -32,6 +35,7 @@ export class TradeFactory {
       entryDate: trade.entryDate.value,
       size: trade.size.value,
       price: trade.price.value,
+      side: trade.side.value,
       notes: trade.notes
     }
   }

@@ -2,6 +2,7 @@ import { TradeSymbol } from '../valueObjects/TradeSymbol'
 import { EntryDate } from '../valueObjects/EntryDate'
 import { Size } from '../valueObjects/Size'
 import { Price } from '../valueObjects/Price'
+import { Side } from '../valueObjects/Side'
 
 export class Trade {
   public readonly id: string
@@ -9,6 +10,7 @@ export class Trade {
   public readonly entryDate: EntryDate
   public readonly size: Size
   public readonly price: Price
+  public readonly side: Side
   public readonly notes?: string
 
   constructor(
@@ -17,6 +19,7 @@ export class Trade {
     entryDate: EntryDate,
     size: Size,
     price: Price,
+    side: Side,
     notes?: string
   ) {
     this.id = id
@@ -24,17 +27,7 @@ export class Trade {
     this.entryDate = entryDate
     this.size = size
     this.price = price
+    this.side = side
     this.notes = notes
-  }
-
-  static update(trade: Trade, updates: Partial<{ symbol: string; entryDate: string; size: number; price: number; notes?: string }>): Trade {
-    return new Trade(
-      trade.id,
-      updates.symbol ? new TradeSymbol(updates.symbol) : trade.symbol,
-      updates.entryDate ? new EntryDate(updates.entryDate) : trade.entryDate,
-      updates.size !== undefined ? new Size(updates.size) : trade.size,
-      updates.price !== undefined ? new Price(updates.price) : trade.price,
-      updates.notes !== undefined ? updates.notes : trade.notes
-    )
   }
 }
