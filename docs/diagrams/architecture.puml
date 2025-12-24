@@ -14,10 +14,11 @@ package "Application" {
 
 package "Domain" {
   [Entities\nTrade.ts] as DomainEntity
-  [ValueObjects\nSize.ts\nPrice.ts\nTradeSymbol.ts] as VOs
+  [ValueObjects\nSize.ts\nPrice.ts\nTradeSymbol.ts\nTradeTarget.ts] as VOs
   [Factories\nTradeFactory.ts] as Factory
   [Domain Errors\nDomainErrors.ts] as Errors
   [Interfaces\nTradeRepository.ts] as Ports
+  [Services\nTradeTargetingService.ts] as DomainServices
 }
 
 package "Infrastructure" {
@@ -29,6 +30,7 @@ package "Infrastructure" {
 UI --> Service : use
 UI --> ErrorMapper : map errors
 Service --> Factory : create / validate
+Service --> DomainServices : assess / apply targeting
 Factory --> VOs : normalize / validate
 Service --> Ports : depends on (import type)
 AdapterRepo ..> Ports : implements
@@ -37,6 +39,8 @@ AdapterRepo --> Ext : persist/store
 ' Layer boundaries (onion-like)
 Service ..> DomainEntity : orchestrates
 Factory ..> DomainEntity : creates
+DomainServices ..> DomainEntity : evaluate / mutate targets
+DomainServices ..> VOs : validate targets
 
 note left of UI
 Presentation: React + CSS Modules
