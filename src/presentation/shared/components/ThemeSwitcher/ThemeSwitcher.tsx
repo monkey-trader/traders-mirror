@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import styles from './ThemeSwitcher.module.css'
 
-const THEMES = ['nightscope', 'warmledger', 'datagrid', 'solarized', 'neon', 'forest', 'sunrise', 'mono'] as const
+const THEMES = ['nightscope', 'warmledger', 'datagrid', 'solarized', 'neon', 'forest', 'sunrise', 'mono', 'aurora'] as const
 export type ThemeName = typeof THEMES[number]
 
 const SWATCH: Record<ThemeName, string> = {
@@ -12,7 +12,8 @@ const SWATCH: Record<ThemeName, string> = {
   neon: 'linear-gradient(90deg,#ff2dd4,#00ffd5)',
   forest: 'linear-gradient(90deg,#79c267,#2e8b57)',
   sunrise: 'linear-gradient(90deg,#ff7a59,#ffd166)',
-  mono: 'linear-gradient(90deg,#cfcfcf,#9a9a9a)'
+  mono: 'linear-gradient(90deg,#cfcfcf,#9a9a9a)',
+  aurora: 'linear-gradient(90deg,#8b5cf6,#3de7c9,#ffd27a)'
 }
 
 export function ThemeSwitcher() {

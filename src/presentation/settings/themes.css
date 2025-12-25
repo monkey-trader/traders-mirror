@@ -123,3 +123,19 @@
   --glass: rgba(255,255,255,0.02);
   --glass-strong: rgba(255,255,255,0.04);
 }
+
+:root[data-theme="aurora"] {
+  /* aurora: rich purple -> teal -> gold gradient vibe */
+  --bg: #070615;
+  --surface: #0f0b16;
+  --text: #f3eef8;
+  --muted: #a69fb1;
+  --color-text: #efeaf6;
+  --color-primary: #8b5cf6; /* violet */
+  --accent: #3de7c9; /* teal */
+  --accent-glass: rgba(61,231,201,0.08);
+  --accent-strong: rgba(139,92,246,0.16);
+  --gold: #ffd27a;
+  --glass: rgba(255,255,255,0.02);
+  --glass-strong: rgba(255,255,255,0.04);
+}
