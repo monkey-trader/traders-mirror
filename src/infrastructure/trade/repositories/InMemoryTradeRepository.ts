@@ -94,17 +94,66 @@ export class InMemoryTradeRepository {
     this.trades = initial.map(t => ({ ...t }))
   }
 
-  async save(trade: RepoTrade): Promise<void> {
-    this.trades.push({ ...trade })
+  private toRepoTrade(obj: any): RepoTrade {
+    // If object looks like a domain Trade (VOs), convert to primitive shape
+    if (obj && typeof obj === 'object' && obj.symbol && typeof obj.symbol === 'object' && 'value' in obj.symbol) {
+      return {
+        id: obj.id,
+        market: (obj as any).market ?? 'All',
+        symbol: obj.symbol.value,
+        entryDate: obj.entryDate && obj.entryDate.value ? obj.entryDate.value : (obj.entryDate ?? new Date().toISOString()),
+        size: obj.size && typeof obj.size === 'object' && 'value' in obj.size ? obj.size.value : obj.size,
+        price: obj.price && typeof obj.price === 'object' && 'value' in obj.price ? obj.price.value : obj.price,
+        side: obj.side && typeof obj.side === 'object' && 'value' in obj.side ? obj.side.value : obj.side,
+        status: obj.status ?? 'OPEN',
+        pnl: obj.pnl ?? 0,
+        notes: obj.notes,
+        entry: obj.entry,
+        sl: obj.sl,
+        tp1: obj.tp1,
+        tp2: obj.tp2,
+        tp3: obj.tp3,
+        margin: obj.margin,
+        leverage: obj.leverage
+      }
+    }
+
+    // Assume it's already a RepoTrade-like object
+    return {
+      id: obj.id,
+      market: obj.market ?? 'All',
+      symbol: obj.symbol,
+      entryDate: obj.entryDate,
+      size: obj.size,
+      price: obj.price,
+      side: obj.side,
+      status: obj.status ?? 'OPEN',
+      pnl: obj.pnl ?? 0,
+      notes: obj.notes,
+      entry: obj.entry,
+      sl: obj.sl,
+      tp1: obj.tp1,
+      tp2: obj.tp2,
+      tp3: obj.tp3,
+      margin: obj.margin,
+      leverage: obj.leverage
+    }
+  }
+
+  async save(trade: any): Promise<void> {
+    const repoTrade = this.toRepoTrade(trade)
+    this.trades.push({ ...repoTrade })
   }
 
   async getAll(): Promise<RepoTrade[]> {
+    // always return primitives (defensive copy)
     return this.trades.map(t => ({ ...t }))
   }
 
-  async update(trade: RepoTrade): Promise<void> {
-    const idx = this.trades.findIndex(t => t.id === trade.id)
-    if (idx >= 0) this.trades[idx] = { ...this.trades[idx], ...trade }
+  async update(trade: any): Promise<void> {
+    const repoTrade = this.toRepoTrade(trade)
+    const idx = this.trades.findIndex(t => t.id === repoTrade.id)
+    if (idx >= 0) this.trades[idx] = { ...this.trades[idx], ...repoTrade }
   }
 }
 

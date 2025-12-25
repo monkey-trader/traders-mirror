@@ -244,6 +244,35 @@ export function TradeJournal() {
     clearUndo()
   }
 
+  // helper: ISO string -> datetime-local format used by input[type=datetime-local]
+  const toDatetimeLocal = (iso?: string) => {
+    const d = iso ? new Date(iso) : new Date()
+    const pad = (n: number) => String(n).padStart(2, '0')
+    const yyyy = d.getFullYear()
+    const mm = pad(d.getMonth() + 1)
+    const dd = pad(d.getDate())
+    const hh = pad(d.getHours())
+    const min = pad(d.getMinutes())
+    return `${yyyy}-${mm}-${dd}T${hh}:${min}`
+  }
+
+  // PREFILL the New Trade form from an analysis suggestion (no auto-persist)
+  const handleCreateTradeFromAnalysis = async (s: import('@/presentation/analysis/Analysis').AnalysisSuggestion) => {
+    const entryDateLocal = toDatetimeLocal(s.entryDate)
+    setForm({
+      symbol: s.symbol,
+      entryDate: entryDateLocal,
+      size: s.size ?? 1,
+      price: s.price ?? 0,
+      side: (s.side ?? 'LONG') as SideValue,
+      notes: `Suggested from analysis (${s.market ?? 'All'})`
+    })
+    // switch to list view so the user can review the New Trade form in the left column
+    setTradesCardTab('list')
+    setMarketFilter(s.market ?? 'All')
+    setSelectedId(null)
+  }
+
   return (
     <>
       <div className={styles.headerRow}>
@@ -356,7 +385,7 @@ export function TradeJournal() {
                   key: 'analysis',
                   title: 'Analyse',
                   render: () => (
-                    <Analysis />
+                    <Analysis onCreateTradeSuggestion={handleCreateTradeFromAnalysis} />
                   )
                 }
               ]}
