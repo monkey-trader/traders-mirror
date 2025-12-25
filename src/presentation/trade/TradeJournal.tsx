@@ -162,7 +162,8 @@ export function TradeJournal() {
     // keep trades visible while their status field is being edited so the row doesn't vanish mid-edit
     // and also keep pinned ids visible for a short time after status changes
     return positions.filter(t => {
-      const isOpenForFilter = t.status === 'OPEN' && (marketFilter === 'All' || t.market === marketFilter)
+      // Show OPEN and FILLED in the Positions panel; respect market filter
+      const isOpenForFilter = (t.status === 'OPEN' || t.status === 'FILLED') && (marketFilter === 'All' || t.market === marketFilter)
       const beingEdited = !!(editFields[t.id]?.status)
       const pinned = pinnedStatusIds.has(t.id)
       return isOpenForFilter || beingEdited || pinned

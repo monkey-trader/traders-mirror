@@ -29,7 +29,6 @@ export function StatusSelect({ value, onChange, ariaLabel, compact = false, colo
       value={value}
       onChange={e => {
         const v = e.target.value as StatusValue
-        console.log('[StatusSelect] onChange ->', v)
         onChange(v)
         // blur immediately after selection so parent onBlur handlers run and edit mode is closed reliably
         try { (e.currentTarget as HTMLSelectElement).blur() } catch (err) { /* ignore */ }
