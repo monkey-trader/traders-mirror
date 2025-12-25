@@ -314,7 +314,7 @@ export function TradeJournal() {
   return (
     <>
       <div className={styles.headerRow}>
-        <h2 className={styles.title}>Trading Journal - Demo</h2>
+        <h2 className={styles.title}>Trading Journal</h2>
         <div className={styles.controls}>
           {/* moved market filters next to Trades title */}
         </div>
@@ -411,7 +411,7 @@ export function TradeJournal() {
 
                 <div className={styles.actions} style={{ marginTop: 8 }}>
                   <Button variant="primary">Add Trade</Button>
-                  <Button variant="ghost">Reset</Button>
+                  <Button variant="ghost" onClick={() => { setForm({ symbol: '', entryDate: '', size: 0, price: 0, side: 'LONG', market: '', notes: '' }); setFormErrors({}) }}>Reset</Button>
                 </div>
               </form>
             </div>
