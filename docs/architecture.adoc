@@ -14,7 +14,11 @@ Die Anwendung folgt dem Onion-Architecture- und Domain-Driven-Design-Ansatz. Die
 * Infrastructure – Adapter, Repositories, externe Implementierungen
 * Presentation – React UI, Form-Validation, Error-Mapping
 
+ifdef::plantuml[]
 include::diagrams/architecture.puml[]
+else[]
+image::diagrams/architecture.png[Architecture diagram,alt="Architecture diagram"]
+endif::[]
 
 == Domäne
 Die Domäne enthält die fachlichen Konzepte rund um einen Trade:
@@ -31,7 +35,11 @@ Use-Cases (z. B. `TradeService`) orchestrieren Domänenobjekte:
 * Annahme von stabilen primitiven DTOs (z. B. `TradeInput`) — Factories normalisieren und bauen Domänenobjekte
 * Rückgabe von stabilen primitiven DTOs via `toDTO` (Application bleibt unabhängig von VOs)
 
+ifdef::plantuml[]
 include::diagrams/components.puml[]
+else[]
+image::diagrams/components.png[Components diagram,alt="Components diagram"]
+endif::[]
 
 == Infrastructure Layer
 Adapter implementieren Ports (Repository Interfaces). Aktuelles Beispiel: `InMemoryTradeRepository`.
@@ -43,7 +51,11 @@ React-Komponenten rendern UI und binden Validierung + ErrorMapper ein. Wichtige 
 * ErrorMapper: mappt `instanceof` Domain-Errors zu field/global messages
 * Keine Business-Logik in UI
 
+ifdef::plantuml[]
 include::diagrams/sequence.puml[]
+else[]
+image::diagrams/sequence.png[Sequence diagram,alt="Sequence diagram"]
+endif::[]
 
 == How to render diagrams
 Dieses Repo verwendet PlantUML-Dateien unter `docs/diagrams/*.puml`.
@@ -71,4 +83,8 @@ Das Erfassen und Analysieren von Trades liefert messbare Erkenntnisse, mit denen
 * Risikokontrolle: Margin-/Leverage-Auswertung und Stop-Loss-Effizienz
 * Prozessverbesserung: Identifikation von Systemen/Setups mit wiederkehrender Profitabilität
 
+ifdef::plantuml[]
 include::diagrams/usecases.puml[]
+else[]
+image::diagrams/usecases.png[Use cases diagram,alt="Use cases diagram"]
+endif::[]
