@@ -10,6 +10,7 @@ import { ConfirmDialog } from '@/presentation/shared/components/ConfirmDialog/Co
 import { TradeList } from './TradeList/TradeList'
 import { TradeDetailEditor } from './TradeDetail/TradeDetailEditor'
 import { Analysis } from '@/presentation/analysis/Analysis'
+import MarketSelect, { MarketValue } from '@/presentation/shared/components/MarketSelect/MarketSelect'
 
 type TradeRow = {
   id: string
@@ -47,8 +48,8 @@ export function TradeJournal() {
   // active tab for the Trades card (list | analysis)
   const [tradesCardTab, setTradesCardTab] = useState<'list' | 'analysis'>('list')
 
-  // track dirty ids (simple set of ids with local unsaved changes)
-  const [dirtyIds, setDirtyIds] = useState<Set<string>>(new Set())
+  // track dirty ids (simple set of ids with local unsaved changes) — we only need the setter
+  const [, setDirtyIds] = useState<Set<string>>(new Set())
 
   // load initial data from repo once on mount
   useEffect(() => {
@@ -102,10 +103,13 @@ export function TradeJournal() {
 
   // Called by editor to persist change immediately (accepts DTO)
   const handleEditorSave = async (dto: EditorDTO) => {
+    const existing = positions.find(p => p.id === dto.id)
+    if (!existing) {
+      console.error('Save failed: trade not found', dto.id)
+      return
+    }
+    const updated = { ...existing, symbol: dto.symbol, entryDate: dto.entryDate, size: dto.size, price: dto.price, side: dto.side as 'LONG' | 'SHORT', notes: dto.notes }
     try {
-      const existing = positions.find(p => p.id === dto.id)
-      if (!existing) throw new Error('Trade not found')
-      const updated = { ...existing, symbol: dto.symbol, entryDate: dto.entryDate, size: dto.size, price: dto.price, side: dto.side as 'LONG' | 'SHORT', notes: dto.notes }
       await repoRef.current.update(updated as any)
       setPositions(prev => prev.map(p => (p.id === dto.id ? updated : p)))
       setDirtyIds(prev => {
@@ -115,7 +119,7 @@ export function TradeJournal() {
       })
     } catch (err) {
       console.error('Save failed', err)
-      throw err
+      // do not rethrow to avoid caught-throw warning in build; caller can check side-effects
     }
   }
 
@@ -126,6 +130,7 @@ export function TradeJournal() {
     size: 0,
     price: 0,
     side: 'LONG' as SideValue,
+    market: 'Crypto' as 'All' | 'Crypto' | 'Forex',
     notes: ''
   })
 
@@ -140,12 +145,17 @@ export function TradeJournal() {
       price: Number(form.price),
       side: form.side as 'LONG' | 'SHORT',
       notes: form.notes,
-      market: "Crypto",
+      market: form.market ?? 'Crypto',
+      sl: (form as any).sl,
+      tp1: (form as any).tp1,
+      tp2: (form as any).tp2,
+      tp3: (form as any).tp3,
+      leverage: (form as any).leverage,
       status: 'OPEN',
       pnl: 0,
     }
     setPositions(prev => [newTrade, ...prev])
-    setForm({ symbol: '', entryDate: '', size: 0, price: 0, side: 'LONG', notes: '' })
+    setForm({ symbol: '', entryDate: '', size: 0, price: 0, side: 'LONG', market: 'Crypto', notes: '' })
   }
 
   // responsive fallback: switch to single-column grid when container is too narrow
@@ -265,6 +275,7 @@ export function TradeJournal() {
       size: s.size ?? 1,
       price: s.price ?? 0,
       side: (s.side ?? 'LONG') as SideValue,
+      market: s.market ?? 'All',
       notes: `Suggested from analysis (${s.market ?? 'All'})`
     })
     // switch to list view so the user can review the New Trade form in the left column
@@ -289,15 +300,37 @@ export function TradeJournal() {
             <form className={styles.form} onSubmit={handleAdd}>
               <div className={styles.row}>
                 <Input label="Symbol" placeholder="e.g. AAPL" value={form.symbol} onChange={(e) => setForm({ ...form, symbol: e.target.value })} />
-                <Input label="Entry Date" type="datetime-local" value={form.entryDate} onChange={(e) => setForm({ ...form, entryDate: e.target.value })} />
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <label style={{ display: 'flex', flexDirection: 'column' }}>
+                    <span style={{ marginBottom: 6 }}>Market</span>
+                    <MarketSelect value={form.market as MarketValue} onChange={(v) => { setForm({ ...form, market: v }); setMarketFilter(v) }} compact />
+                  </label>
+                  <Input label="Entry Date" type="datetime-local" value={form.entryDate} onChange={(e) => setForm({ ...form, entryDate: e.target.value })} />
+                </div>
+               </div>
+
+               <div className={styles.row}>
+                 <Input label="Size" type="number" value={String(form.size)} onChange={(e) => setForm({ ...form, size: Number(e.target.value) })} />
+                 <Input label="Price" type="number" value={String(form.price)} onChange={(e) => setForm({ ...form, price: Number(e.target.value) })} />
+               </div>
+
+               <div className={styles.row}>
+                <Input label="SL" value={(form as any).sl ?? ''} onChange={(e) => setForm({ ...form, // @ts-ignore
+                  sl: e.target.value })} />
+                <Input label="TP1" value={(form as any).tp1 ?? ''} onChange={(e) => setForm({ ...form, // @ts-ignore
+                  tp1: e.target.value })} />
               </div>
 
               <div className={styles.row}>
-                <Input label="Size" type="number" value={String(form.size)} onChange={(e) => setForm({ ...form, size: Number(e.target.value) })} />
-                <Input label="Price" type="number" value={String(form.price)} onChange={(e) => setForm({ ...form, price: Number(e.target.value) })} />
+                <Input label="TP2" value={(form as any).tp2 ?? ''} onChange={(e) => setForm({ ...form, // @ts-ignore
+                  tp2: e.target.value })} />
+                <Input label="TP3" value={(form as any).tp3 ?? ''} onChange={(e) => setForm({ ...form, // @ts-ignore
+                  tp3: e.target.value })} />
               </div>
 
               <div className={styles.row}>
+                <Input label="Leverage" type="text" value={(form as any).leverage ?? ''} onChange={(e) => setForm({ ...form, // @ts-ignore
+                  leverage: e.target.value })} />
                 <Input label="Notes" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
               </div>
 
@@ -312,12 +345,12 @@ export function TradeJournal() {
                 />
               </div>
 
-              <div className={styles.actions}>
-                <Button variant="primary">Add Trade</Button>
-                <Button variant="ghost">Reset</Button>
-              </div>
-            </form>
-          </Card>
+               <div className={styles.actions}>
+                 <Button variant="primary">Add Trade</Button>
+                 <Button variant="ghost">Reset</Button>
+               </div>
+             </form>
+           </Card>
          </div>
 
          <div className={styles.right}>

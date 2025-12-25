@@ -1,0 +1,33 @@
+:global(:root) {
+  --market-fore: #60f0d8;
+  --market-crypto: #7c5cff;
+  --market-all: #2b2f36;
+}
+
+.container {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.badge {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.02);
+  color: var(--muted);
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid rgba(255,255,255,0.03);
+}
+
+.badge.active {
+  color: var(--text);
+  background: linear-gradient(90deg, rgba(34,193,195,0.12), rgba(124,92,255,0.12));
+  box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+}
+
+.compact {
+  padding: 4px 8px;
+  font-size: 13px;
+}
+

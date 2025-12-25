@@ -4,6 +4,8 @@ import { Size } from '../valueObjects/Size'
 import { EntryDate } from '../valueObjects/EntryDate'
 import { TradeSymbol } from '../valueObjects/TradeSymbol'
 import { Side } from '../valueObjects/Side'
+import { Market } from '../valueObjects/Market'
+import { Leverage } from '../valueObjects/Leverage'
 
 export type TradeInput = {
   id: string
@@ -13,6 +15,12 @@ export type TradeInput = {
   price: number
   side: string
   notes?: string
+  market?: string
+  sl?: number | string
+  tp1?: number | string
+  tp2?: number | string
+  tp3?: number | string
+  leverage?: string
 }
 
 export class TradeFactory {
@@ -24,7 +32,13 @@ export class TradeFactory {
       new Size(input.size),
       new Price(input.price),
       new Side(input.side),
-      input.notes
+      new Market(input.market ?? 'All'),
+      input.notes,
+      input.sl ? new Price(Number(input.sl)) : undefined,
+      input.tp1 ? new Price(Number(input.tp1)) : undefined,
+      input.tp2 ? new Price(Number(input.tp2)) : undefined,
+      input.tp3 ? new Price(Number(input.tp3)) : undefined,
+      input.leverage ? new Leverage(input.leverage) : undefined
     )
   }
 
@@ -36,7 +50,13 @@ export class TradeFactory {
       size: trade.size.value,
       price: trade.price.value,
       side: trade.side.value,
-      notes: trade.notes
+      notes: trade.notes,
+      market: trade.market.value,
+      sl: trade.sl?.value,
+      tp1: trade.tp1?.value,
+      tp2: trade.tp2?.value,
+      tp3: trade.tp3?.value,
+      leverage: trade.leverage?.value
     }
   }
 }
