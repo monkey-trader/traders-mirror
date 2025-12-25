@@ -1,0 +1,25 @@
+@startuml
+package Domain {
+  class TradeFactory
+  class Trade
+  class Price
+  class Size
+  class TradeSymbol
+}
+package Application {
+  class TradeService
+}
+package Infrastructure {
+  class InMemoryTradeRepository
+}
+package Presentation {
+  class TradeJournal
+  class TradeDetailEditor
+}
+
+TradeJournal --> TradeService : uses
+TradeService --> TradeFactory : creates/validates
+TradeService --> InMemoryTradeRepository : persists
+InMemoryTradeRepository --> Trade : stores primitives
+
+@enduml

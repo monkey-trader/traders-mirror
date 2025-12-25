@@ -1,0 +1,10 @@
+/* ...existing code... */
+.createBtn {
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, rgba(34,193,195,0.08), rgba(124,92,255,0.08));
+  color: var(--text);
+  border: 1px solid rgba(255,255,255,0.03);
+}
+
+/* ...existing code... */

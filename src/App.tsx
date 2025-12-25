@@ -1,10 +1,39 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { TradeJournal } from '@/presentation/trade/TradeJournal'
+import { Settings } from '@/presentation/settings/Settings'
+import { Layout } from '@/presentation/shared/components/Layout/Layout'
+import { Analysis } from '@/presentation/analysis/Analysis'
 
 function App() {
+  useEffect(() => {
+    // set default theme to nightscope on app load
+    const stored = localStorage.getItem('theme')
+    if (stored) {
+      document.documentElement.setAttribute('data-theme', stored)
+    } else if (!document.documentElement.getAttribute('data-theme')) {
+      document.documentElement.setAttribute('data-theme', 'nightscope')
+    }
+  }, [])
+
+  const [route, setRoute] = useState(() => window.location.hash || '#/journal')
+
+  useEffect(() => {
+    const onHash = () => setRoute(window.location.hash || '#/journal')
+    window.addEventListener('hashchange', onHash)
+    return () => window.removeEventListener('hashchange', onHash)
+  }, [])
+
   return (
-    <div className="app-container">
-      <h1>Traders Mirror</h1>
-    </div>
+    <Layout fullWidth={true}>
+      {/* Simple hash-based routing: #/journal, #/analysis, #/settings */}
+      {route === '#/settings' ? (
+        <Settings />
+      ) : route === '#/analysis' ? (
+        <Analysis />
+      ) : (
+        <TradeJournal />
+      )}
+    </Layout>
   )
 }
 

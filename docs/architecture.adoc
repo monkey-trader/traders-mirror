@@ -1,0 +1,74 @@
+= Architektur (Onion / DDD) for Traders Mirror
+:toc:
+:toc-placement!:
+:icons: font
+
+== Kurze Einführung
+Dieses Dokument beschreibt die Architektur der Anwendung "Traders Mirror". Die App ist ein kleines Trading-Journal, mit dem Nutzer Trades erfassen, bearbeiten und einsehen können. Ziel der Architektur ist: klare Trennung von Verantwortlichkeiten, Testbarkeit und leichtes Ersetzen von Adaptern (z.B. InMemory -> DB).
+
+== Übersicht
+Die Anwendung folgt dem Onion-Architecture- und Domain-Driven-Design-Ansatz. Die Schichten sind:
+
+* Domain – zentrale Geschäftslogik, Entities, Value Objects, Domain-Fehler
+* Application – Use-Cases (Services) fassen Domänenoperationen zusammen
+* Infrastructure – Adapter, Repositories, externe Implementierungen
+* Presentation – React UI, Form-Validation, Error-Mapping
+
+include::diagrams/architecture.puml[]
+
+== Domäne
+Die Domäne enthält die fachlichen Konzepte rund um einen Trade:
+
+* Entities: `Trade` (ID, symbol, entryDate, size, price, side, ...)
+* ValueObjects: `TradeSymbol`, `EntryDate`, `Size`, `Price`, `Side`, `Market`, `Leverage`
+* Domain Errors: typisierte Fehlerklassen (z. B. `SizeMustBePositiveError`, `EntryDateInvalidError`)
+
+Die ValueObjects validieren und normalisieren Eingaben (z. B. Symbol -> uppercase, EntryDate -> ISOString).
+
+== Application Layer
+Use-Cases (z. B. `TradeService`) orchestrieren Domänenobjekte:
+
+* Annahme von stabilen primitiven DTOs (z. B. `TradeInput`) — Factories normalisieren und bauen Domänenobjekte
+* Rückgabe von stabilen primitiven DTOs via `toDTO` (Application bleibt unabhängig von VOs)
+
+include::diagrams/components.puml[]
+
+== Infrastructure Layer
+Adapter implementieren Ports (Repository Interfaces). Aktuelles Beispiel: `InMemoryTradeRepository`.
+
+== Presentation Layer
+React-Komponenten rendern UI und binden Validierung + ErrorMapper ein. Wichtige Punkte:
+
+* Validation: Presentation führt UI-spezifische Validierung (z. B. `validateNewTrade`) und mappt Domain-Errors zu Feldfehlern
+* ErrorMapper: mappt `instanceof` Domain-Errors zu field/global messages
+* Keine Business-Logik in UI
+
+include::diagrams/sequence.puml[]
+
+== How to render diagrams
+Dieses Repo verwendet PlantUML-Dateien unter `docs/diagrams/*.puml`.
+Mit Asciidoctor und dem plantuml-Plugin lassen sich die Diagramme direkt einbetten (z. B. `include::diagrams/architecture.puml[]`).
+
+Beispiel (lokal):
+
+`asciidoctor -r asciidoctor-diagram docs/architecture.adoc`
+
+== Nützliche Pfade im Repo
+* `src/domain/` – Domänenmodelle und VOs
+* `src/application/` – Use-Case Services
+* `src/infrastructure/` – Adapter und Repositories
+* `src/presentation/` – React Komponenten und Validation/ErrorMapper
+
+== Weiterführende Hinweise
+- Tests: Für jede Domänenklasse/Service existieren Vitest-Tests (`src/**/*.test.ts`)
+- Import-Alias: Alle Imports aus `src` verwenden den Alias `@` (Vite/Craco config)
+
+== Use Cases: Warum Analyse & Tracking sinnvoll sind
+Das Erfassen und Analysieren von Trades liefert messbare Erkenntnisse, mit denen Trader ihr Verhalten, Risikomanagement und Performance verbessern können. Wichtige Ziele:
+
+* Transparenz: nachvollziehbare Historie aller offenen und geschlossenen Trades
+* Lernkurve: Muster in Gewinnern/Verlusten erkennen (z. B. über Winrate, durchschnittlichen PnL, Drawdown)
+* Risikokontrolle: Margin-/Leverage-Auswertung und Stop-Loss-Effizienz
+* Prozessverbesserung: Identifikation von Systemen/Setups mit wiederkehrender Profitabilität
+
+include::diagrams/usecases.puml[]

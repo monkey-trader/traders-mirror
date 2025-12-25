@@ -1,0 +1,14 @@
+@startuml
+actor User
+participant "UI / Presentation" as UI
+participant "Application / Services" as App
+participant "Infrastructure / Repo" as Repo
+
+User -> UI: submit new trade form
+UI -> App: TradeService.addTrade(dto)
+App -> Repo: TradeRepository.save(trade)
+Repo --> App: OK
+App --> UI: success
+UI --> User: confirmation
+
+@enduml
