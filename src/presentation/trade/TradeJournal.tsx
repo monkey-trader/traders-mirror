@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { Layout } from '@/presentation/shared/components/Layout/Layout'
 import { Card } from '@/presentation/shared/components/Card/Card'
 import { Button } from '@/presentation/shared/components/Button/Button'
@@ -293,18 +293,18 @@ export function TradeJournal() {
     })
   }
 
-  // Trades nach Markt filtern
-  const trades = useMemo(() => {
-    let filtered = MOCK_TRADES
+  // State für Positionsdaten (editierbar)
+  const [positions, setPositions] = useState<TradeRow[]>(MOCK_TRADES)
+
+  // Trades nach Markt filtern (berechnet aus editable positions)
+  const trades = (() => {
+    let filtered = positions
     if (marketFilter !== 'All') filtered = filtered.filter((t) => t.market === marketFilter)
     if (tradeStatusFilter === 'OPEN') filtered = filtered.filter((t) => t.status === 'OPEN')
     if (tradeStatusFilter === 'CLOSED') filtered = filtered.filter((t) => t.status === 'CLOSED')
     if (tradeStatusFilter === 'FILLED') filtered = filtered.filter((t) => t.status === 'FILLED')
     return filtered
-  }, [marketFilter, tradeStatusFilter])
-
-  // State für Positionsdaten (editierbar)
-  const [positions, setPositions] = useState<TradeRow[]>(MOCK_TRADES)
+  })()
 
   // Editierbare Felder für alle Positions-Spalten
   const [editFields, setEditFields] = useState<{ [tradeId: string]: Partial<Record<keyof TradeRow, boolean>> }>({})
@@ -362,7 +362,7 @@ export function TradeJournal() {
   }
 
   // Für Positions: nur offene Trades des aktuellen Marktes
-  const openPositions = useMemo(() => {
+  const openPositions = (() => {
     // keep trades visible while their status field is being edited so the row doesn't vanish mid-edit
     // and also keep pinned ids visible for a short time after status changes
     return positions.filter(t => {
@@ -371,7 +371,7 @@ export function TradeJournal() {
       const pinned = pinnedStatusIds.has(t.id)
       return isOpenForFilter || beingEdited || pinned
     })
-  }, [marketFilter, positions, editFields, pinnedStatusIds])
+  })()
 
   // responsive fallback: switch to single-column grid when container is too narrow
   const containerRef = useRef<HTMLDivElement | null>(null)
