@@ -1,15 +1,21 @@
 export class Leverage {
-  public readonly value: string
+  public readonly value?: number
 
-  constructor(raw?: string) {
-    if (!raw) {
-      this.value = ''
+  constructor(raw?: number) {
+    if (raw === undefined || raw === null) {
+      this.value = undefined
       return
     }
-    const v = String(raw).trim()
-    // simple normalization: keep as string like '10x' or '5'
-    if (!v) throw new Error('Invalid leverage')
-    this.value = v
+    if (typeof raw !== 'number' || Number.isNaN(raw) || raw <= 0) {
+      throw new LeverageInvalidError(raw)
+    }
+    this.value = raw
   }
 }
 
+export class LeverageInvalidError extends Error {
+  constructor(value: unknown) {
+    super(`Leverage must be a positive number: ${value}`)
+    this.name = 'LeverageInvalidError'
+  }
+}

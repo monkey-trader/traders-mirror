@@ -26,9 +26,9 @@ type TradeRow = {
   notes?: string
   entry?: string
   sl?: number
-  tp1?: string
-  tp2?: string
-  tp3?: string
+  tp1?: number
+  tp2?: number
+  tp3?: number
   margin?: number
   leverage?: number
 }
@@ -134,9 +134,9 @@ export function TradeJournal() {
     status: 'OPEN' | 'CLOSED' | 'FILLED'
     notes: string
     sl?: number
-    tp1?: string
-    tp2?: string
-    tp3?: string
+    tp1?: number
+    tp2?: number
+    tp3?: number
     leverage?: number
     margin?: number
     market?: MarketValue
@@ -330,8 +330,8 @@ export function TradeJournal() {
     setForm({
       symbol: s.symbol,
       entryDate: entryDateLocal,
-      size: s.size ?? 1,
-      price: s.price ?? 0,
+      size: s.size ?? undefined,
+      price: s.price ?? undefined,
       side: (s.side ?? 'LONG') as SideValue,
       market: (s.market ?? '') as MarketValue,
       notes: `Suggested from analysis (${s.market ?? 'unspecified'})`,
@@ -440,8 +440,7 @@ export function TradeJournal() {
                       value={typeof form.margin === 'number' ? String(form.margin) : ''}
                       onChange={(e) => {
                         const v = e.target.value
-                        setForm({ ...form, // @ts-ignore
-                          margin: v === '' ? undefined : Number(v) })
+                        setForm({ ...form, margin: v === '' ? undefined : Number(v) })
                       }}
                       hasError={Boolean(formErrors.margin)}
                       aria-describedby={formErrors.margin ? 'margin-error' : undefined}
@@ -456,8 +455,7 @@ export function TradeJournal() {
                       value={typeof form.leverage === 'number' ? String(form.leverage) : ''}
                       onChange={(e) => {
                         const v = e.target.value
-                        setForm({ ...form, // @ts-ignore
-                          leverage: v === '' ? undefined : Number(v) })
+                        setForm({ ...form, leverage: v === '' ? undefined : Number(v) })
                       }}
                       hasError={Boolean(formErrors.leverage)}
                       aria-describedby={formErrors.leverage ? 'leverage-error' : undefined}
@@ -489,8 +487,7 @@ export function TradeJournal() {
                       value={typeof form.sl === 'number' ? String(form.sl) : ''}
                       onChange={(e) => {
                         const v = e.target.value
-                        setForm({ ...form, // @ts-ignore
-                          sl: v === '' ? undefined : Number(v) })
+                        setForm({ ...form, sl: v === '' ? undefined : Number(v) })
                       }}
                       hasError={Boolean(formErrors.sl)}
                       aria-describedby={formErrors.sl ? 'sl-error' : undefined}
@@ -502,13 +499,12 @@ export function TradeJournal() {
                     <Input
                       id="tp1"
                       label="TP1"
-                      value={(form as any).tp1 ?? ''}
-                      onChange={(e) =>
-                        setForm({
-                          ...form, // @ts-ignore
-                          tp1: e.target.value,
-                        })
-                      }
+                      type="number"
+                      value={typeof form.tp1 === 'number' ? String(form.tp1) : ''}
+                      onChange={(e) => {
+                        const v = e.target.value
+                        setForm({ ...form, tp1: v === '' ? undefined : Number(v) })
+                      }}
                       hasError={Boolean(formErrors.tp1)}
                       aria-describedby={formErrors.tp1 ? 'tp1-error' : undefined}
                     />
@@ -520,13 +516,12 @@ export function TradeJournal() {
                     <Input
                       id="tp2"
                       label="TP2"
-                      value={(form as any).tp2 ?? ''}
-                      onChange={(e) =>
-                        setForm({
-                          ...form, // @ts-ignore
-                          tp2: e.target.value,
-                        })
-                      }
+                      type="number"
+                      value={typeof form.tp2 === 'number' ? String(form.tp2) : ''}
+                      onChange={(e) => {
+                        const v = e.target.value
+                        setForm({ ...form, tp2: v === '' ? undefined : Number(v) })
+                      }}
                       hasError={Boolean(formErrors.tp2)}
                       aria-describedby={formErrors.tp2 ? 'tp2-error' : undefined}
                     />
@@ -537,13 +532,12 @@ export function TradeJournal() {
                     <Input
                       id="tp3"
                       label="TP3"
-                      value={(form as any).tp3 ?? ''}
-                      onChange={(e) =>
-                        setForm({
-                          ...form, // @ts-ignore
-                          tp3: e.target.value,
-                        })
-                      }
+                      type="number"
+                      value={typeof form.tp3 === 'number' ? String(form.tp3) : ''}
+                      onChange={(e) => {
+                        const v = e.target.value
+                        setForm({ ...form, tp3: v === '' ? undefined : Number(v) })
+                      }}
                       hasError={Boolean(formErrors.tp3)}
                       aria-describedby={formErrors.tp3 ? 'tp3-error' : undefined}
                     />
@@ -588,9 +582,9 @@ export function TradeJournal() {
                         market: undefined,
                         notes: '',
                         sl: undefined,
-                        tp1: '',
-                        tp2: '',
-                        tp3: '',
+                        tp1: undefined,
+                        tp2: undefined,
+                        tp3: undefined,
                         leverage: undefined,
                         margin: undefined,
                       })

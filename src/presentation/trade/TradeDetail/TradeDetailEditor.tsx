@@ -37,7 +37,20 @@ export function TradeDetailEditor({ trade, onChange, onSave }: TradeDetailEditor
     }
   }, [local, trade])
 
-  if (!local) return <div className={styles.empty}>No trade selected</div>
+  if (!local) return (
+    <div className={styles.empty}>
+      <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 8 }}>Kein Trade ausgewählt</div>
+      <div style={{ color: 'var(--muted)', marginBottom: 12 }}>
+        Wähle einen Trade aus der Liste, um ihn hier anzusehen oder zu bearbeiten. Du kannst auch einen neuen Trade anlegen und
+        anschließend die Details hier vervollständigen.
+      </div>
+      <ul style={{ color: 'var(--muted)', marginLeft: 16 }}>
+        <li>Ein Trade in der linken Liste anklicken, um Details zu laden.</li>
+        <li>Im Formular links einen neuen Trade anlegen (Add) und hier nachbearbeiten.</li>
+        <li>Änderungen werden beim Verlassen eines Felds (onBlur) validiert und können mit "Save now" gespeichert werden.</li>
+      </ul>
+    </div>
+  )
 
   const fieldChange = <K extends keyof TradeInput>(key: K, value: TradeInput[K]) => {
     setLocal(prev => prev ? ({ ...prev, [key]: value }) : prev)

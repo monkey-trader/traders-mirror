@@ -16,11 +16,11 @@ export type TradeInput = {
   side: string
   notes?: string
   market?: string
-  sl?: number | string
-  tp1?: number | string
-  tp2?: number | string
-  tp3?: number | string
-  leverage?: string
+  sl?: number
+  tp1?: number
+  tp2?: number
+  tp3?: number
+  leverage?: number
 }
 
 export class TradeFactory {
@@ -34,11 +34,11 @@ export class TradeFactory {
       new Side(input.side),
       new Market(input.market ?? 'All'),
       input.notes,
-      input.sl ? new Price(Number(input.sl)) : undefined,
-      input.tp1 ? new Price(Number(input.tp1)) : undefined,
-      input.tp2 ? new Price(Number(input.tp2)) : undefined,
-      input.tp3 ? new Price(Number(input.tp3)) : undefined,
-      input.leverage ? new Leverage(input.leverage) : undefined
+      typeof input.sl === 'number' ? new Price(input.sl) : undefined,
+      typeof input.tp1 === 'number' ? new Price(input.tp1) : undefined,
+      typeof input.tp2 === 'number' ? new Price(input.tp2) : undefined,
+      typeof input.tp3 === 'number' ? new Price(input.tp3) : undefined,
+      typeof input.leverage === 'number' ? new Leverage(input.leverage) : undefined
     )
   }
 
