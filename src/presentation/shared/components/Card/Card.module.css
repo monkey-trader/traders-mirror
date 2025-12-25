@@ -5,11 +5,10 @@
   padding: var(--card-padding, 16px);
   border-radius: var(--card-radius, 12px);
   box-shadow: var(--shadow-1);
-  transition: transform 150ms ease, box-shadow 150ms ease, background 150ms ease;
+  transition: box-shadow 150ms ease, background 150ms ease;
 }
 
 .card:hover {
-  transform: translateY(-4px);
   box-shadow: 0 10px 30px rgba(0,0,0,0.6);
 }
 
