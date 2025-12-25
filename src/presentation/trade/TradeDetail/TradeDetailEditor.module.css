@@ -1,0 +1,164 @@
+.editor {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  color: var(--text);
+  background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
+  border-radius: 10px;
+  padding: 12px;
+  box-shadow: 0 8px 30px rgba(2,8,23,0.45);
+  border: 1px solid rgba(255,255,255,0.02);
+
+  /* animation: subtle fade/slide when editor mounts or content changes */
+  transition: transform 220ms cubic-bezier(.2,.9,.2,1), opacity 180ms ease;
+  will-change: transform, opacity;
+}
+
+/* small state when editor is hidden or not selected */
+.editorHidden {
+  opacity: 0;
+  transform: translateY(8px) scale(0.997);
+  pointer-events: none;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.title {
+  font-weight: 800;
+  font-size: 16px;
+}
+.sub {
+  font-size: 12px;
+  color: var(--muted);
+  margin-left: 8px;
+}
+
+.form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  align-items: start;
+}
+
+.label {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.input {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.03);
+  background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
+  color: var(--text);
+  transition: box-shadow 120ms ease, border-color 120ms ease, transform 120ms ease;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.input:focus {
+  border-color: rgba(124,92,255,0.85);
+  box-shadow: 0 6px 18px rgba(124,92,255,0.06);
+  transform: translateY(-1px);
+}
+
+.textarea {
+  grid-column: 1 / -1;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.03);
+  background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
+  color: var(--text);
+  min-height: 96px;
+  resize: vertical;
+}
+
+.fieldError {
+  color: var(--danger);
+  font-size: 12px;
+  grid-column: 1 / -1;
+  display: block;
+  margin-top: 6px;
+}
+
+.empty {
+  color: var(--muted);
+  padding: 18px;
+  grid-column: 1 / -1;
+}
+
+.saveBtn {
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, var(--primary), #5a3afc);
+  color: white;
+  border: none;
+  cursor: pointer;
+  grid-column: 1 / -1;
+  justify-self: end;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.saveBtn[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.saveBtn:not([disabled]):hover {
+  transform: translateY(-3px) scale(1.01);
+  box-shadow: 0 10px 30px rgba(90,58,252,0.18);
+}
+
+.saveStatus {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* small helpers for field groups inside the editor */
+.field {
+  display: flex;
+  flex-direction: column;
+}
+
+.kvRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.badgeRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* subtle animated highlight when saving */
+.savingPulse {
+  animation: pulse 900ms ease-in-out;
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(124,92,255,0.18); }
+  70% { box-shadow: 0 0 0 12px rgba(124,92,255,0); }
+  100% { box-shadow: 0 0 0 0 rgba(124,92,255,0); }
+}
+
+/* Responsive: single column on small screens */
+@media (max-width: 900px) {
+  .form { grid-template-columns: 1fr }
+  .saveBtn { width: 100%; justify-self: stretch }
+}
+
+/* accessibility: ensure focus outlines remain visible in high-contrast situations */
+.input:focus-visible, .textarea:focus-visible, .saveBtn:focus-visible {
+  outline: 3px solid rgba(124,92,255,0.15);
+  outline-offset: 2px;
+}

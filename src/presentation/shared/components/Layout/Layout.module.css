@@ -10,3 +10,12 @@
   gap: 18px;
 }
 
+/* Page can opt into using the full browser width by passing fullWidth to the Layout. */
+.fullWidth {
+  max-width: none !important; /* remove any max-width clamping from global app-container */
+  width: 100% !important; /* span the full content area */
+  margin: 0 !important; /* remove auto-centering */
+  padding-left: 12px !important; /* small internal padding */
+  padding-right: 12px !important;
+  box-sizing: border-box !important;
+}

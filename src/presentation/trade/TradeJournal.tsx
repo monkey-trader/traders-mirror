@@ -4,11 +4,11 @@ import { Card } from '@/presentation/shared/components/Card/Card'
 import { Button } from '@/presentation/shared/components/Button/Button'
 import { Input } from '@/presentation/shared/components/Input/Input'
 import { SideSelect, SideValue } from '@/presentation/shared/components/SideSelect/SideSelect'
-import { StatusBadge } from '@/presentation/shared/components/StatusBadge/StatusBadge'
 import styles from './TradeJournal.module.css'
 import InMemoryTradeRepository from '@/infrastructure/trade/repositories/InMemoryTradeRepository'
-import { PositionCard } from './components/PositionCard/PositionCard'
 import { ConfirmDialog } from '@/presentation/shared/components/ConfirmDialog/ConfirmDialog'
+import { TradeList } from './TradeList/TradeList'
+import { TradeDetailEditor } from './TradeDetail/TradeDetailEditor'
 
 type TradeRow = {
   id: string
@@ -30,28 +30,21 @@ type TradeRow = {
   leverage?: string
 }
 
-// Mock dataset moved to InMemoryTradeRepository (infrastructure). Use that repo as single source of truth for demo data.
-
 export function TradeJournal() {
   const [marketFilter, setMarketFilter] = useState<'All' | 'Crypto' | 'Forex'>('All')
   const [tradeStatusFilter, setTradeStatusFilter] = useState<'ALL' | 'OPEN' | 'CLOSED' | 'FILLED'>('ALL')
-
-  // expanded rows set
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
-  const toggleRow = (id: string) => {
-    setExpandedIds((prev) => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
-  }
 
   // repository instance (in-memory for demo)
   const repoRef = useRef(new InMemoryTradeRepository())
 
   // State für Positionsdaten (editierbar)
   const [positions, setPositions] = useState<TradeRow[]>([])
+
+  // selected trade id for left-right layout
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+
+  // track dirty ids (simple set of ids with local unsaved changes)
+  const [dirtyIds, setDirtyIds] = useState<Set<string>>(new Set())
 
   // load initial data from repo once on mount
   useEffect(() => {
@@ -75,13 +68,6 @@ export function TradeJournal() {
     return filtered
   })()
 
-  // Editierbare Felder für alle Positions-Spalten
-  const [editFields] = useState<{ [tradeId: string]: Partial<Record<keyof TradeRow, boolean>> }>({})
-  // keep ids pinned temporarily after status change so they don't vanish immediately from open list
-  const [pinnedStatusIds] = useState<Set<string>>(new Set())
-
-  // Note: quick action handlers use the centralized confirm/undo flow below.
-
   // Helper: update trade in state and persist to repo
   const updateTradeById = async (id: string, patch: Partial<TradeRow>) => {
     setPositions(prev => {
@@ -99,6 +85,34 @@ export function TradeJournal() {
       }
       return next
     })
+  }
+
+  // Called by editor when fields change; mark as dirty and update local positions
+  // Editor works with the presentation DTO shape (id, symbol, entryDate, size, price, side, notes)
+  type EditorDTO = { id: string; symbol: string; entryDate: string; size: number; price: number; side: string; notes?: string }
+
+  const handleEditorChange = (dto: EditorDTO) => {
+    setPositions(prev => prev.map(p => (p.id === dto.id ? ({ ...p, symbol: dto.symbol, entryDate: dto.entryDate, size: dto.size, price: dto.price, side: dto.side as 'LONG' | 'SHORT', notes: dto.notes }) : p)))
+    setDirtyIds(prev => new Set(prev).add(dto.id))
+  }
+
+  // Called by editor to persist change immediately (accepts DTO)
+  const handleEditorSave = async (dto: EditorDTO) => {
+    try {
+      const existing = positions.find(p => p.id === dto.id)
+      if (!existing) throw new Error('Trade not found')
+      const updated = { ...existing, symbol: dto.symbol, entryDate: dto.entryDate, size: dto.size, price: dto.price, side: dto.side as 'LONG' | 'SHORT', notes: dto.notes }
+      await repoRef.current.update(updated as any)
+      setPositions(prev => prev.map(p => (p.id === dto.id ? updated : p)))
+      setDirtyIds(prev => {
+        const next = new Set(prev)
+        next.delete(dto.id)
+        return next
+      })
+    } catch (err) {
+      console.error('Save failed', err)
+      throw err
+    }
   }
 
   // Handler für das Hinzufügen eines neuen Trades
@@ -128,11 +142,6 @@ export function TradeJournal() {
     }
     setPositions(prev => [newTrade, ...prev])
     setForm({ symbol: '', entryDate: '', size: 0, price: 0, side: 'LONG', notes: '' })
-  }
-
-  // Hilfsfunktion zum Öffnen der Analyse-Seite im neuen Tab
-  function handleAnalyseClick(symbol: string) {
-    window.open(`/analyse?symbol=${encodeURIComponent(symbol)}`, '_blank', 'noopener,noreferrer');
   }
 
   // responsive fallback: switch to single-column grid when container is too narrow
@@ -178,12 +187,6 @@ export function TradeJournal() {
   // allow undo: store previous trade snapshot and show small undo banner
   const [undoInfo, setUndoInfo] = useState<{ id: string; prev: TradeRow } | null>(null)
   const undoTimerRef = useRef<number | null>(null)
-
-  const openConfirm = (action: 'close' | 'sl-be' | 'sl-hit' | 'toggle-side', id: string) => {
-    setConfirmAction(action)
-    setConfirmTradeId(id)
-    setConfirmOpen(true)
-  }
 
   const clearUndo = () => {
     if (undoTimerRef.current) window.clearTimeout(undoTimerRef.current)
@@ -237,29 +240,8 @@ export function TradeJournal() {
     clearUndo()
   }
 
-  // State and toggler for expanded position cards in the left panel
-  const [expandedPositions, setExpandedPositions] = useState<Set<string>>(new Set())
-  const togglePositionExpand = (id: string) => {
-    setExpandedPositions(prev => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
-  }
-
-  // Open positions for the left panel: show OPEN and FILLED, but keep rows visible while editing or pinned
-  const openPositions = (() => {
-    return positions.filter(t => {
-      const isOpenForFilter = (t.status === 'OPEN' || t.status === 'FILLED') && (marketFilter === 'All' || t.market === marketFilter)
-      const beingEdited = !!(editFields[t.id]?.status)
-      const pinned = pinnedStatusIds.has(t.id)
-      return isOpenForFilter || beingEdited || pinned
-    })
-  })()
-
   return (
-    <Layout>
+    <Layout fullWidth>
       <div className={styles.headerRow}>
         <h2 className={styles.title}>Trading Journal - Demo</h2>
         <div className={styles.controls}>
@@ -287,22 +269,22 @@ export function TradeJournal() {
       </div>
 
       {/* containerRef wraps the grid so we can detect available width */}
-      <div ref={containerRef} className={compactGrid ? `${styles.grid} ${styles.gridCompact}` : styles.grid}>
-        <div className={styles.left}>
+      <div ref={containerRef} className={compactGrid ? `${styles.grid} ${styles.gridCompact} ${styles.fullScreen}` : `${styles.grid} ${styles.fullScreen}`}>
+         <div className={styles.left}>
           <Card title="New Trade">
             <form className={styles.form} onSubmit={handleAdd}>
               <div className={styles.row}>
-                <Input label="Symbol" placeholder="e.g. AAPL" />
-                <Input label="Entry Date" type="datetime-local" />
+                <Input label="Symbol" placeholder="e.g. AAPL" value={form.symbol} onChange={(e) => setForm({ ...form, symbol: e.target.value })} />
+                <Input label="Entry Date" type="datetime-local" value={form.entryDate} onChange={(e) => setForm({ ...form, entryDate: e.target.value })} />
               </div>
 
               <div className={styles.row}>
-                <Input label="Size" type="number" />
-                <Input label="Price" type="number" />
+                <Input label="Size" type="number" value={String(form.size)} onChange={(e) => setForm({ ...form, size: Number(e.target.value) })} />
+                <Input label="Price" type="number" value={String(form.price)} onChange={(e) => setForm({ ...form, price: Number(e.target.value) })} />
               </div>
 
               <div className={styles.row}>
-                <Input label="Notes" />
+                <Input label="Notes" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
               </div>
 
               <div className={styles.row}>
@@ -322,140 +304,55 @@ export function TradeJournal() {
               </div>
             </form>
           </Card>
+         </div>
 
-          <Card title="Positions">
-            <div className={styles.positionsList}>
-              {openPositions.map(t => (
-                <div key={t.id}>
-                  <PositionCard
-                    id={t.id}
-                    symbol={t.symbol}
-                    side={t.side}
-                    size={t.size}
-                    entry={t.entry}
-                    sl={t.sl}
-                    pnl={t.pnl}
-                    onExpand={(id) => togglePositionExpand(id)}
-                    onToggleSide={(id) => openConfirm('toggle-side', id)}
-                    onSetSLtoBE={(id) => openConfirm('sl-be', id)}
-                    onSetSLHit={(id) => openConfirm('sl-hit', id)}
-                    onClose={(id) => openConfirm('close', id)}
-                  />
-                  {expandedPositions.has(t.id) && (
-                    <div className={styles.positionExpandRow}>
-                      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-                        <div>SL: {t.sl ?? '-'}</div>
-                        <div>TP1: {t.tp1 ?? '-'}</div>
-                        <div>TP2: {t.tp2 ?? '-'}</div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-           </Card>
-        </div>
+         <div className={styles.right}>
+            <Card title={`Trades`}>
+              <div className={styles.marketHeader}>{marketFilter}   {trades.length} trades</div>
+              <div className={styles.controls} style={{ marginBottom: 8 }}>
+                <Button variant={tradeStatusFilter === 'ALL' ? 'primary' : 'ghost'} onClick={() => setTradeStatusFilter('ALL')}>All</Button>
+                <Button variant={tradeStatusFilter === 'OPEN' ? 'primary' : 'ghost'} onClick={() => setTradeStatusFilter('OPEN')}>Open</Button>
+                <Button variant={tradeStatusFilter === 'CLOSED' ? 'primary' : 'ghost'} onClick={() => setTradeStatusFilter('CLOSED')}>Closed</Button>
+                <Button variant={tradeStatusFilter === 'FILLED' ? 'primary' : 'ghost'} onClick={() => setTradeStatusFilter('FILLED')}>Filled</Button>
+              </div>
+             <div className={styles.listAndDetailWrap}>
+               <div className={styles.leftPane}>
+                 <TradeList trades={trades} selectedId={selectedId} dirtyIds={dirtyIds} onSelect={(id) => setSelectedId(id)} />
+               </div>
 
-        <div className={styles.right}>
-          <Card title={`Trades`}>
-            <div className={styles.marketHeader}>{marketFilter} — {trades.length} trades</div>
-            <div className={styles.controls} style={{ marginBottom: 8 }}>
-              <Button variant={tradeStatusFilter === 'ALL' ? 'primary' : 'ghost'} onClick={() => setTradeStatusFilter('ALL')}>All</Button>
-              <Button variant={tradeStatusFilter === 'OPEN' ? 'primary' : 'ghost'} onClick={() => setTradeStatusFilter('OPEN')}>Open</Button>
-              <Button variant={tradeStatusFilter === 'CLOSED' ? 'primary' : 'ghost'} onClick={() => setTradeStatusFilter('CLOSED')}>Closed</Button>
-              <Button variant={tradeStatusFilter === 'FILLED' ? 'primary' : 'ghost'} onClick={() => setTradeStatusFilter('FILLED')}>Filled</Button>
-            </div>
-            <div className={styles.tableWrap}>
-              <table className={styles.table}>
-                <thead>
-                  <tr>
-                    <th style={{ width: 40 }}></th>
-                    <th>Time</th>
-                    <th>Symbol</th>
-                    <th>Status</th>
-                    <th>Side</th>
-                    <th>Position</th>
-                    <th>P&L</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {trades.map((t) => {
-                    const isExpanded = expandedIds.has(t.id)
-                    const mainRowClass = [styles.mainRow, styles.mainRowClickable, isExpanded ? styles.mainRowExpanded : '']
-                      .filter(Boolean)
-                      .join(' ')
-
-                    return (
-                      <React.Fragment key={t.id}>
-                        <tr className={mainRowClass} onClick={(e) => { if ((e.target as HTMLElement).tagName !== 'BUTTON' && (e.target as HTMLElement).tagName !== 'A') toggleRow(t.id) }} aria-expanded={isExpanded}>
-                          <td className={styles.chevCell}><span className={styles.chev}>{isExpanded ? '▾' : '▸'}</span></td>
-                          <td>{new Date(t.entryDate).toLocaleDateString()}</td>
-                          <td className={styles.symbolCell}>
-                            <span className={styles.symbol}>{t.symbol}</span>
-                          </td>
-                          <td>
-                            <StatusBadge value={t.status} />
-                          </td>
-                          <td className={t.side === 'LONG' ? styles.sideLong : styles.sideShort}>{t.side}</td>
-                          <td>{t.size}</td>
-                          <td className={t.pnl >= 0 ? styles.plPositive : styles.plNegative}>{t.pnl.toFixed(2)}</td>
-                          <td>
-                            <button
-                              className={styles.analysisBadgeBtn}
-                              type="button"
-                              onClick={() => handleAnalyseClick(t.symbol)}
-                            >
-                              Analyse
-                            </button>
-                          </td>
-                        </tr>
-
-                        {isExpanded && (
-                          <tr className={styles.secondaryRow}>
-                            <td colSpan={8}>
-                              <div className={styles.secondaryDetailsRow}>
-                                <div><strong>SL:</strong> {t.sl ?? '-'}</div>
-                                <div><strong>TP1:</strong> {t.tp1 ?? '-'}</div>
-                                <div><strong>TP2:</strong> {t.tp2 ?? '-'}</div>
-                                <div><strong>TP3:</strong> {t.tp3 ?? '-'}</div>
-                                <div><strong>Margin:</strong> {t.margin ?? '-'}</div>
-                                <div><strong>Leverage:</strong> {t.leverage ?? '-'}</div>
-                              </div>
-                              <div className={styles.secondaryNotesRow}>
-                                <strong>Notes:</strong> {t.notes ?? '-'}
-                              </div>
-                            </td>
-                          </tr>
-                        )}
-                      </React.Fragment>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </Card>
-        </div>
-      </div>
-
-      <ConfirmDialog
-        open={confirmOpen}
-        onConfirm={handleConfirm}
-        onCancel={handleCancelConfirm}
-        title="Bestätigung erforderlich"
-        message={`Sind Sie sicher, dass Sie diese Aktion durchführen möchten?`}
-        confirmLabel="Ja"
-        cancelLabel="Abbrechen"
-      />
-
-      {undoInfo && (
-        <div className={styles.undoBanner}>
-          <div className={styles.undoContent}>
-            <div>Aktion durchgeführt — Rückgängig möglich</div>
-            <Button variant="ghost" onClick={handleUndo}>Rückgängig</Button>
+               <div className={styles.rightPane}>
+                 <TradeDetailEditor
+                   trade={(() => {
+                     const p = positions.find(p => p.id === selectedId)
+                     return p ? { id: p.id, symbol: p.symbol, entryDate: p.entryDate, size: p.size, price: p.price, side: p.side, notes: p.notes } : null
+                   })()}
+                   onChange={(dto) => handleEditorChange(dto)}
+                   onSave={(dto) => handleEditorSave(dto)}
+                 />
+               </div>
+              </div>
+            </Card>
           </div>
         </div>
-      )}
-    </Layout>
-  )
-}
+
+       <ConfirmDialog
+         open={confirmOpen}
+         onConfirm={handleConfirm}
+         onCancel={handleCancelConfirm}
+         title="Bestätigung erforderlich"
+         message={`Sind Sie sicher, dass Sie diese Aktion durchführen möchten?`}
+         confirmLabel="Ja"
+         cancelLabel="Abbrechen"
+       />
+
+       {undoInfo && (
+         <div className={styles.undoBanner}>
+           <div className={styles.undoContent}>
+             <div>Aktion durchgeführt — Rückgängig möglich</div>
+             <Button variant="ghost" onClick={handleUndo}>Rückgängig</Button>
+           </div>
+         </div>
+       )}
+     </Layout>
+   )
+ }

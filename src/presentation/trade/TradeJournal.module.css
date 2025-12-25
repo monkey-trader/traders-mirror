@@ -1,3 +1,86 @@
+:global(:root) {
+  /* dark trading dashboard palette (local overrides) */
+  --bg: #07101a;
+  --card-bg: #0f1720;
+  --text: #e6eef8;
+  --muted: #9aa6b2;
+  --primary: #7c5cff;
+  --accent: #22c1c3; /* teal-ish */
+  --danger: #ff6b6b;
+  --muted-border: rgba(255,255,255,0.04);
+}
+
+/* New layout wrapper for list + detail inside the right column */
+.listAndDetailWrap {
+  display: grid;
+  grid-template-columns: 360px 1fr; /* fixed left list, flexible right detail */
+  gap: 16px;
+  align-items: start;
+  width: 100%;
+}
+
+.leftPane {
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border-radius: 10px;
+  padding: 10px;
+  min-height: 420px;
+  box-shadow: 0 6px 24px rgba(2,8,23,0.5);
+}
+
+.rightPane {
+  background: linear-gradient(180deg, rgba(10,14,18,0.6), rgba(6,10,14,0.4));
+  border-radius: 10px;
+  padding: 12px;
+  min-height: 420px;
+  box-shadow: 0 6px 24px rgba(2,8,23,0.35);
+}
+
+/* tweak existing left/right panels to be darker and compact */
+.left {
+  background: linear-gradient(180deg, rgba(6,10,14,0.95), rgba(6,10,14,0.9));
+  padding: 12px;
+  border-radius: 12px;
+}
+
+.right {
+  background: transparent;
+  padding: 6px 0;
+}
+
+/* make table area darker and more subtle */
+.table {
+  background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
+  border-radius: 8px;
+  color: var(--text);
+}
+
+.table th, .table td { color: var(--muted); }
+
+/* compact list area inside leftPane */
+.positionsList {
+  max-height: calc(68vh - 120px);
+  overflow: auto;
+  padding-right: 6px;
+}
+
+/* subtle scrollbar style for modern look (webkit browsers) */
+.positionsList::-webkit-scrollbar {
+  width: 8px;
+}
+.positionsList::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.04);
+  border-radius: 6px;
+}
+
+/* small responsive adjustment */
+@media (max-width: 980px) {
+  .listAndDetailWrap {
+    grid-template-columns: 1fr; /* stack vertically on small widths */
+  }
+  .leftPane { order: 1 }
+  .rightPane { order: 2 }
+}
+
 .grid {
   display: grid;
   /* left column flexible but constrained, right column uses remaining space */
@@ -551,4 +634,63 @@
   background: linear-gradient(90deg, #60a5fa 60%, #dbeafe 100%);
   box-shadow: 0 4px 16px rgba(59,130,246,0.10);
   transform: translateY(-2px) scale(1.04);
+}
+
+/* Ensure editor inside rightPane stretches nicely */
+.rightPane .editor {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+/* make the right column card content scrollable when content grows */
+.rightPane {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow: hidden;
+}
+
+.rightPane .tableWrap, .rightPane > * {
+  overflow: auto;
+}
+
+/* keep a nice margin between list and detail on small screens */
+@media (max-width: 980px) {
+  .listAndDetailWrap { gap: 10px }
+  .leftPane, .rightPane { padding: 10px }
+}
+
+/* Fullscreen variant for the main grid: use available viewport height and allow left/right panes to scroll independently */
+.fullScreen {
+  min-height: calc(100vh - 80px); /* account for app header bar height — adjust if needed */
+  height: calc(100vh - 80px);
+}
+
+.fullScreen .left, .fullScreen .right {
+  min-height: 0; /* allow flex children to size correctly inside the grid */
+}
+
+/* make left and right columns scroll independently */
+.fullScreen .left {
+  overflow: auto;
+  max-height: 100%;
+}
+
+.fullScreen .right {
+  overflow: auto;
+  max-height: 100%;
+}
+
+/* ensure inner cards stretch to fill column height when needed */
+.fullScreen .left > * , .fullScreen .right > * {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* ensure tableWrap inside right column scrolls properly when fullScreen */
+.fullScreen .right .tableWrap {
+  max-height: calc(100vh - 220px);
 }
