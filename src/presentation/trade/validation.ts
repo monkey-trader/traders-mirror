@@ -8,6 +8,9 @@ export type TradeForm = {
   price: number
   side: string
   market: MarketValue
+  sl?: number
+  margin?: number
+  leverage?: number
 }
 
 export type ValidationResult = { field?: string; message: string } | null
@@ -22,10 +25,10 @@ export function validateNewTrade(input: TradeForm): ValidationResult[] {
   } else if (isNaN(Date.parse(input.entryDate))) {
     errors.push({ field: 'entryDate', message: 'Entry Date ist ungültig' })
   }
-  if (typeof input.price !== 'number' || Number.isNaN(input.price) || input.price <= 0) {
+  if (Number.isNaN(input.price) || input.price <= 0) {
     errors.push({ field: 'price', message: 'Preis muss eine positive Zahl sein' })
   }
-  if (typeof input.size !== 'number' || Number.isNaN(input.size) || input.size <= 0) {
+  if (Number.isNaN(input.size) || input.size <= 0) {
     errors.push({ field: 'size', message: 'Größe muss positiv sein' })
   }
   if (!input.side || (input.side !== 'LONG' && input.side !== 'SHORT')) {
@@ -34,6 +37,23 @@ export function validateNewTrade(input: TradeForm): ValidationResult[] {
   if (!input.market || (input.market !== 'Forex' && input.market !== 'Crypto')) {
     errors.push({ field: 'market', message: 'Bitte Markt auswählen' })
   }
+  // New required fields: SL, Margin, Leverage (now typed as numbers)
+  if (typeof input.sl !== 'number' || Number.isNaN(input.sl)) {
+    errors.push({ field: 'sl', message: 'Stop Loss (SL) ist erforderlich' })
+  }
+
+  if (typeof input.margin !== 'number' || Number.isNaN(input.margin)) {
+    errors.push({ field: 'margin', message: 'Margin ist erforderlich' })
+  } else if (input.margin <= 0) {
+    errors.push({ field: 'margin', message: 'Margin muss eine positive Zahl sein' })
+  }
+
+  if (typeof input.leverage !== 'number' || Number.isNaN(input.leverage)) {
+    errors.push({ field: 'leverage', message: 'Leverage ist erforderlich' })
+  } else if (input.leverage <= 0) {
+    errors.push({ field: 'leverage', message: 'Leverage muss eine positive Zahl sein' })
+  }
+
   return errors
 }
 
@@ -48,10 +68,10 @@ export function validateTrade(input: TradeInput): Record<string, string | undefi
   } else if (isNaN(Date.parse(String(input.entryDate)))) {
     out.entryDate = 'Entry Date ist ungültig'
   }
-  if (typeof input.price !== 'number' || Number.isNaN(input.price) || input.price <= 0) {
+  if (Number.isNaN(input.price as number) || (input.price as number) <= 0) {
     out.price = 'Preis muss eine positive Zahl sein'
   }
-  if (typeof input.size !== 'number' || Number.isNaN(input.size) || input.size <= 0) {
+  if (Number.isNaN(input.size as number) || (input.size as number) <= 0) {
     out.size = 'Größe muss positiv sein'
   }
   if (!input.side || (input.side !== 'LONG' && input.side !== 'SHORT')) {
@@ -63,6 +83,20 @@ export function validateTrade(input: TradeInput): Record<string, string | undefi
     if (m !== 'Forex' && m !== 'Crypto' && m !== 'All' && m !== '') {
       out.market = 'Ungültiger Markt'
     }
+  }
+  // Require SL, margin, leverage in detail editor as numbers
+  if (typeof (input as any).sl !== 'number' || Number.isNaN((input as any).sl)) {
+    out.sl = 'Stop Loss (SL) ist erforderlich'
+  }
+  if (typeof (input as any).margin !== 'number' || Number.isNaN((input as any).margin)) {
+    out.margin = 'Margin ist erforderlich'
+  } else if ((input as any).margin <= 0) {
+    out.margin = 'Margin muss eine positive Zahl sein'
+  }
+  if (typeof (input as any).leverage !== 'number' || Number.isNaN((input as any).leverage)) {
+    out.leverage = 'Leverage ist erforderlich'
+  } else if ((input as any).leverage <= 0) {
+    out.leverage = 'Leverage muss eine positive Zahl sein'
   }
   return out
 }

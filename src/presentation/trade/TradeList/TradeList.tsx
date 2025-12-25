@@ -1,9 +1,19 @@
 import React from 'react'
-import type { TradeInput } from '@/domain/trade/entities/TradeFactory'
+// Use a lightweight presentation DTO here (avoid coupling to domain TradeInput)
+export type TradeListItem = {
+  id: string
+  symbol: string
+  entryDate: string
+  size: number
+  price: number
+  side: string
+  notes?: string
+}
+
 import styles from './TradeList.module.css'
 
 export type TradeListProps = {
-  trades: TradeInput[]
+  trades: TradeListItem[]
   selectedId?: string | null
   onSelect: (id: string) => void
 }

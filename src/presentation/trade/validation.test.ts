@@ -9,7 +9,10 @@ describe('validateNewTrade', () => {
       size: 1,
       price: 100,
       side: 'LONG',
-      market: 'Crypto'
+      market: 'Crypto',
+      sl: 10,
+      margin: 100,
+      leverage: 2
     }
     const errors = validateNewTrade(input as any)
     expect(errors).toEqual([])
@@ -41,5 +44,19 @@ describe('validateNewTrade', () => {
     expect(errors.some(e => e && e.field === 'size')).toBeTruthy()
     expect(errors.some(e => e && e.field === 'price')).toBeTruthy()
   })
-})
 
+  it('returns errors when sl/margin/leverage missing', () => {
+    const input = {
+      symbol: 'AAPL',
+      entryDate: new Date().toISOString(),
+      size: 1,
+      price: 100,
+      side: 'LONG',
+      market: 'Crypto'
+    }
+    const errors = validateNewTrade(input as any)
+    expect(errors.some(e => e && e.field === 'sl')).toBeTruthy()
+    expect(errors.some(e => e && e.field === 'margin')).toBeTruthy()
+    expect(errors.some(e => e && e.field === 'leverage')).toBeTruthy()
+  })
+})

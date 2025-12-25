@@ -25,12 +25,12 @@ type TradeRow = {
   pnl: number
   notes?: string
   entry?: string
-  sl?: string
+  sl?: number
   tp1?: string
   tp2?: string
   tp3?: string
-  margin?: string
-  leverage?: string
+  margin?: number
+  leverage?: number
 }
 
 export function TradeJournal() {
@@ -128,25 +128,25 @@ export function TradeJournal() {
   type NewTradeForm = {
     symbol: string
     entryDate: string
-    size: number
-    price: number
+    size?: number
+    price?: number
     side: SideValue
     status: 'OPEN' | 'CLOSED' | 'FILLED'
     notes: string
-    sl?: string
+    sl?: number
     tp1?: string
     tp2?: string
     tp3?: string
-    leverage?: string
-    margin?: string
+    leverage?: number
+    margin?: number
     market?: MarketValue
   }
 
   const [form, setForm] = useState<NewTradeForm>({
     symbol: '',
     entryDate: '',
-    size: 0,
-    price: 0,
+    size: undefined,
+    price: undefined,
     side: 'LONG',
     status: 'OPEN',
     market: undefined,
@@ -158,14 +158,27 @@ export function TradeJournal() {
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    // helper: parse form values which may be strings -> numbers
+    const parseNumberField = (v: any): number | undefined => {
+      if (v === undefined || v === null) return undefined
+      if (typeof v === 'number') return v
+      const s = String(v).trim()
+      if (s.length === 0) return undefined
+      const n = Number(s)
+      return Number.isNaN(n) ? undefined : n
+    }
+
     // Validate using presentation validation helper (returns array of field errors)
     const toValidate = {
       symbol: form.symbol,
       entryDate: form.entryDate,
-      size: form.size,
-      price: form.price,
+      size: parseNumberField(form.size) ?? undefined,
+      price: parseNumberField(form.price) ?? undefined,
       side: form.side as string,
       market: (form.market ?? '') as MarketValue,
+      sl: form.sl,
+      margin: form.margin,
+      leverage: form.leverage
     }
     const validation = validateNewTrade(toValidate as any)
     const mapped: Record<string, string> = {}
@@ -196,7 +209,7 @@ export function TradeJournal() {
       pnl: 0,
     }
     setPositions(prev => [newTrade, ...prev])
-    setForm({ symbol: '', entryDate: '', size: 0, price: 0, side: 'LONG', status: 'OPEN', market: undefined, notes: '' })
+    setForm({ symbol: '', entryDate: '', size: undefined, price: undefined, side: 'LONG', status: 'OPEN', market: undefined, notes: '' })
     setFormErrors({})
   }
 
@@ -259,7 +272,10 @@ export function TradeJournal() {
       const newSide = prev.side === 'LONG' ? 'SHORT' : 'LONG'
       updateTradeById(id, { side: newSide })
     } else if (action === 'sl-be') {
-      updateTradeById(id, { sl: prev.entry ?? prev.sl, status: 'CLOSED' })
+      // prev.entry may be a string (ISO) or undefined; coerce to number if possible
+      const entryAsNumber = prev.entry ? Number(prev.entry) : undefined
+      const chosenSl = (typeof entryAsNumber === 'number' && !Number.isNaN(entryAsNumber)) ? entryAsNumber : prev.sl
+      updateTradeById(id, { sl: chosenSl, status: 'CLOSED' })
     } else if (action === 'sl-hit') {
       updateTradeById(id, { status: 'CLOSED' })
     } else if (action === 'close') {
@@ -355,12 +371,15 @@ export function TradeJournal() {
                   {/* Row 1: Symbol | Market */}
                   <div className={styles.newTradeField}>
                     <Input
+                      id="symbol"
                       label="Symbol"
-                      placeholder="e.g. AAPL"
+                      placeholder="e.g. BTC"
                       value={form.symbol}
                       onChange={(e) => setForm({ ...form, symbol: e.target.value })}
+                      hasError={Boolean(formErrors.symbol)}
+                      aria-describedby={formErrors.symbol ? 'symbol-error' : undefined}
                     />
-                    {formErrors.symbol && <div className={styles.fieldError}>{formErrors.symbol}</div>}
+                    {formErrors.symbol && <div id="symbol-error" className={styles.fieldError}>{formErrors.symbol}</div>}
                   </div>
 
                   <div className={styles.newTradeField}>
@@ -398,63 +417,90 @@ export function TradeJournal() {
 
                   <div className={styles.newTradeField}>
                     <Input
+                      id="price"
                       label="Entry Price *"
                       type="number"
-                      value={String(form.price)}
-                      onChange={(e) => setForm({ ...form, price: Number(e.target.value) })}
+                      value={typeof form.price === 'number' ? String(form.price) : ''}
+                      onChange={(e) => {
+                        const v = e.target.value
+                        setForm({ ...form, price: v === '' ? undefined : Number(v) })
+                      }}
+                      hasError={Boolean(formErrors.price)}
+                      aria-describedby={formErrors.price ? 'price-error' : undefined}
                     />
-                    {formErrors.price && <div className={styles.fieldError}>{formErrors.price}</div>}
+                    {formErrors.price && <div id="price-error" className={styles.fieldError}>{formErrors.price}</div>}
                   </div>
 
                   {/* Row 3: Margin | Leverage will follow (shifted down) */}
                   <div className={styles.newTradeField}>
                     <Input
-                      label="Margin"
-                      type="text"
-                      value={(form as any).margin ?? ''}
-                      onChange={(e) => setForm({ ...form, // @ts-ignore
-                        margin: e.target.value })}
+                      id="margin"
+                      label="Margin *"
+                      type="number"
+                      value={typeof form.margin === 'number' ? String(form.margin) : ''}
+                      onChange={(e) => {
+                        const v = e.target.value
+                        setForm({ ...form, // @ts-ignore
+                          margin: v === '' ? undefined : Number(v) })
+                      }}
+                      hasError={Boolean(formErrors.margin)}
+                      aria-describedby={formErrors.margin ? 'margin-error' : undefined}
                     />
+                    {formErrors.margin && <div id="margin-error" className={styles.fieldError}>{formErrors.margin}</div>}
                   </div>
                   <div className={styles.newTradeField}>
                     <Input
-                      label="Leverage"
-                      type="text"
-                      value={(form as any).leverage ?? ''}
-                      onChange={(e) =>
-                        setForm({
-                          ...form, // @ts-ignore
-                          leverage: e.target.value,
-                        })
-                      }
+                      id="leverage"
+                      label="Leverage *"
+                      type="number"
+                      value={typeof form.leverage === 'number' ? String(form.leverage) : ''}
+                      onChange={(e) => {
+                        const v = e.target.value
+                        setForm({ ...form, // @ts-ignore
+                          leverage: v === '' ? undefined : Number(v) })
+                      }}
+                      hasError={Boolean(formErrors.leverage)}
+                      aria-describedby={formErrors.leverage ? 'leverage-error' : undefined}
                     />
+                    {formErrors.leverage && <div id="leverage-error" className={styles.fieldError}>{formErrors.leverage}</div>}
                   </div>
                   <div className={styles.newTradeField}>
                     <Input
+                      id="size"
                       label="Position Size *"
                       type="number"
-                      value={String(form.size)}
-                      onChange={(e) => setForm({ ...form, size: Number(e.target.value) })}
+                      value={typeof form.size === 'number' ? String(form.size) : ''}
+                      onChange={(e) => {
+                        const v = e.target.value
+                        setForm({ ...form, size: v === '' ? undefined : Number(v) })
+                      }}
+                      hasError={Boolean(formErrors.size)}
+                      aria-describedby={formErrors.size ? 'size-error' : undefined}
                     />
-                    {formErrors.size && <div className={styles.fieldError}>{formErrors.size}</div>}
+                    {formErrors.size && <div id="size-error" className={styles.fieldError}>{formErrors.size}</div>}
                   </div>
 
                   {/* Row 4: SL | TP1 */}
                   <div className={styles.newTradeField}>
                     <Input
-                      label="SL"
-                      value={(form as any).sl ?? ''}
-                      onChange={(e) =>
-                        setForm({
-                          ...form, // @ts-ignore
-                          sl: e.target.value,
-                        })
-                      }
+                      id="sl"
+                      label="Stop Loss (SL) *"
+                      type="number"
+                      value={typeof form.sl === 'number' ? String(form.sl) : ''}
+                      onChange={(e) => {
+                        const v = e.target.value
+                        setForm({ ...form, // @ts-ignore
+                          sl: v === '' ? undefined : Number(v) })
+                      }}
+                      hasError={Boolean(formErrors.sl)}
+                      aria-describedby={formErrors.sl ? 'sl-error' : undefined}
                     />
+                    {formErrors.sl && <div id="sl-error" className={styles.fieldError}>{formErrors.sl}</div>}
                   </div>
 
                   <div className={styles.newTradeField}>
                     <Input
+                      id="tp1"
                       label="TP1"
                       value={(form as any).tp1 ?? ''}
                       onChange={(e) =>
@@ -463,12 +509,16 @@ export function TradeJournal() {
                           tp1: e.target.value,
                         })
                       }
+                      hasError={Boolean(formErrors.tp1)}
+                      aria-describedby={formErrors.tp1 ? 'tp1-error' : undefined}
                     />
+                    {formErrors.tp1 && <div id="tp1-error" className={styles.fieldError}>{formErrors.tp1}</div>}
                   </div>
 
                   {/* Row 5: TP2 | TP3 */}
                   <div className={styles.newTradeField}>
                     <Input
+                      id="tp2"
                       label="TP2"
                       value={(form as any).tp2 ?? ''}
                       onChange={(e) =>
@@ -477,11 +527,15 @@ export function TradeJournal() {
                           tp2: e.target.value,
                         })
                       }
+                      hasError={Boolean(formErrors.tp2)}
+                      aria-describedby={formErrors.tp2 ? 'tp2-error' : undefined}
                     />
+                    {formErrors.tp2 && <div id="tp2-error" className={styles.fieldError}>{formErrors.tp2}</div>}
                   </div>
 
                   <div className={styles.newTradeField}>
                     <Input
+                      id="tp3"
                       label="TP3"
                       value={(form as any).tp3 ?? ''}
                       onChange={(e) =>
@@ -490,7 +544,10 @@ export function TradeJournal() {
                           tp3: e.target.value,
                         })
                       }
+                      hasError={Boolean(formErrors.tp3)}
+                      aria-describedby={formErrors.tp3 ? 'tp3-error' : undefined}
                     />
+                    {formErrors.tp3 && <div id="tp3-error" className={styles.fieldError}>{formErrors.tp3}</div>}
                   </div>
 
                   {/* Row 6: Notes full-width */}
@@ -524,18 +581,18 @@ export function TradeJournal() {
                       setForm({
                         symbol: '',
                         entryDate: '',
-                        size: 0,
-                        price: 0,
+                        size: undefined,
+                        price: undefined,
                         side: 'LONG',
                         status: 'OPEN',
                         market: undefined,
                         notes: '',
-                        sl: '',
+                        sl: undefined,
                         tp1: '',
                         tp2: '',
                         tp3: '',
-                        leverage: '',
-                        margin: '',
+                        leverage: undefined,
+                        margin: undefined,
                       })
                       setFormErrors({})
                     }}
@@ -616,7 +673,7 @@ export function TradeJournal() {
                     <div className={styles.listAndDetailWrap}>
                       <div className={styles.leftPane}>
                         <TradeList
-                          trades={trades}
+                          trades={trades.map(t => ({ id: t.id, symbol: t.symbol, entryDate: t.entryDate, size: t.size, price: t.price, side: t.side, notes: t.notes }))}
                           selectedId={selectedId}
                           onSelect={(id) => setSelectedId(id)}
                         />

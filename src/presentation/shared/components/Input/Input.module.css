@@ -24,3 +24,12 @@
   border-color: rgba(14,165,164,0.7);
 }
 
+.inputError {
+  border-color: var(--danger);
+  background: rgba(255,107,107,0.03);
+}
+
+.inputError:focus {
+  box-shadow: 0 6px 20px rgba(255,107,107,0.06);
+  border-color: var(--danger);
+}
