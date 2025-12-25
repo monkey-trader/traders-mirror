@@ -199,12 +199,12 @@
 }
 
 .sideLong {
-  color: #69f0ae;
+  color: var(--accent);
   font-weight: 700;
 }
 
 .sideShort {
-  color: #ff6b6b;
+  color: var(--danger);
   font-weight: 700;
 }
 

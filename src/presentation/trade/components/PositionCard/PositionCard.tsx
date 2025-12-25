@@ -17,11 +17,12 @@ export type PositionCardProps = {
 }
 
 export function PositionCard({ id, symbol, side, size, entry, sl, pnl, onExpand, onToggleSide, onClose, onSetSLtoBE, onSetSLHit }: PositionCardProps) {
+  const sideClass = side === 'LONG' ? styles.sideLong : styles.sideShort
   return (
     <div className={styles.card} role="group" aria-labelledby={`pos-${id}-symbol`}>
       <div className={styles.left}>
         <div id={`pos-${id}-symbol`} className={styles.symbol}>{symbol}</div>
-        <div className={styles.meta}>{side} · {size}</div>
+        <div className={[styles.meta, sideClass].filter(Boolean).join(' ')}>{side} · {size}</div>
         {entry && <div className={styles.small}>Entry: {entry}</div>}
         {sl && <div className={styles.small}>SL: {sl}</div>}
       </div>
