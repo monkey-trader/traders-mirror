@@ -4,6 +4,7 @@ import { Card } from '@/presentation/shared/components/Card/Card'
 import { Button } from '@/presentation/shared/components/Button/Button'
 import { Input } from '@/presentation/shared/components/Input/Input'
 import { SideSelect, SideValue } from '@/presentation/shared/components/SideSelect/SideSelect'
+import { validateNewTrade } from '@/presentation/trade/validation'
 import styles from './TradeJournal.module.css'
 import InMemoryTradeRepository from '@/infrastructure/trade/repositories/InMemoryTradeRepository'
 import { ConfirmDialog } from '@/presentation/shared/components/ConfirmDialog/ConfirmDialog'
@@ -152,13 +153,29 @@ export function TradeJournal() {
     notes: ''
   })
 
-  const [, setFormErrors] = useState<Record<string, string>>({})
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({})
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    // Keep validation minimal here (UI-level). Domain validation is handled elsewhere.
-    // We no longer require market in the New Trade form — default to 'Crypto' if unset.
+    // Validate using presentation validation helper (returns array of field errors)
+    const toValidate = {
+      symbol: form.symbol,
+      entryDate: form.entryDate,
+      size: form.size,
+      price: form.price,
+      side: form.side as string,
+      market: (form.market ?? '') as MarketValue,
+    }
+    const validation = validateNewTrade(toValidate as any)
+    const mapped: Record<string, string> = {}
+    validation.forEach((v) => {
+      if (v && v.field) mapped[v.field] = v.message
+    })
+    if (Object.keys(mapped).length > 0) {
+      setFormErrors(mapped)
+      return
+    }
 
     const newTrade: TradeRow = {
       id: crypto.randomUUID(),
@@ -343,6 +360,7 @@ export function TradeJournal() {
                       value={form.symbol}
                       onChange={(e) => setForm({ ...form, symbol: e.target.value })}
                     />
+                    {formErrors.symbol && <div className={styles.fieldError}>{formErrors.symbol}</div>}
                   </div>
 
                   <div className={styles.newTradeField}>
@@ -352,12 +370,16 @@ export function TradeJournal() {
                         value={(form.market ?? '') as MarketValue}
                         onChange={(v) => {
                           setForm({ ...form, market: v })
-                          if (v) setMarketFilter(v)
+                          if (v) {
+                            setMarketFilter(v)
+                            setFormErrors({})
+                          }
                         }}
                         compact
                         showAll={false}
                       />
                     </div>
+                    {formErrors.market && <div className={styles.fieldError}>{formErrors.market}</div>}
                   </div>
 
                   {/* Row 2: Side | Entry Price */}
@@ -376,11 +398,12 @@ export function TradeJournal() {
 
                   <div className={styles.newTradeField}>
                     <Input
-                      label="Entry Price"
+                      label="Entry Price *"
                       type="number"
                       value={String(form.price)}
                       onChange={(e) => setForm({ ...form, price: Number(e.target.value) })}
                     />
+                    {formErrors.price && <div className={styles.fieldError}>{formErrors.price}</div>}
                   </div>
 
                   {/* Row 3: Margin | Leverage will follow (shifted down) */}
@@ -408,11 +431,12 @@ export function TradeJournal() {
                   </div>
                   <div className={styles.newTradeField}>
                     <Input
-                      label="Position Size"
+                      label="Position Size *"
                       type="number"
                       value={String(form.size)}
                       onChange={(e) => setForm({ ...form, size: Number(e.target.value) })}
                     />
+                    {formErrors.size && <div className={styles.fieldError}>{formErrors.size}</div>}
                   </div>
 
                   {/* Row 4: SL | TP1 */}
