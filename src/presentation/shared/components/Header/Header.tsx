@@ -1,5 +1,6 @@
 import React from 'react'
 import styles from './Header.module.css'
+import { ThemeSwitcher } from '../ThemeSwitcher/ThemeSwitcher'
 
 export function Header() {
   return (
@@ -10,7 +11,9 @@ export function Header() {
         <a href="#">Feed</a>
         <a href="#">Settings</a>
       </nav>
+      <div className={styles.controls}>
+        <ThemeSwitcher />
+      </div>
     </header>
   )
 }
-

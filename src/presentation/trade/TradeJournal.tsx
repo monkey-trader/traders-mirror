@@ -3,11 +3,12 @@ import { Layout } from '@/presentation/shared/components/Layout/Layout'
 import { Card } from '@/presentation/shared/components/Card/Card'
 import { Button } from '@/presentation/shared/components/Button/Button'
 import { Input } from '@/presentation/shared/components/Input/Input'
-import { SideSelect, SideBadge, SideValue } from '@/presentation/shared/components/SideSelect/SideSelect'
-import { StatusSelect } from '@/presentation/shared/components/StatusSelect/StatusSelect'
+import { SideSelect, SideValue } from '@/presentation/shared/components/SideSelect/SideSelect'
 import { StatusBadge } from '@/presentation/shared/components/StatusBadge/StatusBadge'
 import styles from './TradeJournal.module.css'
 import InMemoryTradeRepository from '@/infrastructure/trade/repositories/InMemoryTradeRepository'
+import { PositionCard } from './components/PositionCard/PositionCard'
+import { ConfirmDialog } from '@/presentation/shared/components/ConfirmDialog/ConfirmDialog'
 
 type TradeRow = {
   id: string
@@ -75,81 +76,24 @@ export function TradeJournal() {
   })()
 
   // Editierbare Felder für alle Positions-Spalten
-  const [editFields, setEditFields] = useState<{ [tradeId: string]: Partial<Record<keyof TradeRow, boolean>> }>({})
+  const [editFields] = useState<{ [tradeId: string]: Partial<Record<keyof TradeRow, boolean>> }>({})
   // keep ids pinned temporarily after status change so they don't vanish immediately from open list
-  const [pinnedStatusIds, setPinnedStatusIds] = useState<Set<string>>(new Set())
-  const pinnedTimers = useRef<Map<string, number>>(new Map())
+  const [pinnedStatusIds] = useState<Set<string>>(new Set())
 
-  // Handlers for editing fields (restored)
-  const handleEditFieldClick = (tradeId: string, key: keyof TradeRow) => {
-    // open edit mode for field
-    setEditFields(prev => ({
-      ...prev,
-      [tradeId]: { ...prev[tradeId], [key]: true }
-    }))
-  }
-  const handleEditFieldBlur = (tradeId: string, key: keyof TradeRow, value: any) => {
-    // handle blur/update
-    // if status changed and filter would remove the row immediately, pin it briefly so the user sees the change
-    if (key === 'status') {
-      // optimistic update locally and persist using the new state (avoid stale closure)
-      setPositions(prev => {
-        const next = prev.map(row => row.id === tradeId ? { ...row, [key]: value } : row)
-        const updated = next.find(r => r.id === tradeId)
-        if (updated) {
-          ;(async () => {
-            try {
-              await repoRef.current.update(updated as any)
-            } catch (err) {
-              console.error('Failed to persist status update', err)
-            }
-          })()
-        }
-        return next
-      })
+  // Note: quick action handlers use the centralized confirm/undo flow below.
 
-      // if new status is not OPEN, pin for 2s so the row doesn't disappear instantly
-      if (value !== 'OPEN') {
-        setPinnedStatusIds(prev => {
-          const next = new Set(prev)
-          next.add(tradeId)
-          return next
-        })
-        // clear any existing timer
-        const existing = pinnedTimers.current.get(tradeId)
-        if (existing) window.clearTimeout(existing)
-        const id = window.setTimeout(() => {
-          setPinnedStatusIds(prev => {
-            const next = new Set(prev)
-            next.delete(tradeId)
-            return next
-          })
-          pinnedTimers.current.delete(tradeId)
-        }, 2000)
-        pinnedTimers.current.set(tradeId, id)
-      }
-
-      setEditFields(prev => ({
-        ...prev,
-        [tradeId]: { ...prev[tradeId], [key]: false }
-      }))
-      return
-    }
-
-    setEditFields(prev => ({
-      ...prev,
-      [tradeId]: { ...prev[tradeId], [key]: false }
-    }))
-    // optimistic update and persist using the new state to avoid stale reads
+  // Helper: update trade in state and persist to repo
+  const updateTradeById = async (id: string, patch: Partial<TradeRow>) => {
     setPositions(prev => {
-      const next = prev.map(row => (row.id === tradeId ? { ...row, [key]: value } : row))
-      const updated = next.find(r => r.id === tradeId)
+      const next = prev.map(p => (p.id === id ? { ...p, ...patch } : p))
+      // persist updated trade
+      const updated = next.find(t => t.id === id)
       if (updated) {
         ;(async () => {
           try {
             await repoRef.current.update(updated as any)
           } catch (err) {
-            console.error('Failed to persist update', err)
+            console.error('Failed to persist trade update', err)
           }
         })()
       }
@@ -157,18 +101,39 @@ export function TradeJournal() {
     })
   }
 
-  // Für Positions: nur offene Trades des aktuellen Marktes
-  const openPositions = (() => {
-    // keep trades visible while their status field is being edited so the row doesn't vanish mid-edit
-    // and also keep pinned ids visible for a short time after status changes
-    return positions.filter(t => {
-      // Show OPEN and FILLED in the Positions panel; respect market filter
-      const isOpenForFilter = (t.status === 'OPEN' || t.status === 'FILLED') && (marketFilter === 'All' || t.market === marketFilter)
-      const beingEdited = !!(editFields[t.id]?.status)
-      const pinned = pinnedStatusIds.has(t.id)
-      return isOpenForFilter || beingEdited || pinned
-    })
-  })()
+  // Handler für das Hinzufügen eines neuen Trades
+  const [form, setForm] = useState({
+    symbol: '',
+    entryDate: '',
+    size: 0,
+    price: 0,
+    side: 'LONG' as SideValue,
+    notes: ''
+  })
+
+
+  const handleAdd = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const newTrade: TradeRow = {
+      id: crypto.randomUUID(),
+      symbol: form.symbol,
+      entryDate: form.entryDate,
+      size: Number(form.size),
+      price: Number(form.price),
+      side: form.side as 'LONG' | 'SHORT',
+      notes: form.notes,
+      market: "Crypto",
+      status: 'OPEN',
+      pnl: 0,
+    }
+    setPositions(prev => [newTrade, ...prev])
+    setForm({ symbol: '', entryDate: '', size: 0, price: 0, side: 'LONG', notes: '' })
+  }
+
+  // Hilfsfunktion zum Öffnen der Analyse-Seite im neuen Tab
+  function handleAnalyseClick(symbol: string) {
+    window.open(`/analyse?symbol=${encodeURIComponent(symbol)}`, '_blank', 'noopener,noreferrer');
+  }
 
   // responsive fallback: switch to single-column grid when container is too narrow
   const containerRef = useRef<HTMLDivElement | null>(null)
@@ -206,7 +171,73 @@ export function TradeJournal() {
     return () => ro.disconnect()
   }, [])
 
-  // State für expandierte Positionen
+  // Confirmation dialog state for SL/close actions
+   const [confirmOpen, setConfirmOpen] = useState(false)
+   const [confirmTradeId, setConfirmTradeId] = useState<string | null>(null)
+   const [confirmAction, setConfirmAction] = useState<'close' | 'sl-be' | 'sl-hit' | 'toggle-side' | null>(null)
+  // allow undo: store previous trade snapshot and show small undo banner
+  const [undoInfo, setUndoInfo] = useState<{ id: string; prev: TradeRow } | null>(null)
+  const undoTimerRef = useRef<number | null>(null)
+
+  const openConfirm = (action: 'close' | 'sl-be' | 'sl-hit' | 'toggle-side', id: string) => {
+    setConfirmAction(action)
+    setConfirmTradeId(id)
+    setConfirmOpen(true)
+  }
+
+  const clearUndo = () => {
+    if (undoTimerRef.current) window.clearTimeout(undoTimerRef.current)
+    undoTimerRef.current = null
+    setUndoInfo(null)
+  }
+
+  const performAction = (action: NonNullable<typeof confirmAction>, id: string) => {
+    const prev = positions.find(p => p.id === id)
+    if (!prev) return
+    const prevCopy = { ...prev }
+
+    if (action === 'toggle-side') {
+      const newSide = prev.side === 'LONG' ? 'SHORT' : 'LONG'
+      updateTradeById(id, { side: newSide })
+    } else if (action === 'sl-be') {
+      updateTradeById(id, { sl: prev.entry ?? prev.sl, status: 'CLOSED' })
+    } else if (action === 'sl-hit') {
+      updateTradeById(id, { status: 'CLOSED' })
+    } else if (action === 'close') {
+      // user-initiated close -> mark as FILLED (semantic choice)
+      updateTradeById(id, { status: 'FILLED' })
+    }
+
+    // set undo info and auto-clear after 5s
+    setUndoInfo({ id, prev: prevCopy })
+    if (undoTimerRef.current) window.clearTimeout(undoTimerRef.current)
+    undoTimerRef.current = window.setTimeout(() => {
+      setUndoInfo(null)
+      undoTimerRef.current = null
+    }, 5000)
+  }
+
+  const handleConfirm = () => {
+    if (!confirmAction || !confirmTradeId) return
+    performAction(confirmAction, confirmTradeId)
+    setConfirmOpen(false)
+    setConfirmAction(null)
+    setConfirmTradeId(null)
+  }
+
+  const handleCancelConfirm = () => {
+    setConfirmOpen(false)
+    setConfirmAction(null)
+    setConfirmTradeId(null)
+  }
+
+  const handleUndo = () => {
+    if (!undoInfo) return
+    updateTradeById(undoInfo.id, undoInfo.prev)
+    clearUndo()
+  }
+
+  // State and toggler for expanded position cards in the left panel
   const [expandedPositions, setExpandedPositions] = useState<Set<string>>(new Set())
   const togglePositionExpand = (id: string) => {
     setExpandedPositions(prev => {
@@ -217,50 +248,15 @@ export function TradeJournal() {
     })
   }
 
-  // Handler für Demo-Management-Optionen
-  const handleSetSLtoBE = (trade: TradeRow) => {
-    alert(`SL für ${trade.symbol} auf Break Even (${trade.entry}) gesetzt und Status auf SL-HIT gesetzt (Demo)`)
-    // TODO: State-Update/Backend-Call: SL setzen und Status auf SL-HIT
-  }
-  const handleSetSLHit = (trade: TradeRow) => {
-    alert(`Status für ${trade.symbol} auf SL-HIT gesetzt (Demo)`)
-    // TODO: State-Update/Backend-Call: Status auf SL-HIT setzen
-  }
-
-
-  // Handler für das Hinzufügen eines neuen Trades
-  const [form, setForm] = useState({
-    symbol: '',
-    entryDate: '',
-    size: 0,
-    price: 0,
-    side: 'LONG' as SideValue,
-    notes: ''
-  })
-
-
-  const handleAdd = async (e: React.FormEvent) => {
-    e.preventDefault()
-    const newTrade: TradeRow = {
-      id: crypto.randomUUID(),
-      symbol: form.symbol,
-      entryDate: form.entryDate,
-      size: Number(form.size),
-      price: Number(form.price),
-      side: form.side as 'LONG' | 'SHORT',
-      notes: form.notes,
-      market: "Crypto",
-      status: 'OPEN',
-      pnl: 0,
-    }
-    setPositions(prev => [newTrade, ...prev])
-    setForm({ symbol: '', entryDate: '', size: 0, price: 0, side: 'LONG', notes: '' })
-  }
-
-  // Hilfsfunktion zum Öffnen der Analyse-Seite im neuen Tab
-  function handleAnalyseClick(symbol: string) {
-    window.open(`/analyse?symbol=${encodeURIComponent(symbol)}`, '_blank', 'noopener,noreferrer');
-  }
+  // Open positions for the left panel: show OPEN and FILLED, but keep rows visible while editing or pinned
+  const openPositions = (() => {
+    return positions.filter(t => {
+      const isOpenForFilter = (t.status === 'OPEN' || t.status === 'FILLED') && (marketFilter === 'All' || t.market === marketFilter)
+      const beingEdited = !!(editFields[t.id]?.status)
+      const pinned = pinnedStatusIds.has(t.id)
+      return isOpenForFilter || beingEdited || pinned
+    })
+  })()
 
   return (
     <Layout>
@@ -328,322 +324,37 @@ export function TradeJournal() {
           </Card>
 
           <Card title="Positions">
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th style={{ width: 40 }}></th>
-                  <th>Symbol</th>
-                  <th>Side</th>
-                  <th>Position</th>
-                  <th>Entry</th>
-                  <th>SL</th>
-                  <th>Margin</th>
-                  <th>Leverage</th>
-                  <th>P&L</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {openPositions.map(t => {
-                  const isExpanded = expandedPositions.has(t.id)
-                  return (
-                    <React.Fragment key={t.id}>
-                      <tr className={styles.mainRow}>
-                        <td className={styles.chevCell}>
-                          <span
-                            className={styles.chev}
-                            style={{ cursor: 'pointer' }}
-                            onClick={() => togglePositionExpand(t.id)}
-                          >
-                            {isExpanded ? '▾' : '▸'}
-                          </span>
-                        </td>
-                        {/* Symbol */}
-                        <td className={styles.symbolCell}>
-                          {editFields[t.id]?.symbol ? (
-                            <input
-                              className={styles.input}
-                              type="text"
-                              autoFocus
-                              defaultValue={t.symbol}
-                              onBlur={e => handleEditFieldBlur(t.id, 'symbol', e.target.value)}
-                            />
-                          ) : (
-                            <span
-                              className={styles.symbol}
-                              tabIndex={0}
-                              style={{ cursor: 'pointer' }}
-                              onClick={() => handleEditFieldClick(t.id, 'symbol')}
-                            >
-                              {t.symbol}
-                            </span>
-                          )}
-                        </td>
-                        {/* Side */}
-                        <td>
-                          {editFields[t.id]?.side ? (
-                            <SideSelect
-                              value={t.side}
-                              onChange={(v) => setPositions(prev => prev.map(row => row.id === t.id ? { ...row, side: v } : row))}
-                              ariaLabel={`Edit side for ${t.symbol}`}
-                              showBadge={false}
-                              compact
-                              colored
-                              onBlur={() => setEditFields(prev => ({ ...prev, [t.id]: { ...prev[t.id], side: false } }))}
-                            />
-                          ) : (
-                            <SideBadge
-                              value={t.side}
-                              className={styles.sideBadge}
-                              onClick={() => handleEditFieldClick(t.id, 'side')}
-                            />
-                          )}
-                        </td>
-                        {/* Size */}
-                        <td>
-                          {editFields[t.id]?.size ? (
-                            <input
-                              className={styles.input}
-                              type="number"
-                              autoFocus
-                              defaultValue={t.size}
-                              onBlur={e => handleEditFieldBlur(t.id, 'size', Number(e.target.value))}
-                            />
-                          ) : (
-                            <span
-                              tabIndex={0}
-                              style={{ cursor: 'pointer' }}
-                              onClick={() => handleEditFieldClick(t.id, 'size')}
-                            >
-                              {t.size}
-                            </span>
-                          )}
-                        </td>
-                        {/* Entry */}
-                        <td>
-                          {editFields[t.id]?.entry ? (
-                            <input
-                              className={styles.input}
-                              type="text"
-                              autoFocus
-                              defaultValue={t.entry ?? ''}
-                              onBlur={e => handleEditFieldBlur(t.id, 'entry', e.target.value)}
-                            />
-                          ) : (
-                            <span
-                              tabIndex={0}
-                              style={{ cursor: 'pointer' }}
-                              onClick={() => handleEditFieldClick(t.id, 'entry')}
-                            >
-                              {t.entry ?? '-'}
-                            </span>
-                          )}
-                        </td>
-                        {/* SL */}
-                        <td>
-                          {editFields[t.id]?.sl ? (
-                            <input
-                              className={styles.input}
-                              type="text"
-                              autoFocus
-                              defaultValue={t.sl ?? ''}
-                              onBlur={e => handleEditFieldBlur(t.id, 'sl', e.target.value)}
-                            />
-                          ) : (
-                            <span
-                              tabIndex={0}
-                              style={{ cursor: 'pointer' }}
-                              onClick={() => handleEditFieldClick(t.id, 'sl')}
-                            >
-                              {t.sl ?? '-'}
-                            </span>
-                          )}
-                        </td>
-                        {/* Margin */}
-                        <td>
-                          {editFields[t.id]?.margin ? (
-                            <input
-                              className={styles.input}
-                              type="text"
-                              autoFocus
-                              defaultValue={t.margin ?? ''}
-                              onBlur={e => handleEditFieldBlur(t.id, 'margin', e.target.value)}
-                            />
-                          ) : (
-                            <span
-                              tabIndex={0}
-                              style={{ cursor: 'pointer' }}
-                              onClick={() => handleEditFieldClick(t.id, 'margin')}
-                            >
-                              {t.margin ?? '-'}
-                            </span>
-                          )}
-                        </td>
-                        {/* Leverage */}
-                        <td>
-                          {editFields[t.id]?.leverage ? (
-                            <input
-                              className={styles.input}
-                              type="text"
-                              autoFocus
-                              defaultValue={t.leverage ?? ''}
-                              onBlur={e => handleEditFieldBlur(t.id, 'leverage', e.target.value)}
-                            />
-                          ) : (
-                            <span
-                              tabIndex={0}
-                              style={{ cursor: 'pointer' }}
-                              onClick={() => handleEditFieldClick(t.id, 'leverage')}
-                            >
-                              {t.leverage ?? '-'}
-                            </span>
-                          )}
-                        </td>
-                        {/* P&L */}
-                        <td>
-                          <span className={t.pnl >= 0 ? styles.plPositive : styles.plNegative}>{t.pnl.toFixed(2)}</span>
-                        </td>
-                        {/* Status */}
-                        <td>
-                          {editFields[t.id]?.status ? (
-                            <StatusSelect
-                              value={t.status}
-                              onChange={(v) => handleEditFieldBlur(t.id, 'status', v)}
-                              ariaLabel={`Edit status for ${t.symbol}`}
-                              compact
-                              colored
-                              onBlur={() => setEditFields(prev => ({ ...prev, [t.id]: { ...prev[t.id], status: false } }))}
-                            />
-                          ) : (
-                            <StatusBadge
-                              value={t.status}
-                              className={styles.statusBadge}
-                              onClick={() => handleEditFieldClick(t.id, 'status')}
-                            />
-                          )}
-                        </td>
-                        {/* Actions */}
-                        <td>
-                          <button className={styles.slBeBtn} onClick={() => handleSetSLtoBE(t)}>
-                            SL-BE
-                          </button>
-                          <button className={styles.slHitBtn} onClick={() => handleSetSLHit(t)}>
-                            SL-HIT
-                          </button>
-                          <button
-                            className={styles.analysisBadgeBtn}
-                            type="button"
-                            onClick={() => handleAnalyseClick(t.symbol)}
-                          >
-                            Analyse
-                          </button>
-                        </td>
-                      </tr>
-                      {/* Expandierte Zeilen: TP1, TP2, TP3, Notes editierbar */}
-                      {isExpanded && (
-                        <>
-                          <tr className={styles.secondaryRow}>
-                            <td colSpan={11}>
-                              <div className={styles.positionExpandGrid}>
-                                <label>
-                                  TP1:
-                                  {editFields[t.id]?.tp1 ? (
-                                    <input
-                                      className={styles.tpInput}
-                                      type="text"
-                                      autoFocus
-                                      defaultValue={t.tp1 ?? ''}
-                                      onBlur={e => handleEditFieldBlur(t.id, 'tp1', e.target.value)}
-                                    />
-                                  ) : (
-                                    <span
-                                      className={styles.tpInput}
-                                      tabIndex={0}
-                                      style={{ cursor: 'pointer', display: 'inline-block' }}
-                                      onClick={() => handleEditFieldClick(t.id, 'tp1')}
-                                    >
-                                      {t.tp1 ?? '-'}
-                                    </span>
-                                  )}
-                                </label>
-                                <label>
-                                  TP2:
-                                  {editFields[t.id]?.tp2 ? (
-                                    <input
-                                      className={styles.tpInput}
-                                      type="text"
-                                      autoFocus
-                                      defaultValue={t.tp2 ?? ''}
-                                      onBlur={e => handleEditFieldBlur(t.id, 'tp2', e.target.value)}
-                                    />
-                                  ) : (
-                                    <span
-                                      className={styles.tpInput}
-                                      tabIndex={0}
-                                      style={{ cursor: 'pointer', display: 'inline-block' }}
-                                      onClick={() => handleEditFieldClick(t.id, 'tp2')}
-                                    >
-                                      {t.tp2 ?? '-'}
-                                    </span>
-                                  )}
-                                </label>
-                                <label>
-                                  TP3:
-                                  {editFields[t.id]?.tp3 ? (
-                                    <input
-                                      className={styles.tpInput}
-                                      type="text"
-                                      autoFocus
-                                      defaultValue={t.tp3 ?? ''}
-                                      onBlur={e => handleEditFieldBlur(t.id, 'tp3', e.target.value)}
-                                    />
-                                  ) : (
-                                    <span
-                                      className={styles.tpInput}
-                                      tabIndex={0}
-                                      style={{ cursor: 'pointer', display: 'inline-block' }}
-                                      onClick={() => handleEditFieldClick(t.id, 'tp3')}
-                                    >
-                                      {t.tp3 ?? '-'}
-                                    </span>
-                                  )}
-                                </label>
-                              </div>
-                            </td>
-                          </tr>
-                          <tr className={styles.secondaryRow}>
-                            <td colSpan={11}>
-                              <div className={styles.secondaryNotesRow}>
-                                <strong>Notes:</strong>{' '}
-                                {editFields[t.id]?.notes ? (
-                                  <input
-                                    className={styles.input}
-                                    type="text"
-                                    autoFocus
-                                    defaultValue={t.notes ?? ''}
-                                    onBlur={e => handleEditFieldBlur(t.id, 'notes', e.target.value)}
-                                  />
-                                ) : (
-                                  <span
-                                    tabIndex={0}
-                                    style={{ cursor: 'pointer' }}
-                                    onClick={() => handleEditFieldClick(t.id, 'notes')}
-                                  >
-                                    {t.notes ?? '-'}
-                                  </span>
-                                )}
-                              </div>
-                            </td>
-                          </tr>
-                        </>
-                      )}
-                    </React.Fragment>
-                  );
-                })}
-              </tbody>
-            </table>
-          </Card>
+            <div className={styles.positionsList}>
+              {openPositions.map(t => (
+                <div key={t.id}>
+                  <PositionCard
+                    id={t.id}
+                    symbol={t.symbol}
+                    side={t.side}
+                    size={t.size}
+                    entry={t.entry}
+                    sl={t.sl}
+                    pnl={t.pnl}
+                    onExpand={(id) => togglePositionExpand(id)}
+                    onToggleSide={(id) => openConfirm('toggle-side', id)}
+                    onSetSLtoBE={(id) => openConfirm('sl-be', id)}
+                    onSetSLHit={(id) => openConfirm('sl-hit', id)}
+                    onClose={(id) => openConfirm('close', id)}
+                  />
+                  {expandedPositions.has(t.id) && (
+                    <div className={styles.positionExpandRow}>
+                      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                        <div><strong>Entry:</strong> {t.entry ?? '-'}</div>
+                        <div><strong>SL:</strong> {t.sl ?? '-'}</div>
+                        <div><strong>TP1:</strong> {t.tp1 ?? '-'}</div>
+                        <div><strong>TP2:</strong> {t.tp2 ?? '-'}</div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+           </Card>
         </div>
 
         <div className={styles.right}>
@@ -728,6 +439,25 @@ export function TradeJournal() {
           </Card>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={confirmOpen}
+        onConfirm={handleConfirm}
+        onCancel={handleCancelConfirm}
+        title="Bestätigung erforderlich"
+        message={`Sind Sie sicher, dass Sie diese Aktion durchführen möchten?`}
+        confirmLabel="Ja"
+        cancelLabel="Abbrechen"
+      />
+
+      {undoInfo && (
+        <div className={styles.undoBanner}>
+          <div className={styles.undoContent}>
+            <div>Aktion durchgeführt — Rückgängig möglich</div>
+            <Button variant="ghost" onClick={handleUndo}>Rückgängig</Button>
+          </div>
+        </div>
+      )}
     </Layout>
   )
 }

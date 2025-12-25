@@ -1,0 +1,44 @@
+:root {
+  /* Nightscope (default) */
+  --bg: #0b0f14;
+  --surface: #0f1720;
+  --muted: #7b8a93;
+  --text: #e6eef8;
+  --color-text: #e6e6e6;
+  --color-primary: #00bcd4;
+  --accent: #58d68d; /* green */
+  --danger: #ff6b6b;
+  --glass: rgba(255,255,255,0.03);
+  --card-radius: 12px;
+  --card-padding: 12px;
+  --glass-strong: rgba(255,255,255,0.06);
+  --accent-glass: rgba(88,214,141,0.08);
+  --accent-strong: rgba(88,214,141,0.18);
+}
+
+/* Theme variants via [data-theme] attribute (switch at runtime) */
+[data-theme="nightscope"] {
+  --bg: #0b0f14;
+  --surface: #0f1720;
+  --muted: #7b8a93;
+  --accent: #58d68d;
+}
+
+[data-theme="warmledger"] {
+  --bg: #101214;
+  --surface: #161b1f;
+  --muted: #c1c6c9;
+  --accent: #f7b267;
+}
+
+[data-theme="datagrid"] {
+  --bg: #0a0a0c;
+  --surface: #0e0f12;
+  --muted: #9aa6b2;
+  --accent: #4fb3ff;
+}
+
+/* small helper tokens */
+:root {
+  --shadow-1: 0 6px 18px rgba(3,6,10,0.6);
+}

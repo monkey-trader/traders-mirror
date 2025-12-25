@@ -3,13 +3,16 @@
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 12px 0;
+  padding: 14px 18px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border-radius: 10px;
 }
 
 .brand {
-  font-weight: 800;
+  font-weight: 900;
   letter-spacing: 0.3px;
-  font-size: 18px;
+  font-size: 20px;
+  color: var(--text);
 }
 
 .nav {
@@ -27,3 +30,8 @@
   color: var(--text);
 }
 
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}

@@ -1,0 +1,24 @@
+.switcher {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.btn {
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid rgba(255,255,255,0.02);
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.btn:hover { background: rgba(255,255,255,0.02); color: var(--text); }
+
+.active {
+  background: linear-gradient(180deg, var(--accent), color-mix(in srgb, var(--accent) 70%, black));
+  color: var(--surface);
+  border: none;
+}
+

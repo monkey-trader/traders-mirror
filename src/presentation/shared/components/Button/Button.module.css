@@ -16,19 +16,24 @@
 }
 
 .primary {
-  background: linear-gradient(180deg, #0ea5a4, #087f7d);
-  color: var(--bg);
-  box-shadow: 0 6px 18px rgba(8,127,125,0.14), inset 0 -2px 0 rgba(0,0,0,0.08);
+  background: linear-gradient(180deg, var(--accent), color-mix(in srgb, var(--accent) 70%, black));
+  color: var(--surface);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+}
+
+.primary:hover {
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: 0 12px 36px rgba(0,0,0,0.7);
 }
 
 .secondary {
-  background: rgba(255,255,255,0.04);
+  background: rgba(255,255,255,0.02);
   color: var(--text);
-  border: 1px solid rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.04);
 }
 
 .ghost {
   background: transparent;
   color: var(--muted);
+  border: 1px dashed rgba(255,255,255,0.02);
 }
-
