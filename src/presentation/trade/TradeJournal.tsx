@@ -296,61 +296,87 @@ export function TradeJournal() {
       {/* containerRef wraps the grid so we can detect available width */}
       <div ref={containerRef} className={compactGrid ? `${styles.grid} ${styles.gridCompact} ${styles.fullScreen}` : `${styles.grid} ${styles.fullScreen}`}>
          <div className={styles.left}>
-          <Card title="New Trade">
-            <form className={styles.form} onSubmit={handleAdd}>
-              <div className={styles.row}>
-                <Input label="Symbol" placeholder="e.g. AAPL" value={form.symbol} onChange={(e) => setForm({ ...form, symbol: e.target.value })} />
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <label style={{ display: 'flex', flexDirection: 'column' }}>
-                    <span style={{ marginBottom: 6 }}>Market</span>
-                    <MarketSelect value={form.market as MarketValue} onChange={(v) => { setForm({ ...form, market: v }); setMarketFilter(v) }} compact />
-                  </label>
-                  <Input label="Entry Date" type="datetime-local" value={form.entryDate} onChange={(e) => setForm({ ...form, entryDate: e.target.value })} />
+          <Card>
+            <div className={styles.newTradeWrapper}>
+              <div className={styles.newTradeHeader}>
+                <span style={{ fontWeight: 700, color: 'var(--text)' }}>New Trade</span>
+              </div>
+
+              <form className={styles.form} onSubmit={handleAdd}>
+                <div className={styles.newTradeGrid}>
+                  <div className={styles.newTradeField}>
+                    <Input label="Symbol" placeholder="e.g. AAPL" value={form.symbol} onChange={(e) => setForm({ ...form, symbol: e.target.value })} />
+                  </div>
+
+                  <div className={styles.newTradeField}>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <span style={{ marginBottom: 6 }}>Market</span>
+                      <MarketSelect value={form.market as MarketValue} onChange={(v) => { setForm({ ...form, market: v }); setMarketFilter(v) }} compact showAll={false} />
+                    </div>
+                  </div>
+
+                  <div className={styles.newTradeField}>
+                    <Input label="Entry Date" type="datetime-local" value={form.entryDate} onChange={(e) => setForm({ ...form, entryDate: e.target.value })} />
+                  </div>
+
+                  <div className={styles.newTradeField}>
+                    <Input label="Size" type="number" value={String(form.size)} onChange={(e) => setForm({ ...form, size: Number(e.target.value) })} />
+                  </div>
+
+                  <div className={styles.newTradeField}>
+                    <Input label="Price" type="number" value={String(form.price)} onChange={(e) => setForm({ ...form, price: Number(e.target.value) })} />
+                  </div>
+
+                  <div className={styles.newTradeField}>
+                    <Input label="SL" value={(form as any).sl ?? ''} onChange={(e) => setForm({ ...form, // @ts-ignore
+                      sl: e.target.value })} />
+                  </div>
+
+                  <div className={styles.newTradeField}>
+                    <Input label="TP1" value={(form as any).tp1 ?? ''} onChange={(e) => setForm({ ...form, // @ts-ignore
+                      tp1: e.target.value })} />
+                  </div>
+
+                  <div className={styles.newTradeField}>
+                    <Input label="TP2" value={(form as any).tp2 ?? ''} onChange={(e) => setForm({ ...form, // @ts-ignore
+                      tp2: e.target.value })} />
+                  </div>
+
+                  <div className={styles.newTradeField}>
+                    <Input label="TP3" value={(form as any).tp3 ?? ''} onChange={(e) => setForm({ ...form, // @ts-ignore
+                      tp3: e.target.value })} />
+                  </div>
+
+                  <div className={styles.newTradeField}>
+                    <Input label="Leverage" type="text" value={(form as any).leverage ?? ''} onChange={(e) => setForm({ ...form, // @ts-ignore
+                      leverage: e.target.value })} />
+                  </div>
+
+                  <div className={`${styles.newTradeField} ${styles.full}`}>
+                    <Input label="Notes" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
+                  </div>
+
+                  <div className={`${styles.newTradeField} ${styles.full}`}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      <span style={{ marginBottom: 6 }}>Side</span>
+                      <SideSelect
+                        value={form.side as SideValue}
+                        onChange={(v) => setForm({ ...form, side: v })}
+                        ariaLabel="New trade side"
+                        showBadge={false}
+                        colored
+                      />
+                    </div>
+                  </div>
                 </div>
-               </div>
 
-               <div className={styles.row}>
-                 <Input label="Size" type="number" value={String(form.size)} onChange={(e) => setForm({ ...form, size: Number(e.target.value) })} />
-                 <Input label="Price" type="number" value={String(form.price)} onChange={(e) => setForm({ ...form, price: Number(e.target.value) })} />
-               </div>
-
-               <div className={styles.row}>
-                <Input label="SL" value={(form as any).sl ?? ''} onChange={(e) => setForm({ ...form, // @ts-ignore
-                  sl: e.target.value })} />
-                <Input label="TP1" value={(form as any).tp1 ?? ''} onChange={(e) => setForm({ ...form, // @ts-ignore
-                  tp1: e.target.value })} />
-              </div>
-
-              <div className={styles.row}>
-                <Input label="TP2" value={(form as any).tp2 ?? ''} onChange={(e) => setForm({ ...form, // @ts-ignore
-                  tp2: e.target.value })} />
-                <Input label="TP3" value={(form as any).tp3 ?? ''} onChange={(e) => setForm({ ...form, // @ts-ignore
-                  tp3: e.target.value })} />
-              </div>
-
-              <div className={styles.row}>
-                <Input label="Leverage" type="text" value={(form as any).leverage ?? ''} onChange={(e) => setForm({ ...form, // @ts-ignore
-                  leverage: e.target.value })} />
-                <Input label="Notes" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
-              </div>
-
-              <div className={styles.row}>
-                <label className={styles.label} htmlFor="side">Side</label>
-                <SideSelect
-                  value={form.side as SideValue}
-                  onChange={(v) => setForm({ ...form, side: v })}
-                  ariaLabel="New trade side"
-                  showBadge={false}
-                  colored
-                />
-              </div>
-
-               <div className={styles.actions}>
-                 <Button variant="primary">Add Trade</Button>
-                 <Button variant="ghost">Reset</Button>
-               </div>
-             </form>
-           </Card>
+                <div className={styles.actions} style={{ marginTop: 8 }}>
+                  <Button variant="primary">Add Trade</Button>
+                  <Button variant="ghost">Reset</Button>
+                </div>
+              </form>
+            </div>
+          </Card>
          </div>
 
          <div className={styles.right}>
