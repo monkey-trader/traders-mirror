@@ -1,7 +1,7 @@
 import React from 'react'
 import styles from './MarketSelect.module.css'
 
-export type MarketValue = 'All' | 'Forex' | 'Crypto'
+export type MarketValue = '' | 'All' | 'Forex' | 'Crypto'
 
 export type MarketSelectProps = {
   value: MarketValue
@@ -11,7 +11,7 @@ export type MarketSelectProps = {
 }
 
 export function MarketSelect({ value, onChange, compact = false, showAll = true }: MarketSelectProps) {
-  const options = (showAll ? ['All', 'Forex', 'Crypto'] : ['Forex', 'Crypto']) as MarketValue[]
+  const options = (showAll ? ['All', 'Forex', 'Crypto'] : ['Forex', 'Crypto']) as Exclude<MarketValue, ''>[]
 
   return (
     <div className={styles.container} role="tablist" aria-label="Market select">

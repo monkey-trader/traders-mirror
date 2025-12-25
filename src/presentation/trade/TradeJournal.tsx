@@ -124,19 +124,45 @@ export function TradeJournal() {
   }
 
   // Handler für das Hinzufügen eines neuen Trades
-  const [form, setForm] = useState({
+  type NewTradeForm = {
+    symbol: string
+    entryDate: string
+    size: number
+    price: number
+    side: SideValue
+    market: MarketValue
+    notes: string
+    sl?: string
+    tp1?: string
+    tp2?: string
+    tp3?: string
+    leverage?: string
+  }
+
+  const [form, setForm] = useState<NewTradeForm>({
     symbol: '',
     entryDate: '',
     size: 0,
     price: 0,
-    side: 'LONG' as SideValue,
-    market: 'Crypto' as 'All' | 'Crypto' | 'Forex',
+    side: 'LONG',
+    market: '', // no market preselected — user must choose
     notes: ''
   })
 
+  const [formErrors, setFormErrors] = useState<{ market?: string }>({})
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    // validate required fields (market required for new trade)
+    const errors: { market?: string } = {}
+    if (!form.market) errors.market = 'Bitte Markt auswählen'
+
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors)
+      return
+    }
+
     const newTrade: TradeRow = {
       id: crypto.randomUUID(),
       symbol: form.symbol,
@@ -145,17 +171,18 @@ export function TradeJournal() {
       price: Number(form.price),
       side: form.side as 'LONG' | 'SHORT',
       notes: form.notes,
-      market: form.market ?? 'Crypto',
-      sl: (form as any).sl,
-      tp1: (form as any).tp1,
-      tp2: (form as any).tp2,
-      tp3: (form as any).tp3,
-      leverage: (form as any).leverage,
+      market: (form.market as Exclude<MarketValue, ''>) || 'Crypto',
+      sl: form.sl,
+      tp1: form.tp1,
+      tp2: form.tp2,
+      tp3: form.tp3,
+      leverage: form.leverage,
       status: 'OPEN',
       pnl: 0,
     }
     setPositions(prev => [newTrade, ...prev])
-    setForm({ symbol: '', entryDate: '', size: 0, price: 0, side: 'LONG', market: 'Crypto', notes: '' })
+    setForm({ symbol: '', entryDate: '', size: 0, price: 0, side: 'LONG', market: '', notes: '' })
+    setFormErrors({})
   }
 
   // responsive fallback: switch to single-column grid when container is too narrow
@@ -275,8 +302,8 @@ export function TradeJournal() {
       size: s.size ?? 1,
       price: s.price ?? 0,
       side: (s.side ?? 'LONG') as SideValue,
-      market: s.market ?? 'All',
-      notes: `Suggested from analysis (${s.market ?? 'All'})`
+      market: (s.market ?? '') as MarketValue,
+      notes: `Suggested from analysis (${s.market ?? 'unspecified'})`
     })
     // switch to list view so the user can review the New Trade form in the left column
     setTradesCardTab('list')
@@ -311,8 +338,20 @@ export function TradeJournal() {
                   <div className={styles.newTradeField}>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                       <span style={{ marginBottom: 6 }}>Market</span>
-                      <MarketSelect value={form.market as MarketValue} onChange={(v) => { setForm({ ...form, market: v }); setMarketFilter(v) }} compact showAll={false} />
+                      <MarketSelect
+                        value={form.market as MarketValue}
+                        onChange={(v) => {
+                          setForm({ ...form, market: v })
+                          if (v) {
+                            setMarketFilter(v)
+                            setFormErrors({})
+                          }
+                        }}
+                        compact
+                        showAll={false}
+                      />
                     </div>
+                    {formErrors.market && <div className={styles.fieldError}>{formErrors.market}</div>}
                   </div>
 
                   <div className={styles.newTradeField}>

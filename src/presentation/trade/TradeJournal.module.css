@@ -787,3 +787,9 @@
 .leftPane {
   position: relative; /* keep in normal flow */
 }
+
+.fieldError {
+  color: var(--danger);
+  font-size: 12px;
+  margin-top: 6px;
+}
