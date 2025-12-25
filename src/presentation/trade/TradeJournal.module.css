@@ -358,6 +358,38 @@
   border-radius: 6px;
 }
 
+/* Normalize bold labels inside expanded rows to small/muted (Entry/SL/TPs) */
+.positionExpandRow strong,
+.secondaryDetailsRow strong,
+.positionExpandRow .small,
+.positionExpandRow .metaPiece,
+.secondaryDetailsRow .small {
+  font-weight: 400; /* normal */
+  color: var(--muted);
+}
+
+/* Make the first-line inside positionExpandRow render like the small inline meta (Entry/SL/TPs)
+   without requiring JSX changes: flex layout, small font and muted colour, no bold. */
+.positionExpandRow > div {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--muted);
+}
+.positionExpandRow > div > div,
+.positionExpandRow > div > span {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 400;
+}
+.positionExpandRow strong {
+  font-weight: 400;
+  color: var(--muted);
+  margin-right: 4px;
+}
+
 .positionExpandGrid {
   display: grid;
   grid-template-columns: repeat(4, 1fr) 120px;

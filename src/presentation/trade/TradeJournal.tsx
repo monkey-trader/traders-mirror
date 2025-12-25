@@ -344,10 +344,9 @@ export function TradeJournal() {
                   {expandedPositions.has(t.id) && (
                     <div className={styles.positionExpandRow}>
                       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-                        <div><strong>Entry:</strong> {t.entry ?? '-'}</div>
-                        <div><strong>SL:</strong> {t.sl ?? '-'}</div>
-                        <div><strong>TP1:</strong> {t.tp1 ?? '-'}</div>
-                        <div><strong>TP2:</strong> {t.tp2 ?? '-'}</div>
+                        <div>SL: {t.sl ?? '-'}</div>
+                        <div>TP1: {t.tp1 ?? '-'}</div>
+                        <div>TP2: {t.tp2 ?? '-'}</div>
                       </div>
                     </div>
                   )}
@@ -416,7 +415,6 @@ export function TradeJournal() {
                           <tr className={styles.secondaryRow}>
                             <td colSpan={8}>
                               <div className={styles.secondaryDetailsRow}>
-                                <div><strong>Entry:</strong> {t.entry ?? '-'}</div>
                                 <div><strong>SL:</strong> {t.sl ?? '-'}</div>
                                 <div><strong>TP1:</strong> {t.tp1 ?? '-'}</div>
                                 <div><strong>TP2:</strong> {t.tp2 ?? '-'}</div>
