@@ -27,8 +27,9 @@
 
 .selected {
   border-color: rgba(124,92,255,0.9);
-  box-shadow: 0 6px 16px rgba(124,92,255,0.12);
-  background: linear-gradient(90deg, rgba(124,92,255,0.04), rgba(34,193,195,0.02));
+  /* outer glow + thin accent ring to emulate highlighted outline */
+  box-shadow: 0 6px 24px rgba(124,92,255,0.16), 0 0 0 1px rgba(124,92,255,0.18);
+  background: linear-gradient(90deg, rgba(124,92,255,0.06), rgba(34,193,195,0.02));
 }
 
 .rowLeft {
@@ -62,15 +63,6 @@
   background: linear-gradient(90deg, #7ef1c6, #22c1c3);
 }
 
-.dirtyDot {
-  width: 10px;
-  height: 10px;
-  background: linear-gradient(90deg, #ffd166, #ff7b7b);
-  border-radius: 50%;
-  box-shadow: 0 0 6px rgba(255,123,123,0.4);
-}
-
 /* scrollbar subtle */
 .list::-webkit-scrollbar { width: 8px; }
 .list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.03); border-radius: 6px; }
-

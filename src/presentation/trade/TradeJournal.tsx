@@ -317,7 +317,7 @@ export function TradeJournal() {
               </div>
              <div className={styles.listAndDetailWrap}>
                <div className={styles.leftPane}>
-                 <TradeList trades={trades} selectedId={selectedId} dirtyIds={dirtyIds} onSelect={(id) => setSelectedId(id)} />
+                 <TradeList trades={trades} selectedId={selectedId} onSelect={(id) => setSelectedId(id)} />
                </div>
 
                <div className={styles.rightPane}>

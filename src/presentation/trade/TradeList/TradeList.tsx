@@ -5,11 +5,10 @@ import styles from './TradeList.module.css'
 export type TradeListProps = {
   trades: TradeInput[]
   selectedId?: string | null
-  dirtyIds?: Set<string>
   onSelect: (id: string) => void
 }
 
-export function TradeList({ trades, selectedId, dirtyIds = new Set(), onSelect }: TradeListProps) {
+export function TradeList({ trades, selectedId, onSelect }: TradeListProps) {
   return (
     <div className={styles.list} role="list">
       {trades.map((t) => {
@@ -28,7 +27,6 @@ export function TradeList({ trades, selectedId, dirtyIds = new Set(), onSelect }
             </div>
             <div className={styles.rowRight}>
               <div className={styles.side}>{t.side}</div>
-              {dirtyIds.has(t.id) && <div className={styles.dirtyDot} aria-hidden />}
             </div>
           </button>
         )
@@ -36,4 +34,3 @@ export function TradeList({ trades, selectedId, dirtyIds = new Set(), onSelect }
     </div>
   )
 }
-
