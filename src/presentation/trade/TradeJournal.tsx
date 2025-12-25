@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { Layout } from '@/presentation/shared/components/Layout/Layout'
+// Layout is provided by App; do not render Layout again here to avoid duplicate headers
 import { Card } from '@/presentation/shared/components/Card/Card'
 import { Button } from '@/presentation/shared/components/Button/Button'
 import { Input } from '@/presentation/shared/components/Input/Input'
@@ -241,7 +241,7 @@ export function TradeJournal() {
   }
 
   return (
-    <Layout fullWidth>
+    <>
       <div className={styles.headerRow}>
         <h2 className={styles.title}>Trading Journal - Demo</h2>
         <div className={styles.controls}>
@@ -353,6 +353,6 @@ export function TradeJournal() {
            </div>
          </div>
        )}
-     </Layout>
-   )
+    </>
+  )
  }

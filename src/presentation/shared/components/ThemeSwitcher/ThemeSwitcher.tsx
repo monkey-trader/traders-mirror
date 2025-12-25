@@ -1,14 +1,24 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import styles from './ThemeSwitcher.module.css'
 
 const THEMES = ['nightscope', 'warmledger', 'datagrid'] as const
 export type ThemeName = typeof THEMES[number]
 
 export function ThemeSwitcher() {
-  const current = document.documentElement.getAttribute('data-theme') || 'nightscope'
+  const [current, setCurrent] = useState<ThemeName>(() => (localStorage.getItem('theme') as ThemeName) || 'nightscope')
+
+  useEffect(() => {
+    // apply theme to document and persist
+    document.documentElement.setAttribute('data-theme', current)
+    try {
+      localStorage.setItem('theme', current)
+    } catch (e) {
+      // ignore if localStorage is not available
+    }
+  }, [current])
 
   const setTheme = (t: ThemeName) => {
-    document.documentElement.setAttribute('data-theme', t)
+    setCurrent(t)
   }
 
   return (
@@ -25,4 +35,3 @@ export function ThemeSwitcher() {
     </div>
   )
 }
-

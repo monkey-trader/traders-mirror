@@ -1,0 +1,48 @@
+/* Theme variants via [data-theme] attribute (managed by Settings page)
+   Provide full sets of design tokens per theme so switching themes visibly updates the UI.
+*/
+
+:root[data-theme="nightscope"] {
+  /* default dark/night palette */
+  --bg: #0b0f14;
+  --surface: #0f1720;
+  --text: #e6eef8;
+  --muted: #7b8a93;
+  --color-text: #e6e6e6;
+  --color-primary: #00bcd4;
+  --accent: #58d68d;
+  --accent-glass: rgba(88,214,141,0.08);
+  --accent-strong: rgba(88,214,141,0.18);
+  --glass: rgba(255,255,255,0.03);
+  --glass-strong: rgba(255,255,255,0.06);
+}
+
+:root[data-theme="warmledger"] {
+  /* warm, ledger-like palette */
+  --bg: #101214;
+  --surface: #161b1f;
+  --text: #f7efe6;
+  --muted: #c1c6c9;
+  --color-text: #efe6dc;
+  --color-primary: #f7b267; /* warm orange */
+  --accent: #f7b267;
+  --accent-glass: rgba(247,178,103,0.08);
+  --accent-strong: rgba(247,178,103,0.18);
+  --glass: rgba(0,0,0,0.04);
+  --glass-strong: rgba(0,0,0,0.08);
+}
+
+:root[data-theme="datagrid"] {
+  /* cool, blue data-grid palette */
+  --bg: #0a0a0c;
+  --surface: #0e0f12;
+  --text: #eaf6ff;
+  --muted: #9aa6b2;
+  --color-text: #e6f6ff;
+  --color-primary: #4fb3ff;
+  --accent: #4fb3ff;
+  --accent-glass: rgba(79,179,255,0.08);
+  --accent-strong: rgba(79,179,255,0.18);
+  --glass: rgba(255,255,255,0.02);
+  --glass-strong: rgba(255,255,255,0.04);
+}

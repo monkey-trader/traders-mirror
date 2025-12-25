@@ -16,29 +16,11 @@
   --accent-strong: rgba(88,214,141,0.18);
 }
 
-/* Theme variants via [data-theme] attribute (switch at runtime) */
-[data-theme="nightscope"] {
-  --bg: #0b0f14;
-  --surface: #0f1720;
-  --muted: #7b8a93;
-  --accent: #58d68d;
-}
-
-[data-theme="warmledger"] {
-  --bg: #101214;
-  --surface: #161b1f;
-  --muted: #c1c6c9;
-  --accent: #f7b267;
-}
-
-[data-theme="datagrid"] {
-  --bg: #0a0a0c;
-  --surface: #0e0f12;
-  --muted: #9aa6b2;
-  --accent: #4fb3ff;
-}
+/* Theme variants have been moved to src/presentation/settings/themes.css to allow them to be managed from the Settings page. */
 
 /* small helper tokens */
 :root {
   --shadow-1: 0 6px 18px rgba(3,6,10,0.6);
 }
+
+/* end */
