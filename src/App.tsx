@@ -16,47 +16,14 @@ function App() {
 
   const [route, setRoute] = useState(() => window.location.hash || '#/journal')
 
-  // Persisted layout preference (fullWidth). Default: true (fullscreen layout)
-  const [fullWidth, setFullWidth] = useState<boolean>(() => {
-    const stored = localStorage.getItem('layoutFullWidth')
-    return stored === null ? true : stored === 'true'
-  })
-
   useEffect(() => {
     const onHash = () => setRoute(window.location.hash || '#/journal')
     window.addEventListener('hashchange', onHash)
-
-    // Listen for other tabs or settings changes via storage events
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === 'layoutFullWidth') {
-        setFullWidth(e.newValue === null ? true : e.newValue === 'true')
-      }
-    }
-
-    // Also listen for a custom in-app event dispatched by Settings for immediate updates
-    const onCustom = (e: Event) => {
-      // @ts-ignore detail is provided by dispatch
-      const detail = (e as CustomEvent).detail
-      if (typeof detail === 'boolean') setFullWidth(detail)
-    }
-
-    window.addEventListener('storage', onStorage)
-    window.addEventListener('layout:fullWidth', onCustom as EventListener)
-
-    return () => {
-      window.removeEventListener('hashchange', onHash)
-      window.removeEventListener('storage', onStorage)
-      window.removeEventListener('layout:fullWidth', onCustom as EventListener)
-    }
-  }, [])
-
-  useEffect(() => {
-    const onHash = () => setRoute(window.location.hash || '#/journal')
     return () => window.removeEventListener('hashchange', onHash)
   }, [])
 
   return (
-    <Layout fullWidth={fullWidth}>
+    <Layout fullWidth={true}>
       {/* Simple hash-based routing: #/journal, #/feed, #/settings */}
       {route === '#/settings' ? <Settings /> : <TradeJournal />}
     </Layout>
