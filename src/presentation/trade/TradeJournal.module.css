@@ -793,3 +793,10 @@
   font-size: 12px;
   margin-top: 6px;
 }
+
+.fieldLabel {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 400; /* de-emphasized */
+  margin-bottom: 6px;
+}

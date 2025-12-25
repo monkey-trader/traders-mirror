@@ -63,7 +63,7 @@ export function TradeJournal() {
     return () => { mounted = false }
   }, [])
 
-  // Trades nach Markt filtern (berechnet aus editable positions)
+  // Trades nach Markt filtern (berechnet aus editierbaren Positionen)
   const trades = (() => {
     let filtered = positions
     if (marketFilter !== 'All') filtered = filtered.filter((t) => t.market === marketFilter)
@@ -130,13 +130,15 @@ export function TradeJournal() {
     size: number
     price: number
     side: SideValue
-    market: MarketValue
+    status: 'OPEN' | 'CLOSED' | 'FILLED'
     notes: string
     sl?: string
     tp1?: string
     tp2?: string
     tp3?: string
     leverage?: string
+    margin?: string
+    market?: MarketValue
   }
 
   const [form, setForm] = useState<NewTradeForm>({
@@ -145,23 +147,18 @@ export function TradeJournal() {
     size: 0,
     price: 0,
     side: 'LONG',
-    market: '', // no market preselected — user must choose
+    status: 'OPEN',
+    market: undefined,
     notes: ''
   })
 
-  const [formErrors, setFormErrors] = useState<{ market?: string }>({})
+  const [, setFormErrors] = useState<Record<string, string>>({})
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    // validate required fields (market required for new trade)
-    const errors: { market?: string } = {}
-    if (!form.market) errors.market = 'Bitte Markt auswählen'
-
-    if (Object.keys(errors).length > 0) {
-      setFormErrors(errors)
-      return
-    }
+    // Keep validation minimal here (UI-level). Domain validation is handled elsewhere.
+    // We no longer require market in the New Trade form — default to 'Crypto' if unset.
 
     const newTrade: TradeRow = {
       id: crypto.randomUUID(),
@@ -176,12 +173,13 @@ export function TradeJournal() {
       tp1: form.tp1,
       tp2: form.tp2,
       tp3: form.tp3,
+      margin: form.margin,
       leverage: form.leverage,
-      status: 'OPEN',
+      status: form.status,
       pnl: 0,
     }
     setPositions(prev => [newTrade, ...prev])
-    setForm({ symbol: '', entryDate: '', size: 0, price: 0, side: 'LONG', market: '', notes: '' })
+    setForm({ symbol: '', entryDate: '', size: 0, price: 0, side: 'LONG', status: 'OPEN', market: undefined, notes: '' })
     setFormErrors({})
   }
 
@@ -303,7 +301,8 @@ export function TradeJournal() {
       price: s.price ?? 0,
       side: (s.side ?? 'LONG') as SideValue,
       market: (s.market ?? '') as MarketValue,
-      notes: `Suggested from analysis (${s.market ?? 'unspecified'})`
+      notes: `Suggested from analysis (${s.market ?? 'unspecified'})`,
+      status: 'OPEN'
     })
     // switch to list view so the user can review the New Trade form in the left column
     setTradesCardTab('list')
@@ -315,14 +314,19 @@ export function TradeJournal() {
     <>
       <div className={styles.headerRow}>
         <h2 className={styles.title}>Trading Journal</h2>
-        <div className={styles.controls}>
-          {/* moved market filters next to Trades title */}
-        </div>
+        <div className={styles.controls}>{/* moved market filters next to Trades title */}</div>
       </div>
 
       {/* containerRef wraps the grid so we can detect available width */}
-      <div ref={containerRef} className={compactGrid ? `${styles.grid} ${styles.gridCompact} ${styles.fullScreen}` : `${styles.grid} ${styles.fullScreen}`}>
-         <div className={styles.left}>
+      <div
+        ref={containerRef}
+        className={
+          compactGrid
+            ? `${styles.grid} ${styles.gridCompact} ${styles.fullScreen}`
+            : `${styles.grid} ${styles.fullScreen}`
+        }
+      >
+        <div className={styles.left}>
           <Card>
             <div className={styles.newTradeWrapper}>
               <div className={styles.newTradeHeader}>
@@ -331,73 +335,35 @@ export function TradeJournal() {
 
               <form className={styles.form} onSubmit={handleAdd}>
                 <div className={styles.newTradeGrid}>
+                  {/* Row 1: Symbol | Market */}
                   <div className={styles.newTradeField}>
-                    <Input label="Symbol" placeholder="e.g. AAPL" value={form.symbol} onChange={(e) => setForm({ ...form, symbol: e.target.value })} />
+                    <Input
+                      label="Symbol"
+                      placeholder="e.g. AAPL"
+                      value={form.symbol}
+                      onChange={(e) => setForm({ ...form, symbol: e.target.value })}
+                    />
                   </div>
 
                   <div className={styles.newTradeField}>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <span style={{ marginBottom: 6 }}>Market</span>
+                      <span className={styles.fieldLabel}>Market</span>
                       <MarketSelect
-                        value={form.market as MarketValue}
+                        value={(form.market ?? '') as MarketValue}
                         onChange={(v) => {
                           setForm({ ...form, market: v })
-                          if (v) {
-                            setMarketFilter(v)
-                            setFormErrors({})
-                          }
+                          if (v) setMarketFilter(v)
                         }}
                         compact
                         showAll={false}
                       />
                     </div>
-                    {formErrors.market && <div className={styles.fieldError}>{formErrors.market}</div>}
                   </div>
 
+                  {/* Row 2: Side | Entry Price */}
                   <div className={styles.newTradeField}>
-                    <Input label="Entry Date" type="datetime-local" value={form.entryDate} onChange={(e) => setForm({ ...form, entryDate: e.target.value })} />
-                  </div>
-
-                  <div className={styles.newTradeField}>
-                    <Input label="Size" type="number" value={String(form.size)} onChange={(e) => setForm({ ...form, size: Number(e.target.value) })} />
-                  </div>
-
-                  <div className={styles.newTradeField}>
-                    <Input label="Price" type="number" value={String(form.price)} onChange={(e) => setForm({ ...form, price: Number(e.target.value) })} />
-                  </div>
-
-                  <div className={styles.newTradeField}>
-                    <Input label="SL" value={(form as any).sl ?? ''} onChange={(e) => setForm({ ...form, // @ts-ignore
-                      sl: e.target.value })} />
-                  </div>
-
-                  <div className={styles.newTradeField}>
-                    <Input label="TP1" value={(form as any).tp1 ?? ''} onChange={(e) => setForm({ ...form, // @ts-ignore
-                      tp1: e.target.value })} />
-                  </div>
-
-                  <div className={styles.newTradeField}>
-                    <Input label="TP2" value={(form as any).tp2 ?? ''} onChange={(e) => setForm({ ...form, // @ts-ignore
-                      tp2: e.target.value })} />
-                  </div>
-
-                  <div className={styles.newTradeField}>
-                    <Input label="TP3" value={(form as any).tp3 ?? ''} onChange={(e) => setForm({ ...form, // @ts-ignore
-                      tp3: e.target.value })} />
-                  </div>
-
-                  <div className={styles.newTradeField}>
-                    <Input label="Leverage" type="text" value={(form as any).leverage ?? ''} onChange={(e) => setForm({ ...form, // @ts-ignore
-                      leverage: e.target.value })} />
-                  </div>
-
-                  <div className={`${styles.newTradeField} ${styles.full}`}>
-                    <Input label="Notes" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
-                  </div>
-
-                  <div className={`${styles.newTradeField} ${styles.full}`}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                      <span style={{ marginBottom: 6 }}>Side</span>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <span className={styles.fieldLabel}>Side</span>
                       <SideSelect
                         value={form.side as SideValue}
                         onChange={(v) => setForm({ ...form, side: v })}
@@ -407,110 +373,287 @@ export function TradeJournal() {
                       />
                     </div>
                   </div>
+
+                  <div className={styles.newTradeField}>
+                    <Input
+                      label="Entry Price"
+                      type="number"
+                      value={String(form.price)}
+                      onChange={(e) => setForm({ ...form, price: Number(e.target.value) })}
+                    />
+                  </div>
+
+                  {/* Row 3: Margin | Leverage will follow (shifted down) */}
+                  <div className={styles.newTradeField}>
+                    <Input
+                      label="Margin"
+                      type="text"
+                      value={(form as any).margin ?? ''}
+                      onChange={(e) => setForm({ ...form, // @ts-ignore
+                        margin: e.target.value })}
+                    />
+                  </div>
+                  <div className={styles.newTradeField}>
+                    <Input
+                      label="Leverage"
+                      type="text"
+                      value={(form as any).leverage ?? ''}
+                      onChange={(e) =>
+                        setForm({
+                          ...form, // @ts-ignore
+                          leverage: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                  <div className={styles.newTradeField}>
+                    <Input
+                      label="Position Size"
+                      type="number"
+                      value={String(form.size)}
+                      onChange={(e) => setForm({ ...form, size: Number(e.target.value) })}
+                    />
+                  </div>
+
+                  {/* Row 4: SL | TP1 */}
+                  <div className={styles.newTradeField}>
+                    <Input
+                      label="SL"
+                      value={(form as any).sl ?? ''}
+                      onChange={(e) =>
+                        setForm({
+                          ...form, // @ts-ignore
+                          sl: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div className={styles.newTradeField}>
+                    <Input
+                      label="TP1"
+                      value={(form as any).tp1 ?? ''}
+                      onChange={(e) =>
+                        setForm({
+                          ...form, // @ts-ignore
+                          tp1: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+
+                  {/* Row 5: TP2 | TP3 */}
+                  <div className={styles.newTradeField}>
+                    <Input
+                      label="TP2"
+                      value={(form as any).tp2 ?? ''}
+                      onChange={(e) =>
+                        setForm({
+                          ...form, // @ts-ignore
+                          tp2: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div className={styles.newTradeField}>
+                    <Input
+                      label="TP3"
+                      value={(form as any).tp3 ?? ''}
+                      onChange={(e) =>
+                        setForm({
+                          ...form, // @ts-ignore
+                          tp3: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+
+                  {/* Row 6: Notes full-width */}
+                  <div className={`${styles.newTradeField} ${styles.full}`}>
+                    <Input
+                      label="Notes"
+                      value={form.notes}
+                      onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                    />
+                  </div>
+
+                  {/* Status row (full width) */}
+                  <div className={`${styles.newTradeField} ${styles.full}`}>
+                    <label style={{ color: 'var(--muted)', marginBottom: 6 }}>Status</label>
+                    <select
+                      className={styles.input}
+                      value={form.status}
+                      onChange={(e) => setForm({ ...form, status: e.target.value as 'OPEN' | 'CLOSED' | 'FILLED' })}
+                    >
+                      <option value="OPEN">OPEN</option>
+                      <option value="CLOSED">CLOSED</option>
+                      <option value="FILLED">FILLED</option>
+                    </select>
+                  </div>
                 </div>
 
-                <div className={styles.actions} style={{ marginTop: 8 }}>
-                  <Button variant="primary">Add Trade</Button>
-                  <Button variant="ghost" onClick={() => { setForm({ symbol: '', entryDate: '', size: 0, price: 0, side: 'LONG', market: '', notes: '' }); setFormErrors({}) }}>Reset</Button>
+                <div className={styles.actions} style={{ marginTop: 12 }}>
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      setForm({
+                        symbol: '',
+                        entryDate: '',
+                        size: 0,
+                        price: 0,
+                        side: 'LONG',
+                        status: 'OPEN',
+                        market: undefined,
+                        notes: '',
+                        sl: '',
+                        tp1: '',
+                        tp2: '',
+                        tp3: '',
+                        leverage: '',
+                        margin: '',
+                      })
+                      setFormErrors({})
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button variant="primary" onClick={() => { /* submit: form is in enclosing form element so native submit will call handleAdd */ }}>
+                    Add
+                  </Button>
                 </div>
               </form>
             </div>
           </Card>
-         </div>
+        </div>
 
-         <div className={styles.right}>
-            <Card
-              tabs={[
-                {
-                  key: 'list',
-                  title: 'List',
-                  render: () => (
-                    <>
-                      <div className={styles.tradesHeader}>
-                        <div className={styles.tradesTitle}>Trades</div>
-                        <div className={styles.tradesControls}>
-                          <div className={styles.tradesFilters}>
-                            <Button
-                              variant={marketFilter === 'All' ? 'primary' : 'ghost'}
-                              onClick={() => setMarketFilter('All')}
-                            >
-                              All
-                            </Button>
-                            <Button
-                              variant={marketFilter === 'Forex' ? 'primary' : 'ghost'}
-                              onClick={() => setMarketFilter('Forex')}
-                            >
-                              Forex
-                            </Button>
-                            <Button
-                              variant={marketFilter === 'Crypto' ? 'primary' : 'ghost'}
-                              onClick={() => setMarketFilter('Crypto')}
-                            >
-                              Crypto
-                            </Button>
-                          </div>
-                          <div className={styles.tradesCount}>{trades.length} trades</div>
+        <div className={styles.right}>
+          <Card
+            tabs={[
+              {
+                key: 'list',
+                title: 'List',
+                render: () => (
+                  <>
+                    <div className={styles.tradesHeader}>
+                      <div className={styles.tradesTitle}>Trades</div>
+                      <div className={styles.tradesControls}>
+                        <div className={styles.tradesFilters}>
+                          <Button
+                            variant={marketFilter === 'All' ? 'primary' : 'ghost'}
+                            onClick={() => setMarketFilter('All')}
+                          >
+                            All
+                          </Button>
+                          <Button
+                            variant={marketFilter === 'Forex' ? 'primary' : 'ghost'}
+                            onClick={() => setMarketFilter('Forex')}
+                          >
+                            Forex
+                          </Button>
+                          <Button
+                            variant={marketFilter === 'Crypto' ? 'primary' : 'ghost'}
+                            onClick={() => setMarketFilter('Crypto')}
+                          >
+                            Crypto
+                          </Button>
                         </div>
+                        <div className={styles.tradesCount}>{trades.length} trades</div>
+                      </div>
+                    </div>
+
+                    <div className={styles.controls} style={{ marginBottom: 8 }}>
+                      <Button
+                        variant={tradeStatusFilter === 'ALL' ? 'primary' : 'ghost'}
+                        onClick={() => setTradeStatusFilter('ALL')}
+                      >
+                        All
+                      </Button>
+                      <Button
+                        variant={tradeStatusFilter === 'OPEN' ? 'primary' : 'ghost'}
+                        onClick={() => setTradeStatusFilter('OPEN')}
+                      >
+                        Open
+                      </Button>
+                      <Button
+                        variant={tradeStatusFilter === 'CLOSED' ? 'primary' : 'ghost'}
+                        onClick={() => setTradeStatusFilter('CLOSED')}
+                      >
+                        Closed
+                      </Button>
+                      <Button
+                        variant={tradeStatusFilter === 'FILLED' ? 'primary' : 'ghost'}
+                        onClick={() => setTradeStatusFilter('FILLED')}
+                      >
+                        Filled
+                      </Button>
+                    </div>
+
+                    <div className={styles.listAndDetailWrap}>
+                      <div className={styles.leftPane}>
+                        <TradeList
+                          trades={trades}
+                          selectedId={selectedId}
+                          onSelect={(id) => setSelectedId(id)}
+                        />
                       </div>
 
-                      <div className={styles.controls} style={{ marginBottom: 8 }}>
-                        <Button variant={tradeStatusFilter === 'ALL' ? 'primary' : 'ghost'} onClick={() => setTradeStatusFilter('ALL')}>All</Button>
-                        <Button variant={tradeStatusFilter === 'OPEN' ? 'primary' : 'ghost'} onClick={() => setTradeStatusFilter('OPEN')}>Open</Button>
-                        <Button variant={tradeStatusFilter === 'CLOSED' ? 'primary' : 'ghost'} onClick={() => setTradeStatusFilter('CLOSED')}>Closed</Button>
-                        <Button variant={tradeStatusFilter === 'FILLED' ? 'primary' : 'ghost'} onClick={() => setTradeStatusFilter('FILLED')}>Filled</Button>
+                      <div className={styles.rightPane}>
+                        <TradeDetailEditor
+                          trade={(() => {
+                            const p = positions.find((p) => p.id === selectedId);
+                            return p
+                              ? {
+                                  id: p.id,
+                                  symbol: p.symbol,
+                                  entryDate: p.entryDate,
+                                  size: p.size,
+                                  price: p.price,
+                                  side: p.side,
+                                  notes: p.notes,
+                                }
+                              : null;
+                          })()}
+                          onChange={(dto) => handleEditorChange(dto)}
+                          onSave={(dto) => handleEditorSave(dto)}
+                        />
                       </div>
+                    </div>
+                  </>
+                ),
+              },
+              {
+                key: 'analysis',
+                title: 'Analyse',
+                render: () => <Analysis onCreateTradeSuggestion={handleCreateTradeFromAnalysis} />,
+              },
+            ]}
+            activeTabKey={tradesCardTab}
+            onTabChange={(k) => setTradesCardTab(k as 'list' | 'analysis')}
+          />
+        </div>
+      </div>
 
-                      <div className={styles.listAndDetailWrap}>
-                        <div className={styles.leftPane}>
-                          <TradeList trades={trades} selectedId={selectedId} onSelect={(id) => setSelectedId(id)} />
-                        </div>
+      <ConfirmDialog
+        open={confirmOpen}
+        onConfirm={handleConfirm}
+        onCancel={handleCancelConfirm}
+        title="Bestätigung erforderlich"
+        message={`Sind Sie sicher, dass Sie diese Aktion durchführen möchten?`}
+        confirmLabel="Ja"
+        cancelLabel="Abbrechen"
+      />
 
-                        <div className={styles.rightPane}>
-                          <TradeDetailEditor
-                            trade={(() => {
-                              const p = positions.find(p => p.id === selectedId)
-                              return p ? { id: p.id, symbol: p.symbol, entryDate: p.entryDate, size: p.size, price: p.price, side: p.side, notes: p.notes } : null
-                            })()}
-                            onChange={(dto) => handleEditorChange(dto)}
-                            onSave={(dto) => handleEditorSave(dto)}
-                          />
-                        </div>
-                      </div>
-                    </>
-                  )
-                },
-                {
-                  key: 'analysis',
-                  title: 'Analyse',
-                  render: () => (
-                    <Analysis onCreateTradeSuggestion={handleCreateTradeFromAnalysis} />
-                  )
-                }
-              ]}
-              activeTabKey={tradesCardTab}
-              onTabChange={(k) => setTradesCardTab(k as 'list' | 'analysis')}
-            />
-           </div>
-         </div>
-
-       <ConfirmDialog
-         open={confirmOpen}
-         onConfirm={handleConfirm}
-         onCancel={handleCancelConfirm}
-         title="Bestätigung erforderlich"
-         message={`Sind Sie sicher, dass Sie diese Aktion durchführen möchten?`}
-         confirmLabel="Ja"
-         cancelLabel="Abbrechen"
-       />
-
-       {undoInfo && (
-         <div className={styles.undoBanner}>
-           <div className={styles.undoContent}>
-             <div>Aktion durchgeführt — Rückgängig möglich</div>
-             <Button variant="ghost" onClick={handleUndo}>Rückgängig</Button>
-           </div>
-         </div>
-       )}
+      {undoInfo && (
+        <div className={styles.undoBanner}>
+          <div className={styles.undoContent}>
+            <div>Aktion durchgeführt — Rückgängig möglich</div>
+            <Button variant="ghost" onClick={handleUndo}>
+              Rückgängig
+            </Button>
+          </div>
+        </div>
+      )}
     </>
-  )
+  );
  }
