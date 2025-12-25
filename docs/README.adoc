@@ -1,0 +1,15 @@
+== Dokumentation
+
+Dieses Verzeichnis enthält die technische Dokumentation der Anwendung.
+
+* Architekturübersicht:: `architecture.adoc` (Onion / DDD Beschreibung mit eingebetteten PlantUML-Diagrammen)
+* Diagramme:: `diagrams/*.puml` (PlantUML Dateien zur Visualisierung)
+
+== Anleitung
+Um die Dokumentation lokal zu rendern (inkl. PlantUML-Diagrammen), kann man Asciidoctor mit dem Diagram-Plugin verwenden:
+
+`asciidoctor -r asciidoctor-diagram architecture.adoc`
+
+Die generierte HTML-Datei liegt dann im lokalen Verzeichnis und kann im Browser geöffnet werden.
+
+include::architecture.adoc[]

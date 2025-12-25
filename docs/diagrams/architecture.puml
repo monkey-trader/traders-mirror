@@ -1,0 +1,27 @@
+@startuml
+}
+@enduml
+
+I --> D : stores primitives
+D <.. A : pure logic
+A --> I : repositories (ports -> adapters)
+A --> D : use factories / entities
+P --> A : user actions
+  [InMemoryTradeRepository]
+package "Infrastructure" as I #EECCCC {
+}
+  [Entities]
+  [ValueObjects]
+  [TradeFactory]
+package "Domain" as D #AAEEFF {
+}
+  [TradeService]
+package "Application" as A #CCEEFF {
+}
+  [TradeJournal]
+package "Presentation" as P #DDDDFF {
+
+skinparam shadowing false
+skinparam dpi 150
+' Simple architecture overview: Onion / DDD layers
+

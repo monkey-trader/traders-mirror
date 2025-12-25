@@ -1,0 +1,19 @@
+@startuml
+left to right direction
+actor Trader
+rectangle "Traders Mirror" {
+  usecase "Record Trade" as U1
+  usecase "Analyze Performance" as U2
+  usecase "Track Metrics" as U3
+}
+Trader --> U1
+Trader --> U2
+Trader --> U3
+
+note right of U2
+  Beispielanalysen:
+  - Winrate
+  - Average PnL
+  - Risk/Reward
+end note
+@enduml

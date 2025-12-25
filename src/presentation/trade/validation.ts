@@ -60,6 +60,9 @@ export function validateNewTrade(input: TradeForm): ValidationResult[] {
 // This function is used by the TradeDetailEditor; it returns a mapping of field -> message (or undefined)
 export function validateTrade(input: TradeInput): Record<string, string | undefined> {
   const out: Record<string, string | undefined> = {}
+  // narrow to a record so we can safely access optional fields that may not be in the TradeInput type
+  const maybe = input as unknown as Record<string, unknown>
+
   if (!input.symbol || String(input.symbol).trim().length === 0) {
     out.symbol = 'Symbol ist erforderlich'
   }
@@ -68,34 +71,40 @@ export function validateTrade(input: TradeInput): Record<string, string | undefi
   } else if (isNaN(Date.parse(String(input.entryDate)))) {
     out.entryDate = 'Entry Date ist ungültig'
   }
-  if (Number.isNaN(input.price as number) || (input.price as number) <= 0) {
+
+  // price/size: accept numbers or convertible values, validate as numbers
+  const priceValue = Number(maybe.price as unknown)
+  if (Number.isNaN(priceValue) || priceValue <= 0) {
     out.price = 'Preis muss eine positive Zahl sein'
   }
-  if (Number.isNaN(input.size as number) || (input.size as number) <= 0) {
+  const sizeValue = Number(maybe.size as unknown)
+  if (Number.isNaN(sizeValue) || sizeValue <= 0) {
     out.size = 'Größe muss positiv sein'
   }
+
   if (!input.side || (input.side !== 'LONG' && input.side !== 'SHORT')) {
     out.side = 'Seite muss LONG oder SHORT sein'
   }
   // For detail editor we accept market optional, but if present validate
-  if (typeof input.market !== 'undefined' && input.market !== null) {
-    const m = String(input.market)
+  if (typeof maybe.market !== 'undefined' && maybe.market !== null) {
+    const m = String(maybe.market)
     if (m !== 'Forex' && m !== 'Crypto' && m !== 'All' && m !== '') {
       out.market = 'Ungültiger Markt'
     }
   }
-  // Require SL, margin, leverage in detail editor as numbers
-  if (typeof (input as any).sl !== 'number' || Number.isNaN((input as any).sl)) {
+
+  // Require SL, margin, leverage in detail editor as numbers. Use typeof checks on maybe object.
+  if (typeof maybe.sl !== 'number' || Number.isNaN(maybe.sl as number)) {
     out.sl = 'Stop Loss (SL) ist erforderlich'
   }
-  if (typeof (input as any).margin !== 'number' || Number.isNaN((input as any).margin)) {
+  if (typeof maybe.margin !== 'number' || Number.isNaN(maybe.margin as number)) {
     out.margin = 'Margin ist erforderlich'
-  } else if ((input as any).margin <= 0) {
+  } else if ((maybe.margin as number) <= 0) {
     out.margin = 'Margin muss eine positive Zahl sein'
   }
-  if (typeof (input as any).leverage !== 'number' || Number.isNaN((input as any).leverage)) {
+  if (typeof maybe.leverage !== 'number' || Number.isNaN(maybe.leverage as number)) {
     out.leverage = 'Leverage ist erforderlich'
-  } else if ((input as any).leverage <= 0) {
+  } else if ((maybe.leverage as number) <= 0) {
     out.leverage = 'Leverage muss eine positive Zahl sein'
   }
   return out

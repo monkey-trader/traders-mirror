@@ -94,53 +94,87 @@ export class InMemoryTradeRepository {
     this.trades = initial.map(t => ({ ...t }))
   }
 
-  private toRepoTrade(obj: any): RepoTrade {
+  // Narrower typings: accept unknown and detect VO-like shapes safely
+  private isObject(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null
+  }
+
+  private looksLikeVOTrade(obj: unknown): obj is Record<string, unknown> {
+    if (!this.isObject(obj)) return false
+    const maybe = obj as Record<string, unknown>
+    return (
+      'symbol' in maybe && this.isObject(maybe.symbol) && 'value' in (maybe.symbol as Record<string, unknown>)
+    )
+  }
+
+  private toRepoTrade(obj: unknown): RepoTrade {
     // If object looks like a domain Trade (VOs), convert to primitive shape
-    if (obj && typeof obj === 'object' && obj.symbol && typeof obj.symbol === 'object' && 'value' in obj.symbol) {
+    if (this.looksLikeVOTrade(obj)) {
+      const o = obj as Record<string, unknown>
+      const symbolVO = o.symbol as Record<string, unknown>
+      const entryDateVO = o.entryDate as Record<string, unknown> | string | undefined
+
       return {
-        id: obj.id,
-        market: (obj as any).market ?? 'All',
-        symbol: obj.symbol.value,
-        entryDate: obj.entryDate && obj.entryDate.value ? obj.entryDate.value : (obj.entryDate ?? new Date().toISOString()),
-        size: obj.size && typeof obj.size === 'object' && 'value' in obj.size ? obj.size.value : obj.size,
-        price: obj.price && typeof obj.price === 'object' && 'value' in obj.price ? obj.price.value : obj.price,
-        side: obj.side && typeof obj.side === 'object' && 'value' in obj.side ? obj.side.value : obj.side,
-        status: obj.status ?? 'OPEN',
-        pnl: obj.pnl ?? 0,
-        notes: obj.notes,
-        entry: obj.entry,
-        sl: obj.sl,
-        tp1: obj.tp1,
-        tp2: obj.tp2,
-        tp3: obj.tp3,
-        margin: obj.margin,
-        leverage: obj.leverage
+        id: String(o.id),
+        market: (o.market as any) ?? 'All',
+        symbol: String(symbolVO.value),
+        entryDate: entryDateVO && typeof entryDateVO === 'object' && 'value' in entryDateVO ? String((entryDateVO as Record<string, unknown>).value) : String(entryDateVO ?? new Date().toISOString()),
+        size: (this.isObject(o.size) && 'value' in (o.size as Record<string, unknown>)) ? Number((o.size as Record<string, unknown>).value) : Number(o.size as number),
+        price: (this.isObject(o.price) && 'value' in (o.price as Record<string, unknown>)) ? Number((o.price as Record<string, unknown>).value) : Number(o.price as number),
+        side: (this.isObject(o.side) && 'value' in (o.side as Record<string, unknown>)) ? String((o.side as Record<string, unknown>).value) as 'LONG' | 'SHORT' : (o.side as 'LONG' | 'SHORT'),
+        status: (o.status as RepoTrade['status']) ?? 'OPEN',
+        pnl: Number(o.pnl ?? 0),
+        notes: o.notes as string | undefined,
+        entry: o.entry as string | undefined,
+        sl: typeof o.sl === 'number' ? o.sl as number : undefined,
+        tp1: typeof o.tp1 === 'number' ? o.tp1 as number : undefined,
+        tp2: typeof o.tp2 === 'number' ? o.tp2 as number : undefined,
+        tp3: typeof o.tp3 === 'number' ? o.tp3 as number : undefined,
+        margin: typeof o.margin === 'number' ? o.margin as number : undefined,
+        leverage: typeof o.leverage === 'number' ? o.leverage as number : undefined
       }
     }
 
     // Assume it's already a RepoTrade-like object
+    if (this.isObject(obj)) {
+      const o = obj as Record<string, unknown>
+      return {
+        id: String(o.id),
+        market: (o.market as RepoTrade['market']) ?? 'All',
+        symbol: String(o.symbol),
+        entryDate: String(o.entryDate),
+        size: Number(o.size as number),
+        price: Number(o.price as number),
+        side: (o.side as RepoTrade['side']) ?? 'LONG',
+        status: (o.status as RepoTrade['status']) ?? 'OPEN',
+        pnl: Number(o.pnl ?? 0),
+        notes: o.notes as string | undefined,
+        entry: o.entry as string | undefined,
+        sl: typeof o.sl === 'number' ? o.sl as number : undefined,
+        tp1: typeof o.tp1 === 'number' ? o.tp1 as number : undefined,
+        tp2: typeof o.tp2 === 'number' ? o.tp2 as number : undefined,
+        tp3: typeof o.tp3 === 'number' ? o.tp3 as number : undefined,
+        margin: typeof o.margin === 'number' ? o.margin as number : undefined,
+        leverage: typeof o.leverage === 'number' ? o.leverage as number : undefined
+      }
+    }
+
+    // Fallback - create a minimal RepoTrade
+    const now = new Date().toISOString()
     return {
-      id: obj.id,
-      market: obj.market ?? 'All',
-      symbol: obj.symbol,
-      entryDate: obj.entryDate,
-      size: obj.size,
-      price: obj.price,
-      side: obj.side,
-      status: obj.status ?? 'OPEN',
-      pnl: obj.pnl ?? 0,
-      notes: obj.notes,
-      entry: obj.entry,
-      sl: obj.sl,
-      tp1: obj.tp1,
-      tp2: obj.tp2,
-      tp3: obj.tp3,
-      margin: obj.margin,
-      leverage: obj.leverage
+      id: 'unknown',
+      market: 'All',
+      symbol: 'UNKNOWN',
+      entryDate: now,
+      size: 0,
+      price: 0,
+      side: 'LONG',
+      status: 'OPEN',
+      pnl: 0
     }
   }
 
-  async save(trade: any): Promise<void> {
+  async save(trade: unknown): Promise<void> {
     const repoTrade = this.toRepoTrade(trade)
     this.trades.push({ ...repoTrade })
   }
@@ -150,7 +184,7 @@ export class InMemoryTradeRepository {
     return this.trades.map(t => ({ ...t }))
   }
 
-  async update(trade: any): Promise<void> {
+  async update(trade: unknown): Promise<void> {
     const repoTrade = this.toRepoTrade(trade)
     const idx = this.trades.findIndex(t => t.id === repoTrade.id)
     if (idx >= 0) this.trades[idx] = { ...this.trades[idx], ...repoTrade }
