@@ -12,4 +12,8 @@ Um die Dokumentation lokal zu rendern (inkl. PlantUML-Diagrammen), kann man Asci
 
 Die generierte HTML-Datei liegt dann im lokalen Verzeichnis und kann im Browser geöffnet werden.
 
+Falls der CI/Workflow PlantUML nicht ausführen kann, enthält dieses Repository vorgerenderte PNG-Fallbacks für die Diagramme in `docs/diagrams/*.png`.
+
+Ein GitHub Actions-Workflow `./github/workflows/render-puml.yml` rendert automatisch `.puml` -> `.png` und erstellt einen PR, der die PNG-Artefakte aktualisiert, wenn sich die `.puml`-Dateien ändern.
+
 include::architecture.adoc[]
