@@ -46,3 +46,80 @@
   --glass: rgba(255,255,255,0.02);
   --glass-strong: rgba(255,255,255,0.04);
 }
+
+/* --- New theme variants (surprise set) --- */
+
+:root[data-theme="solarized"] {
+  /* softened solarized dark */
+  --bg: #002b36;
+  --surface: #073642;
+  --text: #93a1a1;
+  --muted: #586e75;
+  --color-text: #e8f1f1;
+  --color-primary: #b58900; /* golden */
+  --accent: #2aa198; /* teal */
+  --accent-glass: rgba(42,161,152,0.08);
+  --accent-strong: rgba(42,161,152,0.16);
+  --glass: rgba(255,255,255,0.02);
+  --glass-strong: rgba(255,255,255,0.04);
+}
+
+:root[data-theme="neon"] {
+  /* punchy neon on near-black */
+  --bg: #04060a;
+  --surface: #0b0d11;
+  --text: #f4f7fb;
+  --muted: #98a3b3;
+  --color-text: #ffffff;
+  --color-primary: #ff2dd4; /* magenta */
+  --accent: #00ffd5; /* cyan */
+  --accent-glass: rgba(0,255,213,0.06);
+  --accent-strong: rgba(255,45,212,0.18);
+  --glass: rgba(255,255,255,0.02);
+  --glass-strong: rgba(255,255,255,0.05);
+}
+
+:root[data-theme="forest"] {
+  /* deep forest greens */
+  --bg: #07120b;
+  --surface: #0b1912;
+  --text: #eaf7ee;
+  --muted: #95a69a;
+  --color-text: #e8f7ea;
+  --color-primary: #2e8b57; /* sea green */
+  --accent: #79c267;
+  --accent-glass: rgba(121,194,103,0.08);
+  --accent-strong: rgba(121,194,103,0.18);
+  --glass: rgba(255,255,255,0.02);
+  --glass-strong: rgba(255,255,255,0.04);
+}
+
+:root[data-theme="sunrise"] {
+  /* warm sunrise gradient vibe */
+  --bg: #0c0a10;
+  --surface: #130f15;
+  --text: #fff2ea;
+  --muted: #c8b6b2;
+  --color-text: #fff6f2;
+  --color-primary: #ff7a59; /* coral */
+  --accent: #ffd166; /* sunrise yellow */
+  --accent-glass: rgba(255,209,102,0.08);
+  --accent-strong: rgba(255,122,89,0.18);
+  --glass: rgba(255,255,255,0.02);
+  --glass-strong: rgba(255,255,255,0.04);
+}
+
+:root[data-theme="mono"] {
+  /* monochrome high-contrast */
+  --bg: #070707;
+  --surface: #0f0f10;
+  --text: #e8e8e8;
+  --muted: #9a9a9a;
+  --color-text: #e6e6e6;
+  --color-primary: #a0a0a0;
+  --accent: #cfcfcf;
+  --accent-glass: rgba(207,207,207,0.06);
+  --accent-strong: rgba(207,207,207,0.14);
+  --glass: rgba(255,255,255,0.02);
+  --glass-strong: rgba(255,255,255,0.04);
+}
