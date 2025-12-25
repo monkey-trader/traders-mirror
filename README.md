@@ -7,3 +7,5 @@ Traders Mirror is a small Trading-Journal application built with React + TypeScr
 
 
 See the documentation in the `docs/` folder for architecture diagrams and details.
+
+- docs: [docs/README.md](./docs/README.md)
