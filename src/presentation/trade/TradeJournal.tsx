@@ -9,6 +9,7 @@ import InMemoryTradeRepository from '@/infrastructure/trade/repositories/InMemor
 import { ConfirmDialog } from '@/presentation/shared/components/ConfirmDialog/ConfirmDialog'
 import { TradeList } from './TradeList/TradeList'
 import { TradeDetailEditor } from './TradeDetail/TradeDetailEditor'
+import { Analysis } from '@/presentation/analysis/Analysis'
 
 type TradeRow = {
   id: string
@@ -42,6 +43,9 @@ export function TradeJournal() {
 
   // selected trade id for left-right layout
   const [selectedId, setSelectedId] = useState<string | null>(null)
+
+  // active tab for the Trades card (list | analysis)
+  const [tradesCardTab, setTradesCardTab] = useState<'list' | 'analysis'>('list')
 
   // track dirty ids (simple set of ids with local unsaved changes)
   const [dirtyIds, setDirtyIds] = useState<Set<string>>(new Set())
@@ -245,26 +249,7 @@ export function TradeJournal() {
       <div className={styles.headerRow}>
         <h2 className={styles.title}>Trading Journal - Demo</h2>
         <div className={styles.controls}>
-          <div className={styles.filterPills}>
-            <Button
-              variant={marketFilter === 'Crypto' ? 'primary' : 'ghost'}
-              onClick={() => setMarketFilter('Crypto')}
-            >
-              Crypto
-            </Button>
-            <Button
-              variant={marketFilter === 'Forex' ? 'primary' : 'ghost'}
-              onClick={() => setMarketFilter('Forex')}
-            >
-              Forex
-            </Button>
-            <Button
-              variant={marketFilter === 'All' ? 'primary' : 'ghost'}
-              onClick={() => setMarketFilter('All')}
-            >
-              All
-            </Button>
-          </div>
+          {/* moved market filters next to Trades title */}
         </div>
       </div>
 
@@ -307,33 +292,79 @@ export function TradeJournal() {
          </div>
 
          <div className={styles.right}>
-            <Card title={`Trades`}>
-              <div className={styles.marketHeader}>{marketFilter}   {trades.length} trades</div>
-              <div className={styles.controls} style={{ marginBottom: 8 }}>
-                <Button variant={tradeStatusFilter === 'ALL' ? 'primary' : 'ghost'} onClick={() => setTradeStatusFilter('ALL')}>All</Button>
-                <Button variant={tradeStatusFilter === 'OPEN' ? 'primary' : 'ghost'} onClick={() => setTradeStatusFilter('OPEN')}>Open</Button>
-                <Button variant={tradeStatusFilter === 'CLOSED' ? 'primary' : 'ghost'} onClick={() => setTradeStatusFilter('CLOSED')}>Closed</Button>
-                <Button variant={tradeStatusFilter === 'FILLED' ? 'primary' : 'ghost'} onClick={() => setTradeStatusFilter('FILLED')}>Filled</Button>
-              </div>
-             <div className={styles.listAndDetailWrap}>
-               <div className={styles.leftPane}>
-                 <TradeList trades={trades} selectedId={selectedId} onSelect={(id) => setSelectedId(id)} />
-               </div>
+            <Card
+              tabs={[
+                {
+                  key: 'list',
+                  title: 'List',
+                  render: () => (
+                    <>
+                      <div className={styles.tradesHeader}>
+                        <div className={styles.tradesTitle}>Trades</div>
+                        <div className={styles.tradesControls}>
+                          <div className={styles.tradesFilters}>
+                            <Button
+                              variant={marketFilter === 'All' ? 'primary' : 'ghost'}
+                              onClick={() => setMarketFilter('All')}
+                            >
+                              All
+                            </Button>
+                            <Button
+                              variant={marketFilter === 'Forex' ? 'primary' : 'ghost'}
+                              onClick={() => setMarketFilter('Forex')}
+                            >
+                              Forex
+                            </Button>
+                            <Button
+                              variant={marketFilter === 'Crypto' ? 'primary' : 'ghost'}
+                              onClick={() => setMarketFilter('Crypto')}
+                            >
+                              Crypto
+                            </Button>
+                          </div>
+                          <div className={styles.tradesCount}>{trades.length} trades</div>
+                        </div>
+                      </div>
 
-               <div className={styles.rightPane}>
-                 <TradeDetailEditor
-                   trade={(() => {
-                     const p = positions.find(p => p.id === selectedId)
-                     return p ? { id: p.id, symbol: p.symbol, entryDate: p.entryDate, size: p.size, price: p.price, side: p.side, notes: p.notes } : null
-                   })()}
-                   onChange={(dto) => handleEditorChange(dto)}
-                   onSave={(dto) => handleEditorSave(dto)}
-                 />
-               </div>
-              </div>
-            </Card>
-          </div>
-        </div>
+                      <div className={styles.controls} style={{ marginBottom: 8 }}>
+                        <Button variant={tradeStatusFilter === 'ALL' ? 'primary' : 'ghost'} onClick={() => setTradeStatusFilter('ALL')}>All</Button>
+                        <Button variant={tradeStatusFilter === 'OPEN' ? 'primary' : 'ghost'} onClick={() => setTradeStatusFilter('OPEN')}>Open</Button>
+                        <Button variant={tradeStatusFilter === 'CLOSED' ? 'primary' : 'ghost'} onClick={() => setTradeStatusFilter('CLOSED')}>Closed</Button>
+                        <Button variant={tradeStatusFilter === 'FILLED' ? 'primary' : 'ghost'} onClick={() => setTradeStatusFilter('FILLED')}>Filled</Button>
+                      </div>
+
+                      <div className={styles.listAndDetailWrap}>
+                        <div className={styles.leftPane}>
+                          <TradeList trades={trades} selectedId={selectedId} onSelect={(id) => setSelectedId(id)} />
+                        </div>
+
+                        <div className={styles.rightPane}>
+                          <TradeDetailEditor
+                            trade={(() => {
+                              const p = positions.find(p => p.id === selectedId)
+                              return p ? { id: p.id, symbol: p.symbol, entryDate: p.entryDate, size: p.size, price: p.price, side: p.side, notes: p.notes } : null
+                            })()}
+                            onChange={(dto) => handleEditorChange(dto)}
+                            onSave={(dto) => handleEditorSave(dto)}
+                          />
+                        </div>
+                      </div>
+                    </>
+                  )
+                },
+                {
+                  key: 'analysis',
+                  title: 'Analyse',
+                  render: () => (
+                    <Analysis />
+                  )
+                }
+              ]}
+              activeTabKey={tradesCardTab}
+              onTabChange={(k) => setTradesCardTab(k as 'list' | 'analysis')}
+            />
+           </div>
+         </div>
 
        <ConfirmDialog
          open={confirmOpen}

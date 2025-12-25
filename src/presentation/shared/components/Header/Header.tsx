@@ -7,6 +7,7 @@ export function Header() {
       <div className={styles.brand}>Traders Mirror</div>
       <nav className={styles.nav}>
         <a href="#/journal">Journal</a>
+        <a href="#/analysis">Analyse</a>
         <a href="#/settings">Settings</a>
       </nav>
       <div className={styles.controls}>

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { TradeJournal } from '@/presentation/trade/TradeJournal'
 import { Settings } from '@/presentation/settings/Settings'
 import { Layout } from '@/presentation/shared/components/Layout/Layout'
+import { Analysis } from '@/presentation/analysis/Analysis'
 
 function App() {
   useEffect(() => {
@@ -24,8 +25,14 @@ function App() {
 
   return (
     <Layout fullWidth={true}>
-      {/* Simple hash-based routing: #/journal, #/feed, #/settings */}
-      {route === '#/settings' ? <Settings /> : <TradeJournal />}
+      {/* Simple hash-based routing: #/journal, #/analysis, #/settings */}
+      {route === '#/settings' ? (
+        <Settings />
+      ) : route === '#/analysis' ? (
+        <Analysis />
+      ) : (
+        <TradeJournal />
+      )}
     </Layout>
   )
 }
