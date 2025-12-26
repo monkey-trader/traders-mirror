@@ -2,7 +2,6 @@ import React from 'react'
 import styles from './Settings.module.css'
 import { ThemeSwitcher } from '@/presentation/shared/components/ThemeSwitcher/ThemeSwitcher'
 import { loadSettings, saveSettings } from './settingsStorage'
-import { Switch } from '@/presentation/shared/components/Switch/Switch'
 import { Button } from '@/presentation/shared/components/Button/Button'
 import LocalStorageTradeRepository from '@/infrastructure/trade/repositories/LocalStorageTradeRepository'
 
@@ -24,7 +23,16 @@ function DebugToggle() {
     <div className={styles.debugRow}>
       <label className={styles.fieldLabel}>Debug UI</label>
       <div>
-        <Switch checked={enabled} onChange={onToggle} ariaLabel="Toggle debug UI" />
+        <button
+          role="switch"
+          aria-checked={enabled}
+          aria-label="Toggle debug UI"
+          className={`${styles.debugBtn} ${enabled ? styles.on : styles.off}`}
+          onClick={() => onToggle(!enabled)}
+          type="button"
+        >
+          {enabled ? 'Debug ON' : 'Debug OFF'}
+        </button>
       </div>
       <p className={styles.help}>Enable developer UI features (status banners, extra logs). Stored in browser settings.</p>
     </div>
@@ -62,9 +70,9 @@ function StorageControls() {
   return (
     <div className={styles.debugRow} style={{ alignItems: 'center' }}>
       <label className={styles.fieldLabel}>Storage</label>
-      <div style={{ display: 'flex', gap: 8 }}>
-        <Button variant="secondary" onClick={clearStoredTrades}>Clear stored trades</Button>
-        <Button variant="ghost" onClick={restoreDemoData}>Restore demo data</Button>
+      <div className={styles.storageButtons}>
+        <Button className={styles.dangerBtn} variant="secondary" onClick={clearStoredTrades}>Clear stored trades</Button>
+        <Button className={styles.restoreBtn} variant="ghost" onClick={restoreDemoData}>Restore demo data</Button>
       </div>
       <p className={styles.help}>Remove or restore the demo trades stored in your browser localStorage (key: mt_trades_v1).</p>
     </div>

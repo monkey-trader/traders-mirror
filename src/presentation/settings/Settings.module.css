@@ -71,3 +71,90 @@
   color: var(--muted);
   margin-top: 8px;
 }
+
+.debugRow {
+  display: grid;
+  grid-template-columns: 120px 1fr auto;
+  gap: 12px;
+  align-items: start;
+}
+
+.debugBtn {
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.06);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  min-width: 96px;
+  text-align: center;
+  font-weight: 700;
+  box-shadow: none;
+  transition: background 160ms ease, color 160ms ease, box-shadow 160ms ease, transform 120ms ease;
+}
+
+.debugBtn.on {
+  background: linear-gradient(90deg, #34d399, #059669);
+  color: var(--surface);
+  border: none;
+  box-shadow: 0 6px 18px rgba(5,150,105,0.16);
+  transform: translateY(-1px);
+}
+
+.debugBtn.off {
+  background: transparent;
+  color: var(--muted);
+}
+
+.debugBtn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(52,211,153,0.12), 0 4px 12px rgba(0,0,0,0.6);
+}
+
+/* keep help text spanning columns nicely */
+.debugRow .help {
+  grid-column: 2 / -1;
+  margin-top: 6px;
+}
+
+.storageButtons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.dangerBtn {
+  background: linear-gradient(90deg, #ff6b6b, #ff3b30);
+  color: #fff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-weight: 700;
+  box-shadow: 0 8px 20px rgba(255,59,48,0.14);
+}
+.dangerBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(255,59,48,0.18);
+}
+.dangerBtn:active { transform: translateY(0); }
+
+.restoreBtn {
+  background: linear-gradient(90deg, #7c5cff, #6b46c1);
+  color: var(--surface);
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-weight: 700;
+  box-shadow: 0 8px 20px rgba(124,92,255,0.12);
+}
+.restoreBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(124,92,255,0.16);
+}
+.restoreBtn:active { transform: translateY(0); }
+
+/* ensure accessibility focus outline */
+.dangerBtn:focus-visible, .restoreBtn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(99,102,241,0.12), inset 0 1px 0 rgba(255,255,255,0.02);
+}
