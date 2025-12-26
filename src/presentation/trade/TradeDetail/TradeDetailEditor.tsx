@@ -70,6 +70,18 @@ export function TradeDetailEditor({ trade, onChange, onSave, onDelete }: TradeDe
     setStatus('idle')
   }
 
+  // Restore the editor contents to the initial loaded trade snapshot
+  const restoreInitial = () => {
+    const base = initialTradeRef.current
+    if (!base) return
+    // create a defensive clone so editors won't accidentally mutate the ref
+    const clone: TradeInput = JSON.parse(JSON.stringify(base))
+    setLocal(clone)
+    setErrors({})
+    setStatus('idle')
+    if (onChange) onChange(clone)
+  }
+
   const handleBlurOrSave = async () => {
     if (!local) return
     const v = validateTrade(local)
@@ -140,6 +152,16 @@ export function TradeDetailEditor({ trade, onChange, onSave, onDelete }: TradeDe
         <textarea aria-label="Notes" className={styles.textarea} value={local.notes ?? ''} onChange={(e) => fieldChange('notes', e.target.value)} onBlur={handleBlurOrSave} />
 
         <div style={{ marginTop: 12 }}>
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={restoreInitial}
+            disabled={!isDirty}
+            aria-disabled={!isDirty}
+            style={{ marginRight: 8 }}
+          >
+            Restore
+          </Button>
           <Button
             type="button"
             variant="primary"
