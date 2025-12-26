@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   render-and-pr:
-    name: Render .puml -> PNG and create PR
+    name: Render .puml -> PNG and create PR (or push to main)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -23,33 +23,69 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Check last commit author to avoid loop
+        id: check
+        run: |
+          author=$(git log -1 --pretty=format:'%an') || true
+          echo "Last commit author: $author"
+          if [ "$author" = "github-actions[bot]" ] || [ "$author" = "GitHub Actions" ]; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Setup Node.js
+        if: steps.check.outputs.skip != 'true'
         uses: actions/setup-node@v4
         with:
           node-version: '18'
 
       - name: Install PlantUML / Graphviz / Java
+        if: steps.check.outputs.skip != 'true'
         run: |
           sudo apt-get update
           sudo apt-get install -y plantuml graphviz default-jre
 
       - name: Render PlantUML files
+        if: steps.check.outputs.skip != 'true'
         run: |
           node --version || true
           ls -la docs/diagrams || true
           node --experimental-specifier-resolution=node ./scripts/plantuml-build.mjs
 
       - name: Copy generated PNGs to docs/diagrams (fallback)
+        if: steps.check.outputs.skip != 'true'
         run: |
           mkdir -p docs/diagrams
           cp -v docs/build/assets/diagrams/*.png docs/diagrams/ || true
           git status --porcelain || true
 
-      - name: Create Pull Request with generated images
+      - name: Commit & push generated PNGs directly to main (only on main)
+        if: github.ref == 'refs/heads/main' && steps.check.outputs.skip != 'true'
+        env:
+          GIT_AUTHOR_NAME: github-actions[bot]
+          GIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+        run: |
+          # Configure git for commit
+          git config user.name "${GIT_AUTHOR_NAME}"
+          git config user.email "${GIT_AUTHOR_EMAIL}"
+
+          # Add generated images if any
+          git add docs/diagrams/*.png || true
+
+          # If there are changes to commit, commit and push back to main
+          if git diff --cached --quiet; then
+            echo "No generated image changes to commit"
+          else
+            git commit -m "chore(docs): update generated diagram PNGs [auto]"
+            git push origin HEAD:main
+            echo "Pushed generated PNGs to main"
+          fi
+
+      - name: Create Pull Request with generated images (fallback for branches)
+        if: github.ref != 'refs/heads/main' && steps.check.outputs.skip != 'true'
         uses: peter-evans/create-pull-request@v5
         with:
-          # Prefer a user PAT stored in secrets.ACTIONS_PAT (needs 'repo' + 'workflow' scopes) so the action can create PRs even when organization/repo settings restrict GITHUB_TOKEN.
-          # If not set, fall back to the default github.token (may be blocked by repo settings).
           token: ${{ secrets.ACTIONS_PAT || github.token }}
           commit-message: "chore(docs): update generated diagram PNGs"
           branch: "auto/diagrams-generated-${{ github.sha }}"
@@ -63,7 +99,7 @@ jobs:
           delete-branch: true
 
 # Notes:
-# - To allow this workflow to create PRs automatically in all environments, create a Personal Access Token (classic) with the "repo" scope (and "workflow" if needed)
-#   and add it to this repository's secrets as `ACTIONS_PAT` (Settings -> Secrets and variables -> Actions -> New repository secret).
-# - Alternatively, an admin can enable "Allow GitHub Actions to create and approve pull requests" / grant Actions write permissions in
-#   Settings -> Actions -> General -> Workflow permissions for the repo/organization.
+# - This workflow will now automatically commit & push generated PNGs back to `main` when the workflow runs on `main` (i.e. when `.puml` files are pushed directly to `main`).
+# - For changes on other branches the workflow will continue to create a PR with the generated images so you can review before merging.
+# - To avoid an infinite loop this workflow early-exits if the last commit author is the GitHub Actions bot (so the auto-commit won't retrigger the rendering steps).
+# - If your repository settings restrict the default `GITHUB_TOKEN` from pushing/creating PRs, add a Personal Access Token (classic) with the `repo` scope to repository secrets as `ACTIONS_PAT`.
