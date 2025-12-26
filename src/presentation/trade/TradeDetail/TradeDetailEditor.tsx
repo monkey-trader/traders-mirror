@@ -169,7 +169,7 @@ export function TradeDetailEditor({ trade, onChange, onSave, onDelete }: TradeDe
             disabled={saveDisabled}
             aria-disabled={saveDisabled}
             aria-busy={status === 'saving'}
-            className={`${styles.saveBtn} ${status === 'saving' ? styles.savingPulse : ''}`}
+            className={status === 'saving' ? styles.savingPulse : ''}
           >
             {status === 'saving' ? 'Saving…' : status === 'saved' ? 'Saved' : 'Save now'}
           </Button>

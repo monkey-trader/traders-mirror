@@ -12,8 +12,11 @@ import { TradeDetailEditor } from './TradeDetail/TradeDetailEditor'
 import { Analysis } from '@/presentation/analysis/Analysis'
 import type { MarketValue } from '@/presentation/shared/components/MarketSelect/MarketSelect'
 import { TradeFactory } from '@/domain/trade/entities/TradeFactory'
+import type { TradeInput } from '@/domain/trade/entities/TradeFactory'
 import { EntryDate } from '@/domain/trade/valueObjects/EntryDate'
 import { loadSettings } from '@/presentation/settings/settingsStorage'
+import { COMBINED_MOCK_TRADES, MORE_CRYPTO_MOCK_TRADES, MORE_FOREX_MOCK_TRADES } from '@/infrastructure/trade/repositories/mockData'
+import type { RepoTrade } from '@/infrastructure/trade/repositories/LocalStorageTradeRepository'
 
 // newly extracted presentational components
 import { NewTradeForm, type NewTradeFormState } from './components/NewTradeForm/NewTradeForm'
@@ -42,6 +45,11 @@ type TradeRow = {
 type TradeJournalProps = { repo?: TradeRepository }
 
 export function TradeJournal({ repo }: TradeJournalProps) {
+  // modal state for loading mock data
+  const [mockModalOpen, setMockModalOpen] = useState(false)
+  const [mockLoadOption, setMockLoadOption] = useState<'crypto' | 'forex' | 'both'>('both')
+  const [mockLoading, setMockLoading] = useState(false)
+
   // repository instance must be injected via props (composition root). Do not require() here.
   const repoRef = useRef<TradeRepository | null>(repo ?? null)
   if (repoRef.current === null) {
@@ -491,7 +499,9 @@ export function TradeJournal({ repo }: TradeJournalProps) {
     <>
       <div className={styles.headerRow}>
         <h2 className={styles.title}>Trading Journal</h2>
-        <div className={styles.controls}>{/* moved market filters next to Trades title */}</div>
+        <div className={styles.controls}>
+          <Button variant="secondary" onClick={() => setMockModalOpen(true)}>Load mock data</Button>
+        </div>
       </div>
 
       {/* containerRef wraps the grid so we can detect available width */}
@@ -590,6 +600,72 @@ export function TradeJournal({ repo }: TradeJournalProps) {
          confirmLabel="Ja"
          cancelLabel="Abbrechen"
        />
+
+      {/* Mock data loader modal */}
+      {mockModalOpen && (
+        <div className={styles.backdrop} role="dialog" aria-modal="true">
+          <div className={styles.mockDialog}>
+            <h3>Lade Mock-Daten</h3>
+            <p>Wähle welches Set an Testdaten du laden möchtest. Bereits vorhandene Daten bleiben erhalten.</p>
+            <div style={{ display: 'flex', gap: 8, marginTop: 12, marginBottom: 12 }}>
+              <button className={styles.mockOption} onClick={() => setMockLoadOption('crypto')} aria-pressed={mockLoadOption === 'crypto'}>Crypto</button>
+              <button className={styles.mockOption} onClick={() => setMockLoadOption('forex')} aria-pressed={mockLoadOption === 'forex'}>Forex</button>
+              <button className={styles.mockOption} onClick={() => setMockLoadOption('both')} aria-pressed={mockLoadOption === 'both'}>Both</button>
+            </div>
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+              <Button variant="ghost" onClick={() => setMockModalOpen(false)}>Cancel</Button>
+              <Button
+                variant="primary"
+                onClick={async () => {
+                  setMockLoading(true)
+                  try {
+                    const repoInstance = repoRef.current as unknown as { seed?: (trades: RepoTrade[]) => void } | null
+                    if (!repoInstance || typeof repoInstance.seed !== 'function') {
+                      // fallback: if repo doesn't support seed, attempt to save each trade via save()
+                      const toSeed = mockLoadOption === 'crypto' ? MORE_CRYPTO_MOCK_TRADES : mockLoadOption === 'forex' ? MORE_FOREX_MOCK_TRADES : COMBINED_MOCK_TRADES
+                      if (repoRef.current && typeof repoRef.current.save === 'function') {
+                        for (const rt of toSeed) {
+                          try {
+                            // convert to domain via TradeFactory.create to use save domain contract
+                            const domain = TradeFactory.create(rt as unknown as TradeInput)
+                            await repoRef.current.save(domain)
+                          } catch (err) {
+                            console.error('Failed to save mock trade via save()', err)
+                          }
+                        }
+                      } else {
+                        console.warn('Repository does not support seeding or saving; updating UI only')
+                        setPositions(prev => {
+                          const combined = (mockLoadOption === 'crypto' ? MORE_CRYPTO_MOCK_TRADES : mockLoadOption === 'forex' ? MORE_FOREX_MOCK_TRADES : COMBINED_MOCK_TRADES).map(t => ({ ...t }))
+                          // convert entryDate to input form used by UI
+                          const dto = combined.map(c => ({ ...c, entryDate: EntryDate.toInputValue(c.entryDate) })) as unknown as TradeRow[]
+                          return [...dto, ...prev]
+                        })
+                      }
+                    } else {
+                      // repository exposes seed(trades)
+                      const seedArg = mockLoadOption === 'crypto' ? MORE_CRYPTO_MOCK_TRADES : mockLoadOption === 'forex' ? MORE_FOREX_MOCK_TRADES : COMBINED_MOCK_TRADES
+                      repoInstance.seed(seedArg as RepoTrade[])
+                    }
+
+                    // reload positions from repo if available
+                    if (repoRef.current) {
+                      const domainTrades = await repoRef.current.getAll()
+                      const dtoTrades = domainTrades.map(dt => TradeFactory.toDTO(dt) as unknown as TradeRow)
+                      setPositions(dtoTrades)
+                    }
+                  } finally {
+                    setMockLoading(false)
+                    setMockModalOpen(false)
+                  }
+                }}
+              >
+                {mockLoading ? 'Loading…' : 'Load'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
        {undoInfo && (
          <div className={styles.undoBanner}>
