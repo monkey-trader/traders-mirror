@@ -7,6 +7,7 @@ export type TradeListItem = {
   size: number
   price: number
   side: string
+  status?: string
   notes?: string
 }
 
