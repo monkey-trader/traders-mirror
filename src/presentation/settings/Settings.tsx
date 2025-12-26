@@ -58,7 +58,6 @@ function MockLoaderToggle() {
       <label className={styles.fieldLabel}>Show "Load mock data"</label>
       <div>
         <button
-          role="switch"
           aria-checked={enabled}
           aria-label="Toggle show load mock button"
           className={`${styles.debugBtn} ${enabled ? styles.on : styles.off}`}
