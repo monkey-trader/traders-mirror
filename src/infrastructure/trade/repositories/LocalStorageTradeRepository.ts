@@ -61,6 +61,17 @@ export class LocalStorageTradeRepository implements TradeRepository {
     }
   }
 
+  // Public helper to seed repository with additional trades and persist immediately.
+  // Accepts an array of RepoTrade and appends them to storage.
+  seed(trades: RepoTrade[]) {
+    if (!Array.isArray(trades) || trades.length === 0) return
+    // avoid mutating input
+    const toAdd = trades.map(t => ({ ...t }))
+    this.trades = [...toAdd, ...this.trades]
+    this.flush()
+    console.info('[LocalStorageRepo] seeded', toAdd.length, 'trades')
+  }
+
   private flush() {
     try {
       window.localStorage.setItem(this.key, JSON.stringify(this.trades))
