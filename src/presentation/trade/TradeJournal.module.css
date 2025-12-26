@@ -753,3 +753,52 @@
   }
   .tradesControls { width: 100%; display: flex; justify-content: space-between; }
 }
+
+/* New Trade form layout (left column) */
+.newTradeWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.newTradeHeader {
+  padding: 6px 8px;
+}
+
+/* two-column grid for form fields; collapses to single column on narrow widths */
+.newTradeGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  align-items: start;
+}
+
+.newTradeField {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0; /* allow children to shrink in Firefox */
+}
+
+/* full-width field (notes, etc.) */
+.full {
+  grid-column: 1 / -1;
+}
+
+/* make inputs fill their container and respect box model */
+.input, .tpInput, input, select, textarea {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Align actions: Reset left, Add right */
+.newTradeWrapper .actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+@media (max-width: 720px) {
+  .newTradeGrid { grid-template-columns: 1fr; }
+  .newTradeWrapper .actions { justify-content: flex-end; }
+}
