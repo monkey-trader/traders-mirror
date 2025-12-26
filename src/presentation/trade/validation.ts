@@ -4,10 +4,10 @@ import type { TradeInput } from '@/domain/trade/entities/TradeFactory'
 export type TradeForm = {
   symbol: string
   entryDate: string
-  size: number
-  price: number
+  size?: number
+  price?: number
   side: string
-  market: MarketValue
+  market?: MarketValue
   sl?: number
   margin?: number
   leverage?: number
@@ -25,12 +25,19 @@ export function validateNewTrade(input: TradeForm): ValidationResult[] {
   } else if (isNaN(Date.parse(input.entryDate))) {
     errors.push({ field: 'entryDate', message: 'Entry Date ist ungültig' })
   }
-  if (Number.isNaN(input.price) || input.price <= 0) {
+
+  // price: missing vs invalid
+  if (typeof input.price !== 'number' || Number.isNaN(input.price)) {
+    errors.push({ field: 'price', message: 'Entry Price ist erforderlich' })
+  } else if (input.price <= 0) {
     errors.push({ field: 'price', message: 'Preis muss eine positive Zahl sein' })
   }
-  if (Number.isNaN(input.size) || input.size <= 0) {
+
+  // size must be provided and a positive number
+  if (typeof input.size !== 'number' || Number.isNaN(input.size) || input.size <= 0) {
     errors.push({ field: 'size', message: 'Größe muss positiv sein' })
   }
+
   if (!input.side || (input.side !== 'LONG' && input.side !== 'SHORT')) {
     errors.push({ field: 'side', message: 'Seite muss LONG oder SHORT sein' })
   }
@@ -42,16 +49,12 @@ export function validateNewTrade(input: TradeForm): ValidationResult[] {
     errors.push({ field: 'sl', message: 'Stop Loss (SL) ist erforderlich' })
   }
 
-  if (typeof input.margin !== 'number' || Number.isNaN(input.margin)) {
+  if (typeof input.margin !== 'number' || Number.isNaN(input.margin) || input.margin <= 0) {
     errors.push({ field: 'margin', message: 'Margin ist erforderlich' })
-  } else if (input.margin <= 0) {
-    errors.push({ field: 'margin', message: 'Margin muss eine positive Zahl sein' })
   }
 
-  if (typeof input.leverage !== 'number' || Number.isNaN(input.leverage)) {
+  if (typeof input.leverage !== 'number' || Number.isNaN(input.leverage) || input.leverage <= 0) {
     errors.push({ field: 'leverage', message: 'Leverage ist erforderlich' })
-  } else if (input.leverage <= 0) {
-    errors.push({ field: 'leverage', message: 'Leverage muss eine positive Zahl sein' })
   }
 
   return errors
@@ -73,10 +76,15 @@ export function validateTrade(input: TradeInput): Record<string, string | undefi
   }
 
   // price/size: accept numbers or convertible values, validate as numbers
-  const priceValue = Number(maybe.price as unknown)
-  if (Number.isNaN(priceValue) || priceValue <= 0) {
-    out.price = 'Preis muss eine positive Zahl sein'
+  if (typeof maybe.price === 'undefined' || maybe.price === null || String(maybe.price).trim() === '') {
+    out.price = 'Entry Price ist erforderlich'
+  } else {
+    const priceValue = Number(maybe.price as unknown)
+    if (Number.isNaN(priceValue) || priceValue <= 0) {
+      out.price = 'Preis muss eine positive Zahl sein'
+    }
   }
+
   const sizeValue = Number(maybe.size as unknown)
   if (Number.isNaN(sizeValue) || sizeValue <= 0) {
     out.size = 'Größe muss positiv sein'
@@ -97,15 +105,11 @@ export function validateTrade(input: TradeInput): Record<string, string | undefi
   if (typeof maybe.sl !== 'number' || Number.isNaN(maybe.sl as number)) {
     out.sl = 'Stop Loss (SL) ist erforderlich'
   }
-  if (typeof maybe.margin !== 'number' || Number.isNaN(maybe.margin as number)) {
+  if (typeof maybe.margin !== 'number' || Number.isNaN(maybe.margin as number) || (maybe.margin as number) <= 0) {
     out.margin = 'Margin ist erforderlich'
-  } else if ((maybe.margin as number) <= 0) {
-    out.margin = 'Margin muss eine positive Zahl sein'
   }
-  if (typeof maybe.leverage !== 'number' || Number.isNaN(maybe.leverage as number)) {
+  if (typeof maybe.leverage !== 'number' || Number.isNaN(maybe.leverage as number) || (maybe.leverage as number) <= 0) {
     out.leverage = 'Leverage ist erforderlich'
-  } else if ((maybe.leverage as number) <= 0) {
-    out.leverage = 'Leverage muss eine positive Zahl sein'
   }
   return out
 }

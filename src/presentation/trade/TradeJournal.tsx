@@ -160,8 +160,8 @@ export function TradeJournal() {
   // key to force remount the New Trade form and its inputs (useful to fully clear internal input state)
   const [formKey, setFormKey] = useState(0)
 
-  const handleAdd = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleAdd = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault()
     setFormSubmitted(true)
 
     // helper: parse form values which may be strings -> numbers
@@ -193,6 +193,8 @@ export function TradeJournal() {
     })
     if (Object.keys(mapped).length > 0) {
       setFormErrors(mapped)
+      // mark all errored fields as touched so UI shows the messages immediately
+      setTouched(prev => ({ ...prev, ...Object.fromEntries(Object.keys(mapped).map(k => [k, true])) }))
       return
     }
 
@@ -224,7 +226,7 @@ export function TradeJournal() {
 
   // responsive fallback: switch to single-column grid when container is too narrow
   const containerRef = useRef<HTMLDivElement | null>(null)
-  const [compactGrid, setCompactGrid] = useState(false)
+   const [compactGrid, setCompactGrid] = useState(false)
 
   useEffect(() => {
     const el = containerRef.current
@@ -566,10 +568,11 @@ export function TradeJournal() {
                         const v = e.target.value;
                         setForm({ ...form, tp1: v === '' ? undefined : Number(v) });
                       }}
-                      hasError={Boolean(formErrors.tp1)}
-                      aria-describedby={formErrors.tp1 ? 'tp1-error' : undefined}
+                      onBlur={() => setTouched(prev => ({ ...prev, tp1: true }))}
+                      hasError={Boolean(formErrors.tp1 && (touched.tp1 || formSubmitted))}
+                      aria-describedby={formErrors.tp1 && (touched.tp1 || formSubmitted) ? 'tp1-error' : undefined}
                     />
-                    {formErrors.tp1 && (
+                    {(formErrors.tp1 && (touched.tp1 || formSubmitted)) && (
                       <div id="tp1-error" className={styles.fieldError}>
                         {formErrors.tp1}
                       </div>
@@ -587,10 +590,11 @@ export function TradeJournal() {
                         const v = e.target.value;
                         setForm({ ...form, tp2: v === '' ? undefined : Number(v) });
                       }}
-                      hasError={Boolean(formErrors.tp2)}
-                      aria-describedby={formErrors.tp2 ? 'tp2-error' : undefined}
+                      onBlur={() => setTouched(prev => ({ ...prev, tp2: true }))}
+                      hasError={Boolean(formErrors.tp2 && (touched.tp2 || formSubmitted))}
+                      aria-describedby={formErrors.tp2 && (touched.tp2 || formSubmitted) ? 'tp2-error' : undefined}
                     />
-                    {formErrors.tp2 && (
+                    {(formErrors.tp2 && (touched.tp2 || formSubmitted)) && (
                       <div id="tp2-error" className={styles.fieldError}>
                         {formErrors.tp2}
                       </div>
@@ -607,10 +611,11 @@ export function TradeJournal() {
                         const v = e.target.value;
                         setForm({ ...form, tp3: v === '' ? undefined : Number(v) });
                       }}
-                      hasError={Boolean(formErrors.tp3)}
-                      aria-describedby={formErrors.tp3 ? 'tp3-error' : undefined}
+                      onBlur={() => setTouched(prev => ({ ...prev, tp3: true }))}
+                      hasError={Boolean(formErrors.tp3 && (touched.tp3 || formSubmitted))}
+                      aria-describedby={formErrors.tp3 && (touched.tp3 || formSubmitted) ? 'tp3-error' : undefined}
                     />
-                    {formErrors.tp3 && (
+                    {(formErrors.tp3 && (touched.tp3 || formSubmitted)) && (
                       <div id="tp3-error" className={styles.fieldError}>
                         {formErrors.tp3}
                       </div>
@@ -667,10 +672,9 @@ export function TradeJournal() {
                     Reset
                   </Button>
                   <Button
+                    type="button"
                     variant="primary"
-                    onClick={() => {
-                      /* submit: form is in enclosing form element so native submit will call handleAdd */
-                    }}
+                    onClick={() => { setFormSubmitted(true); setTouched(prev => ({ ...prev, price: true })); handleAdd() }}
                   >
                     Add
                   </Button>
