@@ -92,6 +92,25 @@
   border: 1px solid rgba(219,68,55,0.18);
 }
 
+/* Compact variant for tighter layouts (matches SideSelect.selectCompact.colored) */
+.sideCompact {
+  min-width: 56px;
+  height: 24px;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* make badges automatically compact on small screens */
+@media (max-width: 420px) {
+  .side {
+    min-width: 56px;
+    height: 24px;
+    padding: 2px 8px;
+    font-size: 12px;
+  }
+}
+
 /* focus visible for keyboard users */
 .item:focus-visible {
   outline: 3px solid rgba(124,92,255,0.12);

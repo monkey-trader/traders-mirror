@@ -154,9 +154,15 @@ export function TradeJournal() {
   })
 
   const [formErrors, setFormErrors] = useState<Record<string, string>>({})
+  // Track which fields the user has interacted with; errors are shown only when touched or after submit
+  const [touched, setTouched] = useState<Record<string, boolean>>({})
+  const [formSubmitted, setFormSubmitted] = useState(false)
+  // key to force remount the New Trade form and its inputs (useful to fully clear internal input state)
+  const [formKey, setFormKey] = useState(0)
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault()
+    setFormSubmitted(true)
 
     // helper: parse form values which may be strings -> numbers
     const parseNumberField = (v: any): number | undefined => {
@@ -211,6 +217,9 @@ export function TradeJournal() {
     setPositions(prev => [newTrade, ...prev])
     setForm({ symbol: '', entryDate: '', size: undefined, price: undefined, side: 'LONG', status: 'OPEN', market: undefined, notes: '' })
     setFormErrors({})
+    // clear submission / touched state after successful add
+    setFormSubmitted(false)
+    setTouched({})
   }
 
   // responsive fallback: switch to single-column grid when container is too narrow
@@ -343,6 +352,36 @@ export function TradeJournal() {
     setSelectedId(null)
   }
 
+  // helper: reset New Trade form to initial state
+  const resetNewTradeForm = () => {
+    // Use case: allow the user to reset the New Trade form to sensible defaults
+    // (keeps default side: LONG and status: OPEN). This is a true "reset" action
+    // distinct from closing/canceling the panel — it clears inputs while keeping
+    // the New Trade UI open so the user can start again.
+    setForm({
+      symbol: '',
+      entryDate: '',
+      size: undefined,
+      price: undefined,
+      side: 'LONG',
+      status: 'OPEN',
+      market: undefined,
+      notes: '',
+      sl: undefined,
+      tp1: undefined,
+      tp2: undefined,
+      tp3: undefined,
+      leverage: undefined,
+      margin: undefined,
+    })
+    setFormErrors({})
+    // also clear touched and submitted state so no errors are visible after reset
+    setTouched({})
+    setFormSubmitted(false)
+    // force remount of form to clear any input internal state / visual artifacts
+    setFormKey((k) => k + 1)
+  }
+
   return (
     <>
       <div className={styles.headerRow}>
@@ -366,21 +405,9 @@ export function TradeJournal() {
                 <span style={{ fontWeight: 700, color: 'var(--text)' }}>New Trade</span>
               </div>
 
-              <form className={styles.form} onSubmit={handleAdd}>
+              <form key={formKey} className={styles.form} onSubmit={handleAdd}>
                 <div className={styles.newTradeGrid}>
                   {/* Row 1: Symbol | Market */}
-                  <div className={styles.newTradeField}>
-                    <Input
-                      id="symbol"
-                      label="Symbol"
-                      placeholder="e.g. BTC"
-                      value={form.symbol}
-                      onChange={(e) => setForm({ ...form, symbol: e.target.value })}
-                      hasError={Boolean(formErrors.symbol)}
-                      aria-describedby={formErrors.symbol ? 'symbol-error' : undefined}
-                    />
-                    {formErrors.symbol && <div id="symbol-error" className={styles.fieldError}>{formErrors.symbol}</div>}
-                  </div>
 
                   <div className={styles.newTradeField}>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -388,32 +415,41 @@ export function TradeJournal() {
                       <MarketSelect
                         value={(form.market ?? '') as MarketValue}
                         onChange={(v) => {
-                          setForm({ ...form, market: v })
+                          setForm({ ...form, market: v });
+                          setTouched(prev => ({ ...prev, market: true }))
                           if (v) {
-                            setMarketFilter(v)
-                            setFormErrors({})
+                            setMarketFilter(v);
+                            setFormErrors({});
                           }
                         }}
                         compact
                         showAll={false}
                       />
                     </div>
-                    {formErrors.market && <div className={styles.fieldError}>{formErrors.market}</div>}
+                    {(formErrors.market && (touched.market || formSubmitted)) && (
+                      <div className={styles.fieldError}>{formErrors.market}</div>
+                    )}
                   </div>
 
-                  {/* Row 2: Side | Entry Price */}
                   <div className={styles.newTradeField}>
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <span className={styles.fieldLabel}>Side</span>
-                      <SideSelect
-                        value={form.side as SideValue}
-                        onChange={(v) => setForm({ ...form, side: v })}
-                        ariaLabel="New trade side"
-                        showBadge={false}
-                        colored
-                      />
-                    </div>
+                    <Input
+                      id="symbol"
+                      label="Symbol"
+                      placeholder="e.g. BTC"
+                      value={form.symbol}
+                      onChange={(e) => setForm({ ...form, symbol: e.target.value })}
+                      onBlur={() => setTouched(prev => ({ ...prev, symbol: true }))}
+                      hasError={Boolean(formErrors.symbol && (touched.symbol || formSubmitted))}
+                      aria-describedby={formErrors.symbol && (touched.symbol || formSubmitted) ? 'symbol-error' : undefined}
+                    />
+                    {(formErrors.symbol && (touched.symbol || formSubmitted)) && (
+                      <div id="symbol-error" className={styles.fieldError}>
+                        {formErrors.symbol}
+                      </div>
+                    )}
                   </div>
+
+                  {/* Row 2: Entry Price */}
 
                   <div className={styles.newTradeField}>
                     <Input
@@ -422,13 +458,18 @@ export function TradeJournal() {
                       type="number"
                       value={typeof form.price === 'number' ? String(form.price) : ''}
                       onChange={(e) => {
-                        const v = e.target.value
-                        setForm({ ...form, price: v === '' ? undefined : Number(v) })
+                        const v = e.target.value;
+                        setForm({ ...form, price: v === '' ? undefined : Number(v) });
                       }}
-                      hasError={Boolean(formErrors.price)}
-                      aria-describedby={formErrors.price ? 'price-error' : undefined}
+                      onBlur={() => setTouched(prev => ({ ...prev, price: true }))}
+                      hasError={Boolean(formErrors.price && (touched.price || formSubmitted))}
+                      aria-describedby={formErrors.price && (touched.price || formSubmitted) ? 'price-error' : undefined}
                     />
-                    {formErrors.price && <div id="price-error" className={styles.fieldError}>{formErrors.price}</div>}
+                    {(formErrors.price && (touched.price || formSubmitted)) && (
+                      <div id="price-error" className={styles.fieldError}>
+                        {formErrors.price}
+                      </div>
+                    )}
                   </div>
 
                   {/* Row 3: Margin | Leverage will follow (shifted down) */}
@@ -439,13 +480,18 @@ export function TradeJournal() {
                       type="number"
                       value={typeof form.margin === 'number' ? String(form.margin) : ''}
                       onChange={(e) => {
-                        const v = e.target.value
-                        setForm({ ...form, margin: v === '' ? undefined : Number(v) })
+                        const v = e.target.value;
+                        setForm({ ...form, margin: v === '' ? undefined : Number(v) });
                       }}
-                      hasError={Boolean(formErrors.margin)}
-                      aria-describedby={formErrors.margin ? 'margin-error' : undefined}
+                      onBlur={() => setTouched(prev => ({ ...prev, margin: true }))}
+                      hasError={Boolean(formErrors.margin && (touched.margin || formSubmitted))}
+                      aria-describedby={formErrors.margin && (touched.margin || formSubmitted) ? 'margin-error' : undefined}
                     />
-                    {formErrors.margin && <div id="margin-error" className={styles.fieldError}>{formErrors.margin}</div>}
+                    {(formErrors.margin && (touched.margin || formSubmitted)) && (
+                      <div id="margin-error" className={styles.fieldError}>
+                        {formErrors.margin}
+                      </div>
+                    )}
                   </div>
                   <div className={styles.newTradeField}>
                     <Input
@@ -454,13 +500,18 @@ export function TradeJournal() {
                       type="number"
                       value={typeof form.leverage === 'number' ? String(form.leverage) : ''}
                       onChange={(e) => {
-                        const v = e.target.value
-                        setForm({ ...form, leverage: v === '' ? undefined : Number(v) })
+                        const v = e.target.value;
+                        setForm({ ...form, leverage: v === '' ? undefined : Number(v) });
                       }}
-                      hasError={Boolean(formErrors.leverage)}
-                      aria-describedby={formErrors.leverage ? 'leverage-error' : undefined}
+                      onBlur={() => setTouched(prev => ({ ...prev, leverage: true }))}
+                      hasError={Boolean(formErrors.leverage && (touched.leverage || formSubmitted))}
+                      aria-describedby={formErrors.leverage && (touched.leverage || formSubmitted) ? 'leverage-error' : undefined}
                     />
-                    {formErrors.leverage && <div id="leverage-error" className={styles.fieldError}>{formErrors.leverage}</div>}
+                    {(formErrors.leverage && (touched.leverage || formSubmitted)) && (
+                      <div id="leverage-error" className={styles.fieldError}>
+                        {formErrors.leverage}
+                      </div>
+                    )}
                   </div>
                   <div className={styles.newTradeField}>
                     <Input
@@ -469,13 +520,18 @@ export function TradeJournal() {
                       type="number"
                       value={typeof form.size === 'number' ? String(form.size) : ''}
                       onChange={(e) => {
-                        const v = e.target.value
-                        setForm({ ...form, size: v === '' ? undefined : Number(v) })
+                        const v = e.target.value;
+                        setForm({ ...form, size: v === '' ? undefined : Number(v) });
                       }}
-                      hasError={Boolean(formErrors.size)}
-                      aria-describedby={formErrors.size ? 'size-error' : undefined}
+                      onBlur={() => setTouched(prev => ({ ...prev, size: true }))}
+                      hasError={Boolean(formErrors.size && (touched.size || formSubmitted))}
+                      aria-describedby={formErrors.size && (touched.size || formSubmitted) ? 'size-error' : undefined}
                     />
-                    {formErrors.size && <div id="size-error" className={styles.fieldError}>{formErrors.size}</div>}
+                    {(formErrors.size && (touched.size || formSubmitted)) && (
+                      <div id="size-error" className={styles.fieldError}>
+                        {formErrors.size}
+                      </div>
+                    )}
                   </div>
 
                   {/* Row 4: SL | TP1 */}
@@ -486,13 +542,18 @@ export function TradeJournal() {
                       type="number"
                       value={typeof form.sl === 'number' ? String(form.sl) : ''}
                       onChange={(e) => {
-                        const v = e.target.value
-                        setForm({ ...form, sl: v === '' ? undefined : Number(v) })
+                        const v = e.target.value;
+                        setForm({ ...form, sl: v === '' ? undefined : Number(v) });
                       }}
-                      hasError={Boolean(formErrors.sl)}
-                      aria-describedby={formErrors.sl ? 'sl-error' : undefined}
+                      onBlur={() => setTouched(prev => ({ ...prev, sl: true }))}
+                      hasError={Boolean(formErrors.sl && (touched.sl || formSubmitted))}
+                      aria-describedby={formErrors.sl && (touched.sl || formSubmitted) ? 'sl-error' : undefined}
                     />
-                    {formErrors.sl && <div id="sl-error" className={styles.fieldError}>{formErrors.sl}</div>}
+                    {(formErrors.sl && (touched.sl || formSubmitted)) && (
+                      <div id="sl-error" className={styles.fieldError}>
+                        {formErrors.sl}
+                      </div>
+                    )}
                   </div>
 
                   <div className={styles.newTradeField}>
@@ -502,13 +563,17 @@ export function TradeJournal() {
                       type="number"
                       value={typeof form.tp1 === 'number' ? String(form.tp1) : ''}
                       onChange={(e) => {
-                        const v = e.target.value
-                        setForm({ ...form, tp1: v === '' ? undefined : Number(v) })
+                        const v = e.target.value;
+                        setForm({ ...form, tp1: v === '' ? undefined : Number(v) });
                       }}
                       hasError={Boolean(formErrors.tp1)}
                       aria-describedby={formErrors.tp1 ? 'tp1-error' : undefined}
                     />
-                    {formErrors.tp1 && <div id="tp1-error" className={styles.fieldError}>{formErrors.tp1}</div>}
+                    {formErrors.tp1 && (
+                      <div id="tp1-error" className={styles.fieldError}>
+                        {formErrors.tp1}
+                      </div>
+                    )}
                   </div>
 
                   {/* Row 5: TP2 | TP3 */}
@@ -519,13 +584,17 @@ export function TradeJournal() {
                       type="number"
                       value={typeof form.tp2 === 'number' ? String(form.tp2) : ''}
                       onChange={(e) => {
-                        const v = e.target.value
-                        setForm({ ...form, tp2: v === '' ? undefined : Number(v) })
+                        const v = e.target.value;
+                        setForm({ ...form, tp2: v === '' ? undefined : Number(v) });
                       }}
                       hasError={Boolean(formErrors.tp2)}
                       aria-describedby={formErrors.tp2 ? 'tp2-error' : undefined}
                     />
-                    {formErrors.tp2 && <div id="tp2-error" className={styles.fieldError}>{formErrors.tp2}</div>}
+                    {formErrors.tp2 && (
+                      <div id="tp2-error" className={styles.fieldError}>
+                        {formErrors.tp2}
+                      </div>
+                    )}
                   </div>
 
                   <div className={styles.newTradeField}>
@@ -535,13 +604,17 @@ export function TradeJournal() {
                       type="number"
                       value={typeof form.tp3 === 'number' ? String(form.tp3) : ''}
                       onChange={(e) => {
-                        const v = e.target.value
-                        setForm({ ...form, tp3: v === '' ? undefined : Number(v) })
+                        const v = e.target.value;
+                        setForm({ ...form, tp3: v === '' ? undefined : Number(v) });
                       }}
                       hasError={Boolean(formErrors.tp3)}
                       aria-describedby={formErrors.tp3 ? 'tp3-error' : undefined}
                     />
-                    {formErrors.tp3 && <div id="tp3-error" className={styles.fieldError}>{formErrors.tp3}</div>}
+                    {formErrors.tp3 && (
+                      <div id="tp3-error" className={styles.fieldError}>
+                        {formErrors.tp3}
+                      </div>
+                    )}
                   </div>
 
                   {/* Row 6: Notes full-width */}
@@ -553,47 +626,52 @@ export function TradeJournal() {
                     />
                   </div>
 
-                  {/* Status row (full width) */}
-                  <div className={`${styles.newTradeField} ${styles.full}`}>
-                    <label style={{ color: 'var(--muted)', marginBottom: 6 }}>Status</label>
+                  {/* Status row (was full-width) */}
+                  <div className={styles.newTradeField}>
+                    <span className={styles.fieldLabel}>Status</span>
                     <select
                       className={styles.input}
                       value={form.status}
-                      onChange={(e) => setForm({ ...form, status: e.target.value as 'OPEN' | 'CLOSED' | 'FILLED' })}
+                      onChange={(e) => {
+                        setForm({ ...form, status: e.target.value as 'OPEN' | 'CLOSED' | 'FILLED' })
+                        setTouched(prev => ({ ...prev, status: true }))
+                      }}
+                      onBlur={() => setTouched(prev => ({ ...prev, status: true }))}
                     >
                       <option value="OPEN">OPEN</option>
-                      <option value="CLOSED">CLOSED</option>
                       <option value="FILLED">FILLED</option>
                     </select>
                   </div>
+                   <div className={styles.newTradeField}>
+                     <div style={{ display: 'flex', flexDirection: 'column' }}>
+                       <span className={styles.fieldLabel}>Side</span>
+                       <SideSelect
+                         value={form.side as SideValue}
+                         onChange={(v) => setForm({ ...form, side: v })}
+                         ariaLabel="New trade side"
+                         showBadge={false}
+                         colored
+                         onBlur={() => setTouched(prev => ({ ...prev, side: true }))}
+                       />
+                     </div>
+                   </div>
                 </div>
 
                 <div className={styles.actions} style={{ marginTop: 12 }}>
                   <Button
                     variant="ghost"
+                    onClick={resetNewTradeForm}
+                    title="Reset form fields to defaults"
+                    aria-label="Reset new trade form"
+                  >
+                    Reset
+                  </Button>
+                  <Button
+                    variant="primary"
                     onClick={() => {
-                      setForm({
-                        symbol: '',
-                        entryDate: '',
-                        size: undefined,
-                        price: undefined,
-                        side: 'LONG',
-                        status: 'OPEN',
-                        market: undefined,
-                        notes: '',
-                        sl: undefined,
-                        tp1: undefined,
-                        tp2: undefined,
-                        tp3: undefined,
-                        leverage: undefined,
-                        margin: undefined,
-                      })
-                      setFormErrors({})
+                      /* submit: form is in enclosing form element so native submit will call handleAdd */
                     }}
                   >
-                    Cancel
-                  </Button>
-                  <Button variant="primary" onClick={() => { /* submit: form is in enclosing form element so native submit will call handleAdd */ }}>
                     Add
                   </Button>
                 </div>
@@ -667,7 +745,15 @@ export function TradeJournal() {
                     <div className={styles.listAndDetailWrap}>
                       <div className={styles.leftPane}>
                         <TradeList
-                          trades={trades.map(t => ({ id: t.id, symbol: t.symbol, entryDate: t.entryDate, size: t.size, price: t.price, side: t.side, notes: t.notes }))}
+                          trades={trades.map((t) => ({
+                            id: t.id,
+                            symbol: t.symbol,
+                            entryDate: t.entryDate,
+                            size: t.size,
+                            price: t.price,
+                            side: t.side,
+                            notes: t.notes,
+                          }))}
                           selectedId={selectedId}
                           onSelect={(id) => setSelectedId(id)}
                         />
