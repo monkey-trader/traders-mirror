@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { TradeJournal } from '@/presentation/trade/TradeJournal'
+import LocalStorageTradeRepository from '@/infrastructure/trade/repositories/LocalStorageTradeRepository'
 import { Settings } from '@/presentation/settings/Settings'
 import { Layout } from '@/presentation/shared/components/Layout/Layout'
 import { Analysis } from '@/presentation/analysis/Analysis'
@@ -31,7 +32,8 @@ function App() {
       ) : route === '#/analysis' ? (
         <Analysis />
       ) : (
-        <TradeJournal />
+        // create repo at composition root and inject into TradeJournal
+        <TradeJournal repo={new LocalStorageTradeRepository()} />
       )}
     </Layout>
   )

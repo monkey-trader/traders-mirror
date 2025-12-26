@@ -29,7 +29,12 @@
 - Value Objects
   - Pro semantischem Feld eine eigene VO-Klasse (z.B. `Size`, `Price`, `EntryDate`, `TradeSymbol`).
   - VO-Konstruktoren validieren und normalisieren (z.B. Trim/Uppercase für Symbole, toISOString für Dates).
-  - VOs werfen typisierte Domain-Errors (keine generischen `Error`-Strings).
+  - UI-Format-Helper: Wenn ein Value Object eine Präsentations-spezifische Konvertierung benötigt (z.B. HTML <input type="datetime-local"), gehören die Konverter und Parser in das VO (z.B. `EntryDate.toInputValue()` / `EntryDate.fromInputValue()`), nicht in UI-Komponenten. So bleiben Validierung und Normalisierung zentralisiert in der Domain.
+    - Vorteil: keine Duplikation von Parsing/Formatting-Logik in Komponenten; Domain-Validierung bleibt single source of truth.
+    - Beispiel (EntryDate):
+      - `EntryDate.toInputValue(iso?: string): string` — liefert `yyyy-MM-ddTHH:mm` für `datetime-local` inputs.
+      - `EntryDate.fromInputValue(input: string): string` — validiert und gibt ISO-String zurück oder wirft `EntryDateInvalidError`.
+    - Tests: Für solche Helpers immer Unit-Tests in `src/domain/<feature>/valueObjects/<VO>.test.ts` (happy path + invalid inputs).
 - Factories
   - `Factory.create(input)` normalisiert unterschiedliche Input-Formen (primitives, VOs, DTOs) und verwendet VOs zur Validierung.
   - Factory gibt stabile primitive API-Objekte/Entities zurück (z. B. `Trade` mit primitiven Feldern), damit die Application/Presentation-Schicht nicht von VOs abhängig ist.

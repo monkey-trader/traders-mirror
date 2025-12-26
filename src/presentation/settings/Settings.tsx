@@ -1,6 +1,33 @@
 import React from 'react'
 import styles from './Settings.module.css'
 import { ThemeSwitcher } from '@/presentation/shared/components/ThemeSwitcher/ThemeSwitcher'
+import { loadSettings, saveSettings } from './settingsStorage'
+import { Switch } from '@/presentation/shared/components/Switch/Switch'
+
+function DebugToggle() {
+  const [enabled, setEnabled] = React.useState<boolean>(() => {
+    const s = loadSettings()
+    // if env var is set, treat as default but still allow user override
+    const envDefault = typeof process !== 'undefined' && (process.env.REACT_APP_DEBUG_UI === 'true' || process.env.NODE_ENV === 'development')
+    return typeof s.debugUI === 'boolean' ? s.debugUI : envDefault
+  })
+
+  const onToggle = (v: boolean) => {
+    setEnabled(v)
+    const s = loadSettings()
+    saveSettings({ ...s, debugUI: v })
+  }
+
+  return (
+    <div className={styles.debugRow}>
+      <label className={styles.fieldLabel}>Debug UI</label>
+      <div>
+        <Switch checked={enabled} onChange={onToggle} ariaLabel="Toggle debug UI" />
+      </div>
+      <p className={styles.help}>Enable developer UI features (status banners, extra logs). Stored in browser settings.</p>
+    </div>
+  )
+}
 
 export function Settings() {
   return (
@@ -13,6 +40,11 @@ export function Settings() {
         <div className={styles.themeRow}>
           <ThemeSwitcher />
         </div>
+      </section>
+
+      <section className={styles.section}>
+        <h3>Debug</h3>
+        <DebugToggle />
       </section>
 
     </div>

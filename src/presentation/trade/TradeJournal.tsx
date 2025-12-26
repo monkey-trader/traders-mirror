@@ -6,12 +6,15 @@ import { Input } from '@/presentation/shared/components/Input/Input'
 import { SideSelect, SideValue } from '@/presentation/shared/components/SideSelect/SideSelect'
 import { validateNewTrade } from '@/presentation/trade/validation'
 import styles from './TradeJournal.module.css'
-import InMemoryTradeRepository from '@/infrastructure/trade/repositories/InMemoryTradeRepository'
+import type { TradeRepository } from '@/domain/trade/interfaces/TradeRepository'
 import { ConfirmDialog } from '@/presentation/shared/components/ConfirmDialog/ConfirmDialog'
 import { TradeList } from './TradeList/TradeList'
 import { TradeDetailEditor } from './TradeDetail/TradeDetailEditor'
 import { Analysis } from '@/presentation/analysis/Analysis'
 import MarketSelect, { MarketValue } from '@/presentation/shared/components/MarketSelect/MarketSelect'
+import { TradeFactory } from '@/domain/trade/entities/TradeFactory'
+import { EntryDate } from '@/domain/trade/valueObjects/EntryDate'
+import { loadSettings } from '@/presentation/settings/settingsStorage'
 
 type TradeRow = {
   id: string
@@ -33,15 +36,24 @@ type TradeRow = {
   leverage?: number
 }
 
-export function TradeJournal() {
-  const [marketFilter, setMarketFilter] = useState<'All' | 'Crypto' | 'Forex'>('All')
-  const [tradeStatusFilter, setTradeStatusFilter] = useState<'ALL' | 'OPEN' | 'CLOSED' | 'FILLED'>('ALL')
+type TradeJournalProps = { repo?: TradeRepository }
 
-  // repository instance (in-memory for demo)
-  const repoRef = useRef(new InMemoryTradeRepository())
+export function TradeJournal({ repo }: TradeJournalProps) {
+  // repository instance must be injected via props (composition root). Do not require() here.
+  const repoRef = useRef<TradeRepository | null>(repo ?? null)
+  if (repoRef.current === null) {
+    // Do not auto-create adapters here to keep component testable and avoid require()/dynamic imports.
+    console.warn('No TradeRepository provided to TradeJournal; persistence disabled. Provide repo prop from composition root.')
+  }
 
   // State für Positionsdaten (editierbar)
   const [positions, setPositions] = useState<TradeRow[]>([])
+  // debug/status for UI (visible) so user sees immediate feedback without console
+  const [lastStatus, setLastStatus] = useState<string | null>(null)
+
+  // market and status filters (missing earlier) — restore here
+  const [marketFilter, setMarketFilter] = useState<'All' | 'Crypto' | 'Forex'>('All')
+  const [tradeStatusFilter, setTradeStatusFilter] = useState<'ALL' | 'OPEN' | 'CLOSED' | 'FILLED'>('ALL')
 
   // selected trade id for left-right layout
   const [selectedId, setSelectedId] = useState<string | null>(null)
@@ -56,9 +68,11 @@ export function TradeJournal() {
   useEffect(() => {
     let mounted = true
     ;(async () => {
-      const all = await repoRef.current.getAll()
+      if (!repoRef.current) return
+      const domainTrades = await repoRef.current.getAll()
       if (!mounted) return
-      // initial load from repo
+      // convert domain Trades to presentation primitives
+      const all = domainTrades.map(dt => TradeFactory.toDTO(dt))
       setPositions(all as unknown as TradeRow[])
     })()
     return () => { mounted = false }
@@ -83,7 +97,9 @@ export function TradeJournal() {
       if (updated) {
         ;(async () => {
           try {
-            await repoRef.current.update(updated as any)
+            if (!repoRef.current) { console.warn('Repository unavailable'); return }
+            const domain = TradeFactory.create(updated as any)
+            await repoRef.current.update(domain)
           } catch (err) {
             console.error('Failed to persist trade update', err)
           }
@@ -111,7 +127,9 @@ export function TradeJournal() {
     }
     const updated = { ...existing, symbol: dto.symbol, entryDate: dto.entryDate, size: dto.size, price: dto.price, side: dto.side as 'LONG' | 'SHORT', notes: dto.notes }
     try {
-      await repoRef.current.update(updated as any)
+      if (!repoRef.current) { console.warn('Repository unavailable'); return }
+      const domain = TradeFactory.create(updated as any)
+      await repoRef.current.update(domain)
       setPositions(prev => prev.map(p => (p.id === dto.id ? updated : p)))
       setDirtyIds(prev => {
         const next = new Set(prev)
@@ -144,7 +162,7 @@ export function TradeJournal() {
 
   const [form, setForm] = useState<NewTradeForm>({
     symbol: '',
-    entryDate: '',
+    entryDate: EntryDate.toInputValue(),
     size: undefined,
     price: undefined,
     side: 'LONG',
@@ -163,6 +181,8 @@ export function TradeJournal() {
   const handleAdd = async (e?: React.FormEvent) => {
     if (e) e.preventDefault()
     setFormSubmitted(true)
+    console.info('[TradeJournal] handleAdd start', { form })
+    setLastStatus('handleAdd start')
 
     // helper: parse form values which may be strings -> numbers
     const parseNumberField = (v: any): number | undefined => {
@@ -193,6 +213,8 @@ export function TradeJournal() {
     })
     if (Object.keys(mapped).length > 0) {
       setFormErrors(mapped)
+      console.info('[TradeJournal] validation failed', mapped)
+      setLastStatus(`validation failed: ${Object.keys(mapped).join(',')}`)
       // mark all errored fields as touched so UI shows the messages immediately
       setTouched(prev => ({ ...prev, ...Object.fromEntries(Object.keys(mapped).map(k => [k, true])) }))
       return
@@ -216,8 +238,45 @@ export function TradeJournal() {
       status: form.status,
       pnl: 0,
     }
-    setPositions(prev => [newTrade, ...prev])
-    setForm({ symbol: '', entryDate: '', size: undefined, price: undefined, side: 'LONG', status: 'OPEN', market: undefined, notes: '' })
+
+    try {
+      if (!repoRef.current) {
+        console.warn('[TradeJournal] Repository unavailable; skipping persistence')
+        setLastStatus('repo unavailable; local update')
+        // fallback: update local positions only
+        setPositions(prev => {
+          const next = [newTrade, ...prev]
+          console.info('[TradeJournal] positions updated (local, no repo)', next.length)
+          return next
+        })
+      } else {
+        console.info('[TradeJournal] persisting trade to repo', newTrade.id)
+        setLastStatus(`persisting ${newTrade.id}`)
+        const domain = TradeFactory.create(newTrade as any)
+        await repoRef.current.save(domain)
+        console.info('[TradeJournal] persisted trade to repo', newTrade.id)
+        setLastStatus(`persisted ${newTrade.id}`)
+
+        // reload canonical trades from repo to keep UI in sync with storage
+        try {
+          const domainTrades = await repoRef.current.getAll()
+          const dtoTrades = domainTrades.map(dt => TradeFactory.toDTO(dt) as unknown as TradeRow)
+          setPositions(dtoTrades)
+          console.info('[TradeJournal] reloaded positions from repo', dtoTrades.length)
+          setLastStatus(`reloaded ${dtoTrades.length} trades from repo`)
+        } catch (err) {
+          console.warn('[TradeJournal] failed to reload from repo after save, falling back to local update', err)
+          setLastStatus('reload failed; fallback to local')
+          setPositions(prev => [newTrade, ...prev])
+        }
+      }
+    } catch (err) {
+      console.error('[TradeJournal] Failed to persist new trade to repository', err)
+      setLastStatus('persist error')
+      // still update UI so user sees the trade; but surface error in console
+      setPositions(prev => [newTrade, ...prev])
+    }
+    setForm({ symbol: '', entryDate: EntryDate.toInputValue(), size: undefined, price: undefined, side: 'LONG', status: 'OPEN', market: undefined, notes: '' })
     setFormErrors({})
     // clear submission / touched state after successful add
     setFormSubmitted(false)
@@ -362,7 +421,7 @@ export function TradeJournal() {
     // the New Trade UI open so the user can start again.
     setForm({
       symbol: '',
-      entryDate: '',
+      entryDate: EntryDate.toInputValue(),
       size: undefined,
       price: undefined,
       side: 'LONG',
@@ -383,6 +442,12 @@ export function TradeJournal() {
     // force remount of form to clear any input internal state / visual artifacts
     setFormKey((k) => k + 1)
   }
+
+  // small visible status panel (debug) — can be removed later
+  const repoEnabled = Boolean(repoRef.current)
+  // read user setting and env default for debug UI
+  const settings = typeof window !== 'undefined' ? loadSettings() : {}
+  const debugUiEnabled = typeof settings.debugUI === 'boolean' ? settings.debugUI : (typeof process !== 'undefined' && (process.env.REACT_APP_DEBUG_UI === 'true' || process.env.NODE_ENV === 'development'))
 
   return (
     <>
@@ -407,7 +472,24 @@ export function TradeJournal() {
                 <span style={{ fontWeight: 700, color: 'var(--text)' }}>New Trade</span>
               </div>
 
-              <form key={formKey} className={styles.form} onSubmit={handleAdd}>
+              {/* Visible status & validation summary */}
+              {debugUiEnabled && (lastStatus || Object.keys(formErrors).length > 0) && (
+                <div className={styles.inlineStatus} style={{ margin: '8px 0', color: 'var(--muted)' }}>
+                  {lastStatus && <div style={{ marginBottom: 6 }}><strong>Status:</strong> {lastStatus}</div>}
+                  {Object.keys(formErrors).length > 0 && (
+                    <div style={{ color: 'var(--accent-error)' }}>
+                      <strong>Form errors:</strong>
+                      <ul style={{ margin: '6px 0 0 16px' }}>
+                        {Object.entries(formErrors).map(([k, v]) => (
+                          <li key={k}>{k}: {v}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
+
+               <form key={formKey} className={styles.form} onSubmit={handleAdd}>
                 <div className={styles.newTradeGrid}>
                   {/* Row 1: Symbol | Market */}
 
@@ -447,6 +529,25 @@ export function TradeJournal() {
                     {(formErrors.symbol && (touched.symbol || formSubmitted)) && (
                       <div id="symbol-error" className={styles.fieldError}>
                         {formErrors.symbol}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Entry Date input (prefilled with now) */}
+                  <div className={styles.newTradeField}>
+                    <Input
+                      id="entryDate"
+                      label="Entry Date"
+                      type="datetime-local"
+                      value={form.entryDate}
+                      onChange={(e) => setForm({ ...form, entryDate: e.target.value })}
+                      onBlur={() => setTouched(prev => ({ ...prev, entryDate: true }))}
+                      hasError={Boolean(formErrors.entryDate && (touched.entryDate || formSubmitted))}
+                      aria-describedby={formErrors.entryDate && (touched.entryDate || formSubmitted) ? 'entryDate-error' : undefined}
+                    />
+                    {(formErrors.entryDate && (touched.entryDate || formSubmitted)) && (
+                      <div id="entryDate-error" className={styles.fieldError}>
+                        {formErrors.entryDate}
                       </div>
                     )}
                   </div>
@@ -817,6 +918,14 @@ export function TradeJournal() {
               Rückgängig
             </Button>
           </div>
+        </div>
+      )}
+
+      {/* Debug/status banner (dev-only) */}
+      {repoEnabled && debugUiEnabled && (
+        <div className={styles.statusBanner}>
+          <div>{positions.length} trades loaded</div>
+          {lastStatus && <div className={styles.statusMessage}>{lastStatus}</div>}
         </div>
       )}
     </>
