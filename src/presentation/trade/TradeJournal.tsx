@@ -125,7 +125,7 @@ export function TradeJournal({ repo }: TradeJournalProps) {
 
   // Called by editor when fields change; mark as dirty and update local positions
   // Editor works with the presentation DTO shape (id, symbol, entryDate?, size, price, side, notes)
-  type EditorDTO = { id: string; symbol: string; entryDate?: string; size: number; price: number; side: string; notes?: string }
+  type EditorDTO = { id: string; symbol: string; entryDate?: string; size: number; price: number; side: string; notes?: string; status?: 'OPEN' | 'CLOSED' | 'FILLED' }
 
   const handleEditorChange = (dto: EditorDTO) => {
     setPositions(prev => prev.map(p => (p.id === dto.id ? ({
@@ -135,6 +135,7 @@ export function TradeJournal({ repo }: TradeJournalProps) {
       size: dto.size,
       price: dto.price,
       side: dto.side as 'LONG' | 'SHORT',
+      status: (dto as any).status ?? p.status,
       notes: dto.notes
     }) : p)))
     setDirtyIds(prev => new Set(prev).add(dto.id))
@@ -147,7 +148,7 @@ export function TradeJournal({ repo }: TradeJournalProps) {
       console.error('Save failed: trade not found', dto.id)
       return
     }
-    const updated = { ...existing, symbol: dto.symbol, entryDate: dto.entryDate ?? existing.entryDate, size: dto.size, price: dto.price, side: dto.side as 'LONG' | 'SHORT', notes: dto.notes }
+    const updated = { ...existing, symbol: dto.symbol, entryDate: dto.entryDate ?? existing.entryDate, size: dto.size, price: dto.price, side: dto.side as 'LONG' | 'SHORT', status: (dto as any).status ?? existing.status, notes: dto.notes }
     try {
       if (!repoRef.current) { console.warn('Repository unavailable'); return }
       const domain = TradeFactory.create(updated as any)
@@ -494,6 +495,7 @@ export function TradeJournal({ repo }: TradeJournalProps) {
         size: selectedPos.size,
         price: selectedPos.price,
         side: selectedPos.side,
+        status: selectedPos.status,
         notes: selectedPos.notes,
       }
     : null
@@ -563,6 +565,7 @@ export function TradeJournal({ repo }: TradeJournalProps) {
                              size: t.size,
                              price: t.price,
                              side: t.side,
+                             status: t.status,
                              notes: t.notes,
                            }))}
                            selectedId={selectedId}
