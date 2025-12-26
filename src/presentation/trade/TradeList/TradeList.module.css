@@ -55,12 +55,43 @@
 }
 
 .side {
-  padding: 6px 10px;
+  /* removed earlier padding to avoid duplicate declarations; final padding below keeps horizontal breathing */
   border-radius: 999px;
   font-weight: 800;
   font-size: 12px;
   color: #07101a;
+  /* keep a neutral gradient by default; overridden by .sideLong/.sideShort */
   background: linear-gradient(90deg, #7ef1c6, #22c1c3);
+
+  /* Ensure all badges are the same size */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 55px; /* fixed width for consistent badges */
+  height: 25px; /* fixed height */
+  padding: 0 8px; /* reduced horizontal padding to better fit text */
+  text-align: center;
+  white-space: nowrap;      /* prevent wrapping */
+  overflow: hidden;        /* hide overflowed text */
+  text-overflow: ellipsis; /* show ellipsis if text is too long */
+}
+
+/* Only Long/Short variants (no neutral/outline) */
+.sideLong {
+  background: linear-gradient(90deg, var(--color-long-600), var(--color-long-800));
+  color: white;
+}
+
+.sideShort {
+  background: linear-gradient(90deg, var(--color-short-600), var(--color-short-800));
+  color: white;
+}
+
+/* focus visible for keyboard users */
+.item:focus-visible {
+  outline: 3px solid rgba(124,92,255,0.16);
+  outline-offset: 2px;
 }
 
 /* scrollbar subtle */

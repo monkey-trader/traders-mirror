@@ -23,6 +23,13 @@ export function TradeList({ trades, selectedId, onSelect }: TradeListProps) {
     <div className={styles.list} role="list">
       {trades.map((t) => {
         const isSelected = selectedId === t.id
+
+        // normalize side value to a predictable key and restrict to only 'long' or 'short'
+        const rawSide = (t.side || '').toString().trim().toLowerCase()
+        const sideKey = rawSide === 'long' || rawSide === 'buy' ? 'long' : 'short'
+
+        const sideClass = sideKey === 'long' ? styles.sideLong : styles.sideShort
+
         return (
           <button
             key={t.id}
@@ -36,7 +43,9 @@ export function TradeList({ trades, selectedId, onSelect }: TradeListProps) {
               <div className={styles.meta}>{new Date(t.entryDate).toLocaleDateString()}</div>
             </div>
             <div className={styles.rowRight}>
-              <div className={styles.side}>{t.side}</div>
+              <div className={[styles.side, sideClass].join(' ')} aria-label={`Side: ${sideKey}`} title={sideKey}>
+                {t.side}
+              </div>
             </div>
           </button>
         )

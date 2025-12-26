@@ -14,6 +14,13 @@
   --glass-strong: rgba(255,255,255,0.06);
   --accent-glass: rgba(88,214,141,0.08);
   --accent-strong: rgba(88,214,141,0.18);
+
+  /* New semantic tokens for trade sides */
+  --color-long-600: #0F9D58; /* primary long (green) */
+  --color-long-800: #0B7A45; /* darker long */
+  --color-short-600: #DB4437; /* primary short (red) */
+  --color-short-800: #B0362C; /* darker short */
+  --color-neutral-600: #6C757D; /* neutral */
 }
 
 /* Theme variants have been moved to src/presentation/settings/themes.css to allow them to be managed from the Settings page. */
