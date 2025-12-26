@@ -305,9 +305,8 @@ export function NewTradeForm({
               Reset
             </Button>
             <Button
-              type="button"
+              type="submit"
               variant="primary"
-              onClick={() => { /* keep same behaviour: mark submitted and trigger submit */ onChangeForm({}); onSubmit() }}
             >
               Add
             </Button>
@@ -317,4 +316,3 @@ export function NewTradeForm({
     </Card>
   )
 }
-

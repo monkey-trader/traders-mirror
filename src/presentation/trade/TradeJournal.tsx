@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react'
 // Layout is provided by App; do not render Layout again here to avoid duplicate headers
 import { Card } from '@/presentation/shared/components/Card/Card'
 import { Button } from '@/presentation/shared/components/Button/Button'
-import { SideSelect, SideValue } from '@/presentation/shared/components/SideSelect/SideSelect'
+import { SideValue } from '@/presentation/shared/components/SideSelect/SideSelect'
 import { validateNewTrade } from '@/presentation/trade/validation'
 import styles from './TradeJournal.module.css'
 import type { TradeRepository } from '@/domain/trade/interfaces/TradeRepository'
@@ -10,14 +10,14 @@ import { ConfirmDialog } from '@/presentation/shared/components/ConfirmDialog/Co
 import { TradeList } from './TradeList/TradeList'
 import { TradeDetailEditor } from './TradeDetail/TradeDetailEditor'
 import { Analysis } from '@/presentation/analysis/Analysis'
-import MarketSelect, { MarketValue } from '@/presentation/shared/components/MarketSelect/MarketSelect'
+import type { MarketValue } from '@/presentation/shared/components/MarketSelect/MarketSelect'
 import { TradeFactory } from '@/domain/trade/entities/TradeFactory'
 import { EntryDate } from '@/domain/trade/valueObjects/EntryDate'
 import { loadSettings } from '@/presentation/settings/settingsStorage'
 
 // newly extracted presentational components
 import { NewTradeForm, type NewTradeFormState } from './components/NewTradeForm/NewTradeForm'
-import TradeFilters, { MarketFilters, StatusFilters } from './components/TradeFilters/TradeFilters'
+import { MarketFilters, StatusFilters } from './components/TradeFilters/TradeFilters'
 
 type TradeRow = {
   id: string
@@ -473,6 +473,20 @@ export function TradeJournal({ repo }: TradeJournalProps) {
   const settings = typeof window !== 'undefined' ? loadSettings() : {}
   const debugUiEnabled = typeof settings.debugUI === 'boolean' ? settings.debugUI : (typeof process !== 'undefined' && (process.env.REACT_APP_DEBUG_UI === 'true' || process.env.NODE_ENV === 'development'))
 
+  // compute the selected trade DTO once to avoid inline IIFE in JSX (linting + readability)
+  const selectedPos = positions.find((p) => p.id === selectedId)
+  const selectedTrade = selectedPos
+    ? {
+        id: selectedPos.id,
+        symbol: selectedPos.symbol,
+        entryDate: selectedPos.entryDate,
+        size: selectedPos.size,
+        price: selectedPos.price,
+        side: selectedPos.side,
+        notes: selectedPos.notes,
+      }
+    : null
+
   return (
     <>
       <div className={styles.headerRow}>
@@ -545,20 +559,7 @@ export function TradeJournal({ repo }: TradeJournalProps) {
 
                        <div className={styles.rightPane}>
                          <TradeDetailEditor
-                           trade={(() => {
-                             const p = positions.find((p) => p.id === selectedId);
-                             return p
-                               ? {
-                                   id: p.id,
-                                   symbol: p.symbol,
-                                   entryDate: p.entryDate,
-                                   size: p.size,
-                                   price: p.price,
-                                   side: p.side,
-                                   notes: p.notes,
-                                 }
-                               : null;
-                           })()}
+                           trade={selectedTrade}
                            onChange={(dto) => handleEditorChange(dto)}
                            onSave={(dto) => handleEditorSave(dto)}
                            onDelete={(id) => handleDeleteFromEditor(id)}
