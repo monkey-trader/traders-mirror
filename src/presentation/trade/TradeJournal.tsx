@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useCallback } from 'react'
 // Layout is provided by App; do not render Layout again here to avoid duplicate headers
 import { Card } from '@/presentation/shared/components/Card/Card'
 import { Button } from '@/presentation/shared/components/Button/Button'
@@ -127,7 +127,7 @@ export function TradeJournal({ repo }: TradeJournalProps) {
   // Editor works with the presentation DTO shape (id, symbol, entryDate?, size, price, side, notes)
   type EditorDTO = { id: string; symbol: string; entryDate?: string; size: number; price: number; side: string; notes?: string; status?: 'OPEN' | 'CLOSED' | 'FILLED' }
 
-  const handleEditorChange = (dto: EditorDTO) => {
+  const handleEditorChange = useCallback((dto: EditorDTO) => {
     setPositions(prev => prev.map(p => (p.id === dto.id ? ({
       ...p,
       symbol: dto.symbol,
@@ -138,22 +138,41 @@ export function TradeJournal({ repo }: TradeJournalProps) {
       status: (dto as any).status ?? p.status,
       notes: dto.notes
     }) : p)))
-    setDirtyIds(prev => new Set(prev).add(dto.id))
-  }
+    setDirtyIds(prev => {
+      const next = new Set(prev)
+      next.add(dto.id)
+      return next
+    })
+  }, [])
 
   // Called by editor to persist change immediately (accepts DTO)
-  const handleEditorSave = async (dto: EditorDTO) => {
-    const existing = positions.find(p => p.id === dto.id)
-    if (!existing) {
+  const handleEditorSave = useCallback(async (dto: EditorDTO) => {
+    let updatedTrade: TradeRow | null = null
+    setPositions(prev => {
+      const existing = prev.find(p => p.id === dto.id)
+      if (!existing) return prev
+      updatedTrade = {
+        ...existing,
+        symbol: dto.symbol,
+        entryDate: dto.entryDate ?? existing.entryDate,
+        size: dto.size,
+        price: dto.price,
+        side: dto.side as 'LONG' | 'SHORT',
+        status: (dto as any).status ?? existing.status,
+        notes: dto.notes
+      }
+      return prev.map(p => (p.id === dto.id ? updatedTrade! : p))
+    })
+
+    if (!updatedTrade) {
       console.error('Save failed: trade not found', dto.id)
       return
     }
-    const updated = { ...existing, symbol: dto.symbol, entryDate: dto.entryDate ?? existing.entryDate, size: dto.size, price: dto.price, side: dto.side as 'LONG' | 'SHORT', status: (dto as any).status ?? existing.status, notes: dto.notes }
+
     try {
       if (!repoRef.current) { console.warn('Repository unavailable'); return }
-      const domain = TradeFactory.create(updated as any)
+      const domain = TradeFactory.create(updatedTrade as any)
       await repoRef.current.update(domain)
-      setPositions(prev => prev.map(p => (p.id === dto.id ? updated : p)))
       setDirtyIds(prev => {
         const next = new Set(prev)
         next.delete(dto.id)
@@ -161,9 +180,8 @@ export function TradeJournal({ repo }: TradeJournalProps) {
       })
     } catch (err) {
       console.error('Save failed', err)
-      // do not rethrow to avoid caught-throw warning in build; caller can check side-effects
     }
-  }
+  }, [])
 
   // Handler für das Hinzufügen eines neuen Trades
   type NewTradeForm = NewTradeFormState
@@ -175,7 +193,7 @@ export function TradeJournal({ repo }: TradeJournalProps) {
     price: undefined,
     side: 'LONG',
     status: 'OPEN',
-    market: undefined,
+    market: 'Crypto', // default to Crypto to avoid validation blocking when user doesn't explicitly select
     notes: ''
   })
 
@@ -284,7 +302,7 @@ export function TradeJournal({ repo }: TradeJournalProps) {
       // still update UI so user sees the trade; but surface error in console
       setPositions(prev => [newTrade, ...prev])
     }
-    setForm({ symbol: '', entryDate: EntryDate.toInputValue(), size: undefined, price: undefined, side: 'LONG', status: 'OPEN', market: undefined, notes: '' })
+    setForm({ symbol: '', entryDate: EntryDate.toInputValue(), size: undefined, price: undefined, side: 'LONG', status: 'OPEN', market: 'Crypto', notes: '' })
     setFormErrors({})
     // clear submission / touched state after successful add
     setFormSubmitted(false)
@@ -462,7 +480,7 @@ export function TradeJournal({ repo }: TradeJournalProps) {
       price: undefined,
       side: 'LONG',
       status: 'OPEN',
-      market: undefined,
+      market: 'Crypto',
       notes: '',
       sl: undefined,
       tp1: undefined,
@@ -576,8 +594,8 @@ export function TradeJournal({ repo }: TradeJournalProps) {
                        <div className={styles.rightPane}>
                          <TradeDetailEditor
                            trade={selectedTrade}
-                           onChange={(dto) => handleEditorChange(dto)}
-                           onSave={(dto) => handleEditorSave(dto)}
+                           onChange={handleEditorChange}
+                           onSave={handleEditorSave}
                            onDelete={(id) => handleDeleteFromEditor(id)}
                          />
                        </div>
