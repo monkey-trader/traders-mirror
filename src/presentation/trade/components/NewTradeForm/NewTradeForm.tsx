@@ -4,6 +4,7 @@ import { Button } from '@/presentation/shared/components/Button/Button'
 import { Input } from '@/presentation/shared/components/Input/Input'
 import { SideSelect, type SideValue } from '@/presentation/shared/components/SideSelect/SideSelect'
 import MarketSelect, { type MarketValue } from '@/presentation/shared/components/MarketSelect/MarketSelect'
+import { StatusSelect } from '@/presentation/shared/components/StatusSelect/StatusSelect'
 import styles from '../../TradeJournal.module.css'
 
 export type NewTradeFormState = {
@@ -268,30 +269,34 @@ export function NewTradeForm({
             </div>
 
             <div className={styles.newTradeField}>
-              <span className={styles.fieldLabel}>Status</span>
-              <select
-                className={styles.input}
+              <StatusSelect
+                label="Status"
                 value={form.status}
-                onChange={(e) => { onChangeForm({ status: e.target.value as 'OPEN' | 'CLOSED' | 'FILLED' }); onBlurField('status') }}
+                onChange={(v) => { onChangeForm({ status: v }); onBlurField('status') }}
                 onBlur={() => onBlurField('status')}
-              >
-                <option value="OPEN">OPEN</option>
-                <option value="FILLED">FILLED</option>
-              </select>
+                hasError={Boolean(formErrors.status && (touched.status || formSubmitted))}
+                ariaDescribedBy={formErrors.status && (touched.status || formSubmitted) ? 'status-error' : undefined}
+              />
+              {(formErrors.status && (touched.status || formSubmitted)) && (
+                <div id="status-error" className={styles.fieldError}>{formErrors.status}</div>
+              )}
             </div>
 
             <div className={styles.newTradeField}>
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span className={styles.fieldLabel}>Side</span>
-                <SideSelect
-                  value={form.side}
-                  onChange={(v) => onChangeForm({ side: v })}
-                  ariaLabel="New trade side"
-                  showBadge={false}
-                  colored
-                  onBlur={() => onBlurField('side')}
-                />
-              </div>
+              <SideSelect
+                label="Side"
+                value={form.side}
+                onChange={(v) => onChangeForm({ side: v })}
+                ariaLabel="New trade side"
+                showBadge={false}
+                colored
+                onBlur={() => onBlurField('side')}
+                hasError={Boolean(formErrors.side && (touched.side || formSubmitted))}
+                ariaDescribedBy={formErrors.side && (touched.side || formSubmitted) ? 'side-error' : undefined}
+              />
+              {(formErrors.side && (touched.side || formSubmitted)) && (
+                <div id="side-error" className={styles.fieldError}>{formErrors.side}</div>
+              )}
             </div>
           </div>
 

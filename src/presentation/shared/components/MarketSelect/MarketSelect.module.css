@@ -31,3 +31,8 @@
   font-size: 13px;
 }
 
+.error {
+  box-shadow: 0 0 0 3px rgba(255,107,107,0.04);
+  border-radius: 8px;
+  outline: 1px solid rgba(255,107,107,0.12);
+}
