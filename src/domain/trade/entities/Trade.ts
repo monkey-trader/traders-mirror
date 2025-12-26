@@ -13,6 +13,7 @@ export class Trade {
   public readonly size: Size
   public readonly price: Price
   public readonly side: Side
+  public readonly status?: 'OPEN' | 'CLOSED' | 'FILLED'
   public readonly notes?: string
   public readonly market: Market
   public readonly sl?: Price
@@ -29,6 +30,7 @@ export class Trade {
     price: Price,
     side: Side,
     market: Market,
+    status?: 'OPEN' | 'CLOSED' | 'FILLED',
     notes?: string,
     sl?: Price,
     tp1?: Price,
@@ -42,6 +44,7 @@ export class Trade {
     this.size = size
     this.price = price
     this.side = side
+    this.status = status
     this.market = market
     this.notes = notes
     this.sl = sl
