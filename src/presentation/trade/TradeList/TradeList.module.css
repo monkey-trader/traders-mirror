@@ -68,9 +68,9 @@
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  min-width: 64px; /* align with SideSelect.colored */
+  width: 72px; /* fixed width for consistent layout */
   height: 28px; /* align with SideSelect height */
-  padding: 4px 10px; /* similar breathing room */
+  padding: 4px 8px; /* similar breathing room */
   text-align: center;
   white-space: nowrap;
   overflow: hidden;
@@ -103,8 +103,8 @@
 
 /* make badges automatically compact on small screens */
 @media (max-width: 420px) {
-  .side {
-    min-width: 56px;
+  .side, .status {
+    width: 56px;
     height: 24px;
     padding: 2px 8px;
     font-size: 12px;
@@ -120,3 +120,37 @@
 /* scrollbar subtle */
 .list::-webkit-scrollbar { width: 8px; }
 .list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.03); border-radius: 6px; }
+
+.status {
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px; /* match side badge width */
+  height: 28px;
+  padding: 4px 8px;
+  box-sizing: border-box;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.statusOpen {
+  background: rgba(110,231,183,0.08);
+  color: #69f0ae;
+  border: 1px solid rgba(110,231,183,0.14);
+}
+
+.statusClosed {
+  background: rgba(255,255,255,0.02);
+  color: var(--muted);
+  border: 1px solid rgba(255,255,255,0.04);
+}
+
+.statusFilled {
+  background: rgba(96,165,250,0.06);
+  color: #60a5fa;
+  border: 1px solid rgba(96,165,250,0.08);
+}
