@@ -109,6 +109,7 @@
   position: static;
   z-index: auto;
   background-clip: padding-box; /* avoid shadows bleeding */
+  min-width: 0; /* allow children to shrink properly in Firefox */
 }
 
 /* Remove the forced overlay in compact mode — compact will simply stack vertically without z-index tricks */
@@ -153,6 +154,7 @@
   gap: 12px;
   justify-content: flex-end;
   margin-top: 8px;
+  flex-wrap: wrap; /* allow buttons to wrap on narrow screens */
 }
 
 .positionsPlaceholder {
@@ -716,18 +718,33 @@
   gap: 12px;
 }
 
+/* New: small row under the Trades title that contains the status filter pills (All/Open/Closed/Filled) */
+.tradesStatusRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Ensure status pills inside the row render as small buttons by reusing filter styling and spacing */
+.tradesStatusRow .button {
+  /* leave visual styling to Button.module.css; ensure compact spacing */
+  padding: 6px 10px;
+  min-height: 34px;
+}
+
 .tradesFilters {
   display: flex;
-  gap: 8px;
   align-items: center;
+  gap: 10px;
 }
 
 .tradesCount {
+  margin-left: auto;
   color: var(--muted);
-  font-weight: 600;
   font-size: 13px;
 }
 
+/* Responsive: stack header elements on small screens */
 @media (max-width: 680px) {
   .tradesHeader {
     flex-direction: column;
@@ -735,68 +752,4 @@
     gap: 8px;
   }
   .tradesControls { width: 100%; display: flex; justify-content: space-between; }
-}
-
-/* New styles for the New Trade panel improvements */
-.newTradeWrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  position: relative;
-}
-
-.newTradeHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-
-.newTradeGrid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px 12px;
-  align-items: start;
-}
-
-.newTradeGrid .full {
-  grid-column: 1 / -1;
-}
-
-.newTradeField {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-/* collapsed state reduces width and hides content gracefully */
-.collapsed {
-  width: 56px !important;
-  min-width: 56px !important;
-  overflow: hidden;
-}
-
-/* small responsive tweak: when collapsed on narrow screens hide labels to keep compact */
-@media (max-width: 980px) {
-  .collapsed .newTradeGrid { display: none }
-  .collapsed .newTradeHeader span { display: none }
-}
-
-/* ensure the left column doesn't overlay the right content in narrow layouts */
-.leftPane {
-  position: relative; /* keep in normal flow */
-}
-
-.fieldError {
-  color: var(--danger);
-  font-size: 12px;
-  margin-top: 6px;
-}
-
-.fieldLabel {
-  color: var(--muted);
-  font-size: 13px;
-  font-weight: 400; /* de-emphasized */
-  margin-bottom: 6px;
 }

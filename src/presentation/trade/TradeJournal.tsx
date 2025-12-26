@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from 'react'
 // Layout is provided by App; do not render Layout again here to avoid duplicate headers
 import { Card } from '@/presentation/shared/components/Card/Card'
 import { Button } from '@/presentation/shared/components/Button/Button'
-import { Input } from '@/presentation/shared/components/Input/Input'
 import { SideSelect, SideValue } from '@/presentation/shared/components/SideSelect/SideSelect'
 import { validateNewTrade } from '@/presentation/trade/validation'
 import styles from './TradeJournal.module.css'
@@ -15,6 +14,10 @@ import MarketSelect, { MarketValue } from '@/presentation/shared/components/Mark
 import { TradeFactory } from '@/domain/trade/entities/TradeFactory'
 import { EntryDate } from '@/domain/trade/valueObjects/EntryDate'
 import { loadSettings } from '@/presentation/settings/settingsStorage'
+
+// newly extracted presentational components
+import { NewTradeForm, type NewTradeFormState } from './components/NewTradeForm/NewTradeForm'
+import TradeFilters, { MarketFilters, StatusFilters } from './components/TradeFilters/TradeFilters'
 
 type TradeRow = {
   id: string
@@ -151,22 +154,7 @@ export function TradeJournal({ repo }: TradeJournalProps) {
   }
 
   // Handler für das Hinzufügen eines neuen Trades
-  type NewTradeForm = {
-    symbol: string
-    entryDate: string
-    size?: number
-    price?: number
-    side: SideValue
-    status: 'OPEN' | 'CLOSED' | 'FILLED'
-    notes: string
-    sl?: number
-    tp1?: number
-    tp2?: number
-    tp3?: number
-    leverage?: number
-    margin?: number
-    market?: MarketValue
-  }
+  type NewTradeForm = NewTradeFormState
 
   const [form, setForm] = useState<NewTradeForm>({
     symbol: '',
@@ -502,454 +490,124 @@ export function TradeJournal({ repo }: TradeJournalProps) {
         }
       >
         <div className={styles.left}>
-          <Card>
-            <div className={styles.newTradeWrapper}>
-              <div className={styles.newTradeHeader}>
-                <span style={{ fontWeight: 700, color: 'var(--text)' }}>New Trade</span>
-              </div>
-
-              {/* Entry date is hidden for new trades (value preserved via hidden input inside the form) */}
-
-              {/* Visible status & validation summary */}
-              {debugUiEnabled && (lastStatus || Object.keys(formErrors).length > 0) && (
-                <div className={styles.inlineStatus} style={{ margin: '8px 0', color: 'var(--muted)' }}>
-                  {lastStatus && <div style={{ marginBottom: 6 }}><strong>Status:</strong> {lastStatus}</div>}
-                  {Object.keys(formErrors).length > 0 && (
-                    <div style={{ color: 'var(--accent-error)' }}>
-                      <strong>Form errors:</strong>
-                      <ul style={{ margin: '6px 0 0 16px' }}>
-                        {Object.entries(formErrors).map(([k, v]) => (
-                          <li key={k}>{k}: {v}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </div>
-              )}
-
-               <form key={formKey} className={styles.form} onSubmit={handleAdd}>
-                {/* keep a plain hidden input for entryDate so state/DTO remains available but no grid space is used */}
-                <input id="entryDate" type="hidden" value={form.entryDate} />
-                <div className={styles.newTradeGrid}>
-                  {/* Row 1: Symbol | Market */}
-
-                  <div className={styles.newTradeField}>
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      <span className={styles.fieldLabel}>Market</span>
-                      <MarketSelect
-                        value={(form.market ?? '') as MarketValue}
-                        onChange={(v) => {
-                          setForm({ ...form, market: v });
-                          setTouched(prev => ({ ...prev, market: true }))
-                          if (v) {
-                            setMarketFilter(v);
-                            setFormErrors({});
-                          }
-                        }}
-                        compact
-                        showAll={false}
-                      />
-                    </div>
-                    {(formErrors.market && (touched.market || formSubmitted)) && (
-                      <div className={styles.fieldError}>{formErrors.market}</div>
-                    )}
-                  </div>
-
-                  <div className={styles.newTradeField}>
-                    <Input
-                      id="symbol"
-                      label="Symbol"
-                      placeholder="e.g. BTC"
-                      value={form.symbol}
-                      onChange={(e) => setForm({ ...form, symbol: e.target.value })}
-                      onBlur={() => setTouched(prev => ({ ...prev, symbol: true }))}
-                      hasError={Boolean(formErrors.symbol && (touched.symbol || formSubmitted))}
-                      aria-describedby={formErrors.symbol && (touched.symbol || formSubmitted) ? 'symbol-error' : undefined}
-                    />
-                    {(formErrors.symbol && (touched.symbol || formSubmitted)) && (
-                      <div id="symbol-error" className={styles.fieldError}>
-                        {formErrors.symbol}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Row 2: Entry Price */}
-
-                  <div className={styles.newTradeField}>
-                    <Input
-                      id="price"
-                      label="Entry Price *"
-                      type="number"
-                      value={typeof form.price === 'number' ? String(form.price) : ''}
-                      onChange={(e) => {
-                        const v = e.target.value;
-                        setForm({ ...form, price: v === '' ? undefined : Number(v) });
-                      }}
-                      onBlur={() => setTouched(prev => ({ ...prev, price: true }))}
-                      hasError={Boolean(formErrors.price && (touched.price || formSubmitted))}
-                      aria-describedby={formErrors.price && (touched.price || formSubmitted) ? 'price-error' : undefined}
-                    />
-                    {(formErrors.price && (touched.price || formSubmitted)) && (
-                      <div id="price-error" className={styles.fieldError}>
-                        {formErrors.price}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Row 3: Margin | Leverage will follow (shifted down) */}
-                  <div className={styles.newTradeField}>
-                    <Input
-                      id="margin"
-                      label="Margin *"
-                      type="number"
-                      value={typeof form.margin === 'number' ? String(form.margin) : ''}
-                      onChange={(e) => {
-                        const v = e.target.value;
-                        setForm({ ...form, margin: v === '' ? undefined : Number(v) });
-                      }}
-                      onBlur={() => setTouched(prev => ({ ...prev, margin: true }))}
-                      hasError={Boolean(formErrors.margin && (touched.margin || formSubmitted))}
-                      aria-describedby={formErrors.margin && (touched.margin || formSubmitted) ? 'margin-error' : undefined}
-                    />
-                    {(formErrors.margin && (touched.margin || formSubmitted)) && (
-                      <div id="margin-error" className={styles.fieldError}>
-                        {formErrors.margin}
-                      </div>
-                    )}
-                  </div>
-                  <div className={styles.newTradeField}>
-                    <Input
-                      id="leverage"
-                      label="Leverage *"
-                      type="number"
-                      value={typeof form.leverage === 'number' ? String(form.leverage) : ''}
-                      onChange={(e) => {
-                        const v = e.target.value;
-                        setForm({ ...form, leverage: v === '' ? undefined : Number(v) });
-                      }}
-                      onBlur={() => setTouched(prev => ({ ...prev, leverage: true }))}
-                      hasError={Boolean(formErrors.leverage && (touched.leverage || formSubmitted))}
-                      aria-describedby={formErrors.leverage && (touched.leverage || formSubmitted) ? 'leverage-error' : undefined}
-                    />
-                    {(formErrors.leverage && (touched.leverage || formSubmitted)) && (
-                      <div id="leverage-error" className={styles.fieldError}>
-                        {formErrors.leverage}
-                      </div>
-                    )}
-                  </div>
-                  <div className={styles.newTradeField}>
-                    <Input
-                      id="size"
-                      label="Position Size *"
-                      type="number"
-                      value={typeof form.size === 'number' ? String(form.size) : ''}
-                      onChange={(e) => {
-                        const v = e.target.value;
-                        setForm({ ...form, size: v === '' ? undefined : Number(v) });
-                      }}
-                      onBlur={() => setTouched(prev => ({ ...prev, size: true }))}
-                      hasError={Boolean(formErrors.size && (touched.size || formSubmitted))}
-                      aria-describedby={formErrors.size && (touched.size || formSubmitted) ? 'size-error' : undefined}
-                    />
-                    {(formErrors.size && (touched.size || formSubmitted)) && (
-                      <div id="size-error" className={styles.fieldError}>
-                        {formErrors.size}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Row 4: SL | TP1 */}
-                  <div className={styles.newTradeField}>
-                    <Input
-                      id="sl"
-                      label="Stop Loss (SL) *"
-                      type="number"
-                      value={typeof form.sl === 'number' ? String(form.sl) : ''}
-                      onChange={(e) => {
-                        const v = e.target.value;
-                        setForm({ ...form, sl: v === '' ? undefined : Number(v) });
-                      }}
-                      onBlur={() => setTouched(prev => ({ ...prev, sl: true }))}
-                      hasError={Boolean(formErrors.sl && (touched.sl || formSubmitted))}
-                      aria-describedby={formErrors.sl && (touched.sl || formSubmitted) ? 'sl-error' : undefined}
-                    />
-                    {(formErrors.sl && (touched.sl || formSubmitted)) && (
-                      <div id="sl-error" className={styles.fieldError}>
-                        {formErrors.sl}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className={styles.newTradeField}>
-                    <Input
-                      id="tp1"
-                      label="TP1"
-                      type="number"
-                      value={typeof form.tp1 === 'number' ? String(form.tp1) : ''}
-                      onChange={(e) => {
-                        const v = e.target.value;
-                        setForm({ ...form, tp1: v === '' ? undefined : Number(v) });
-                      }}
-                      onBlur={() => setTouched(prev => ({ ...prev, tp1: true }))}
-                      hasError={Boolean(formErrors.tp1 && (touched.tp1 || formSubmitted))}
-                      aria-describedby={formErrors.tp1 && (touched.tp1 || formSubmitted) ? 'tp1-error' : undefined}
-                    />
-                    {(formErrors.tp1 && (touched.tp1 || formSubmitted)) && (
-                      <div id="tp1-error" className={styles.fieldError}>
-                        {formErrors.tp1}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Row 5: TP2 | TP3 */}
-                  <div className={styles.newTradeField}>
-                    <Input
-                      id="tp2"
-                      label="TP2"
-                      type="number"
-                      value={typeof form.tp2 === 'number' ? String(form.tp2) : ''}
-                      onChange={(e) => {
-                        const v = e.target.value;
-                        setForm({ ...form, tp2: v === '' ? undefined : Number(v) });
-                      }}
-                      onBlur={() => setTouched(prev => ({ ...prev, tp2: true }))}
-                      hasError={Boolean(formErrors.tp2 && (touched.tp2 || formSubmitted))}
-                      aria-describedby={formErrors.tp2 && (touched.tp2 || formSubmitted) ? 'tp2-error' : undefined}
-                    />
-                    {(formErrors.tp2 && (touched.tp2 || formSubmitted)) && (
-                      <div id="tp2-error" className={styles.fieldError}>
-                        {formErrors.tp2}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className={styles.newTradeField}>
-                    <Input
-                      id="tp3"
-                      label="TP3"
-                      type="number"
-                      value={typeof form.tp3 === 'number' ? String(form.tp3) : ''}
-                      onChange={(e) => {
-                        const v = e.target.value;
-                        setForm({ ...form, tp3: v === '' ? undefined : Number(v) });
-                      }}
-                      onBlur={() => setTouched(prev => ({ ...prev, tp3: true }))}
-                      hasError={Boolean(formErrors.tp3 && (touched.tp3 || formSubmitted))}
-                      aria-describedby={formErrors.tp3 && (touched.tp3 || formSubmitted) ? 'tp3-error' : undefined}
-                    />
-                    {(formErrors.tp3 && (touched.tp3 || formSubmitted)) && (
-                      <div id="tp3-error" className={styles.fieldError}>
-                        {formErrors.tp3}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Row 6: Notes full-width */}
-                  <div className={`${styles.newTradeField} ${styles.full}`}>
-                    <Input
-                      label="Notes"
-                      value={form.notes}
-                      onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                    />
-                  </div>
-
-                  {/* Status row (was full-width) */}
-                  <div className={styles.newTradeField}>
-                    <span className={styles.fieldLabel}>Status</span>
-                    <select
-                      className={styles.input}
-                      value={form.status}
-                      onChange={(e) => {
-                        setForm({ ...form, status: e.target.value as 'OPEN' | 'CLOSED' | 'FILLED' })
-                        setTouched(prev => ({ ...prev, status: true }))
-                      }}
-                      onBlur={() => setTouched(prev => ({ ...prev, status: true }))}
-                    >
-                      <option value="OPEN">OPEN</option>
-                      <option value="FILLED">FILLED</option>
-                    </select>
-                  </div>
-                   <div className={styles.newTradeField}>
-                     <div style={{ display: 'flex', flexDirection: 'column' }}>
-                       <span className={styles.fieldLabel}>Side</span>
-                       <SideSelect
-                         value={form.side as SideValue}
-                         onChange={(v) => setForm({ ...form, side: v })}
-                         ariaLabel="New trade side"
-                         showBadge={false}
-                         colored
-                         onBlur={() => setTouched(prev => ({ ...prev, side: true }))}
-                       />
-                     </div>
-                   </div>
-                </div>
-
-                <div className={styles.actions} style={{ marginTop: 12 }}>
-                  <Button
-                    variant="ghost"
-                    onClick={resetNewTradeForm}
-                    title="Reset form fields to defaults"
-                    aria-label="Reset new trade form"
-                  >
-                    Reset
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="primary"
-                    onClick={() => { setFormSubmitted(true); setTouched(prev => ({ ...prev, price: true })); handleAdd() }}
-                  >
-                    Add
-                  </Button>
-                </div>
-              </form>
-            </div>
-          </Card>
-        </div>
-
-        <div className={styles.right}>
-          <Card
-            tabs={[
-              {
-                key: 'list',
-                title: 'List',
-                render: () => (
-                  <>
-                    <div className={styles.tradesHeader}>
-                      <div className={styles.tradesTitle}>Trades</div>
-                      <div className={styles.tradesControls}>
-                        <div className={styles.tradesFilters}>
-                          <Button
-                            variant={marketFilter === 'All' ? 'primary' : 'ghost'}
-                            onClick={() => setMarketFilter('All')}
-                          >
-                            All
-                          </Button>
-                          <Button
-                            variant={marketFilter === 'Forex' ? 'primary' : 'ghost'}
-                            onClick={() => setMarketFilter('Forex')}
-                          >
-                            Forex
-                          </Button>
-                          <Button
-                            variant={marketFilter === 'Crypto' ? 'primary' : 'ghost'}
-                            onClick={() => setMarketFilter('Crypto')}
-                          >
-                            Crypto
-                          </Button>
-                        </div>
-                        <div className={styles.tradesCount}>{trades.length} trades</div>
-                      </div>
-                    </div>
-
-                    <div className={styles.controls} style={{ marginBottom: 8 }}>
-                      <Button
-                        variant={tradeStatusFilter === 'ALL' ? 'primary' : 'ghost'}
-                        onClick={() => setTradeStatusFilter('ALL')}
-                      >
-                        All
-                      </Button>
-                      <Button
-                        variant={tradeStatusFilter === 'OPEN' ? 'primary' : 'ghost'}
-                        onClick={() => setTradeStatusFilter('OPEN')}
-                      >
-                        Open
-                      </Button>
-                      <Button
-                        variant={tradeStatusFilter === 'CLOSED' ? 'primary' : 'ghost'}
-                        onClick={() => setTradeStatusFilter('CLOSED')}
-                      >
-                        Closed
-                      </Button>
-                      <Button
-                        variant={tradeStatusFilter === 'FILLED' ? 'primary' : 'ghost'}
-                        onClick={() => setTradeStatusFilter('FILLED')}
-                      >
-                        Filled
-                      </Button>
-                    </div>
-
-                    <div className={styles.listAndDetailWrap}>
-                      <div className={styles.leftPane}>
-                        <TradeList
-                          trades={trades.map((t) => ({
-                            id: t.id,
-                            symbol: t.symbol,
-                            entryDate: t.entryDate,
-                            size: t.size,
-                            price: t.price,
-                            side: t.side,
-                            notes: t.notes,
-                          }))}
-                          selectedId={selectedId}
-                          onSelect={(id) => setSelectedId(id)}
-                        />
-                      </div>
-
-                      <div className={styles.rightPane}>
-                        <TradeDetailEditor
-                          trade={(() => {
-                            const p = positions.find((p) => p.id === selectedId);
-                            return p
-                              ? {
-                                  id: p.id,
-                                  symbol: p.symbol,
-                                  entryDate: p.entryDate,
-                                  size: p.size,
-                                  price: p.price,
-                                  side: p.side,
-                                  notes: p.notes,
-                                }
-                              : null;
-                          })()}
-                          onChange={(dto) => handleEditorChange(dto)}
-                          onSave={(dto) => handleEditorSave(dto)}
-                          onDelete={(id) => handleDeleteFromEditor(id)}
-                        />
-                      </div>
-                    </div>
-                  </>
-                ),
-              },
-              {
-                key: 'analysis',
-                title: 'Analyse',
-                render: () => <Analysis onCreateTradeSuggestion={handleCreateTradeFromAnalysis} />,
-              },
-            ]}
-            activeTabKey={tradesCardTab}
-            onTabChange={(k) => setTradesCardTab(k as 'list' | 'analysis')}
+          <NewTradeForm
+            form={form}
+            formErrors={formErrors}
+            touched={touched}
+            formSubmitted={formSubmitted}
+            formKey={formKey}
+            debugUiEnabled={debugUiEnabled}
+            lastStatus={lastStatus}
+            onChangeForm={(patch) => setForm((prev) => ({ ...prev, ...patch }))}
+            onBlurField={(f) => setTouched((prev) => ({ ...prev, [f]: true }))}
+            onSubmit={(e?: React.FormEvent) => { setFormSubmitted(true); setTouched(prev => ({ ...prev, price: true })); handleAdd(e) }}
+            onReset={resetNewTradeForm}
+            setMarketFilter={(m) => setMarketFilter(m === '' ? 'All' : (m as 'All' | 'Crypto' | 'Forex'))}
           />
-        </div>
-      </div>
+         </div>
 
-      <ConfirmDialog
-        open={confirmOpen}
-        onConfirm={handleConfirm}
-        onCancel={handleCancelConfirm}
-        title="Bestätigung erforderlich"
-        message={`Sind Sie sicher, dass Sie diese Aktion durchführen möchten?`}
-        confirmLabel="Ja"
-        cancelLabel="Abbrechen"
-      />
+         <div className={styles.right}>
+           <Card
+             tabs={[
+               {
+                 key: 'list',
+                 title: 'List',
+                 render: () => (
+                   <>
+                     <div className={styles.tradesHeader}>
+                       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                         <div className={styles.tradesTitle}>Trades</div>
+                         <div className={styles.tradesStatusRow}>
+                           <StatusFilters tradeStatusFilter={tradeStatusFilter} setTradeStatusFilter={(s) => setTradeStatusFilter(s)} />
+                         </div>
+                       </div>
+                       <div className={styles.tradesControls}>
+                         <MarketFilters marketFilter={marketFilter} setMarketFilter={(m) => setMarketFilter(m)} tradesCount={trades.length} />
+                       </div>
+                     </div>
 
-      {undoInfo && (
-        <div className={styles.undoBanner}>
-          <div className={styles.undoContent}>
-            <div>Aktion durchgeführt — Rückgängig möglich</div>
-            <Button variant="ghost" onClick={handleUndo}>
-              Rückgängig
-            </Button>
-          </div>
-        </div>
-      )}
+                     <div className={styles.listAndDetailWrap}>
+                       <div className={styles.leftPane}>
+                         <TradeList
+                           trades={trades.map((t) => ({
+                             id: t.id,
+                             symbol: t.symbol,
+                             entryDate: t.entryDate,
+                             size: t.size,
+                             price: t.price,
+                             side: t.side,
+                             notes: t.notes,
+                           }))}
+                           selectedId={selectedId}
+                           onSelect={(id) => setSelectedId(id)}
+                         />
+                       </div>
 
-      {/* Debug/status banner (dev-only) */}
-      {repoEnabled && debugUiEnabled && (
-        <div className={styles.statusBanner}>
-          <div>{positions.length} trades loaded</div>
-          {lastStatus && <div className={styles.statusMessage}>{lastStatus}</div>}
-        </div>
-      )}
+                       <div className={styles.rightPane}>
+                         <TradeDetailEditor
+                           trade={(() => {
+                             const p = positions.find((p) => p.id === selectedId);
+                             return p
+                               ? {
+                                   id: p.id,
+                                   symbol: p.symbol,
+                                   entryDate: p.entryDate,
+                                   size: p.size,
+                                   price: p.price,
+                                   side: p.side,
+                                   notes: p.notes,
+                                 }
+                               : null;
+                           })()}
+                           onChange={(dto) => handleEditorChange(dto)}
+                           onSave={(dto) => handleEditorSave(dto)}
+                           onDelete={(id) => handleDeleteFromEditor(id)}
+                         />
+                       </div>
+                     </div>
+                   </>
+                 ),
+               },
+               {
+                 key: 'analysis',
+                 title: 'Analyse',
+                 render: () => <Analysis onCreateTradeSuggestion={handleCreateTradeFromAnalysis} />,
+               },
+             ]}
+             activeTabKey={tradesCardTab}
+             onTabChange={(k) => setTradesCardTab(k as 'list' | 'analysis')}
+           />
+         </div>
+       </div>
+
+       <ConfirmDialog
+         open={confirmOpen}
+         onConfirm={handleConfirm}
+         onCancel={handleCancelConfirm}
+         title="Bestätigung erforderlich"
+         message={`Sind Sie sicher, dass Sie diese Aktion durchführen möchten?`}
+         confirmLabel="Ja"
+         cancelLabel="Abbrechen"
+       />
+
+       {undoInfo && (
+         <div className={styles.undoBanner}>
+           <div className={styles.undoContent}>
+             <div>Aktion durchgeführt — Rückgängig möglich</div>
+             <Button variant="ghost" onClick={handleUndo}>
+               Rückgängig
+             </Button>
+           </div>
+         </div>
+       )}
+
+       {/* Debug/status banner (dev-only) */}
+       {repoEnabled && debugUiEnabled && (
+         <div className={styles.statusBanner}>
+           <div>{positions.length} trades loaded</div>
+           {lastStatus && <div className={styles.statusMessage}>{lastStatus}</div>}
+         </div>
+       )}
     </>
-  );
- }
+   );
+  }
