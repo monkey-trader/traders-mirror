@@ -1,8 +1,8 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 // Layout is provided by App; do not render Layout again here to avoid duplicate headers
 import { Card } from '@/presentation/shared/components/Card/Card'
 import { Button } from '@/presentation/shared/components/Button/Button'
-import { SideValue } from '@/presentation/shared/components/SideSelect/SideSelect'
+import { SideSelect, SideValue } from '@/presentation/shared/components/SideSelect/SideSelect'
 import { validateNewTrade } from '@/presentation/trade/validation'
 import styles from './TradeJournal.module.css'
 import type { TradeRepository } from '@/domain/trade/interfaces/TradeRepository'
@@ -10,17 +10,14 @@ import { ConfirmDialog } from '@/presentation/shared/components/ConfirmDialog/Co
 import { TradeList } from './TradeList/TradeList'
 import { TradeDetailEditor } from './TradeDetail/TradeDetailEditor'
 import { Analysis } from '@/presentation/analysis/Analysis'
-import type { MarketValue } from '@/presentation/shared/components/MarketSelect/MarketSelect'
+import MarketSelect, { MarketValue } from '@/presentation/shared/components/MarketSelect/MarketSelect'
 import { TradeFactory } from '@/domain/trade/entities/TradeFactory'
-import type { TradeInput } from '@/domain/trade/entities/TradeFactory'
 import { EntryDate } from '@/domain/trade/valueObjects/EntryDate'
 import { loadSettings } from '@/presentation/settings/settingsStorage'
-import { COMBINED_MOCK_TRADES, MORE_CRYPTO_MOCK_TRADES, MORE_FOREX_MOCK_TRADES } from '@/infrastructure/trade/repositories/mockData'
-import type { RepoTrade } from '@/infrastructure/trade/repositories/LocalStorageTradeRepository'
 
 // newly extracted presentational components
 import { NewTradeForm, type NewTradeFormState } from './components/NewTradeForm/NewTradeForm'
-import { MarketFilters, StatusFilters } from './components/TradeFilters/TradeFilters'
+import TradeFilters, { MarketFilters, StatusFilters } from './components/TradeFilters/TradeFilters'
 
 type TradeRow = {
   id: string
@@ -45,40 +42,11 @@ type TradeRow = {
 type TradeJournalProps = { repo?: TradeRepository }
 
 export function TradeJournal({ repo }: TradeJournalProps) {
-  // read user setting to decide whether to show Load mock data control
-  const [showLoadMockButton, setShowLoadMockButton] = useState<boolean>(() => {
-    try {
-      const s = loadSettings()
-      return typeof s.showLoadMockButton === 'boolean' ? s.showLoadMockButton : true
-    } catch (_e) {
-      return true
-    }
-  })
-  // keep in sync if settings change elsewhere (optional: could add a storage event listener)
-  useEffect(() => {
-    const handler = () => {
-      try {
-        const s = loadSettings()
-        setShowLoadMockButton(typeof s.showLoadMockButton === 'boolean' ? s.showLoadMockButton : true)
-      } catch (_e) { /* ignore */ }
-    }
-    window.addEventListener('storage', handler)
-    return () => window.removeEventListener('storage', handler)
-  }, [])
-
-  // modal state for loading mock data
-  const [mockModalOpen, setMockModalOpen] = useState(false)
-  const [mockLoadOption, setMockLoadOption] = useState<'crypto' | 'forex' | 'both'>('both')
-  const [mockLoading, setMockLoading] = useState(false)
-
   // repository instance must be injected via props (composition root). Do not require() here.
   const repoRef = useRef<TradeRepository | null>(repo ?? null)
-  // Keep ref in sync if prop changes (composition root may re-create repo)
-  useEffect(() => { repoRef.current = repo ?? null }, [repo])
-  if (!repoRef.current) {
+  if (repoRef.current === null) {
     // Do not auto-create adapters here to keep component testable and avoid require()/dynamic imports.
-    // Only warn once in dev
-    if (typeof process !== 'undefined' && process.env.NODE_ENV === 'development') console.warn('No TradeRepository provided to TradeJournal; persistence disabled. Provide repo prop from composition root.')
+    console.warn('No TradeRepository provided to TradeJournal; persistence disabled. Provide repo prop from composition root.')
   }
 
   // State für Positionsdaten (editierbar)
@@ -146,9 +114,9 @@ export function TradeJournal({ repo }: TradeJournalProps) {
 
   // Called by editor when fields change; mark as dirty and update local positions
   // Editor works with the presentation DTO shape (id, symbol, entryDate?, size, price, side, notes)
-  type EditorDTO = { id: string; symbol: string; entryDate?: string; size: number; price: number; side: string; notes?: string; status?: 'OPEN' | 'CLOSED' | 'FILLED' }
+  type EditorDTO = { id: string; symbol: string; entryDate?: string; size: number; price: number; side: string; notes?: string }
 
-  const handleEditorChange = useCallback((dto: EditorDTO) => {
+  const handleEditorChange = (dto: EditorDTO) => {
     setPositions(prev => prev.map(p => (p.id === dto.id ? ({
       ...p,
       symbol: dto.symbol,
@@ -156,44 +124,24 @@ export function TradeJournal({ repo }: TradeJournalProps) {
       size: dto.size,
       price: dto.price,
       side: dto.side as 'LONG' | 'SHORT',
-      status: (dto as any).status ?? p.status,
       notes: dto.notes
     }) : p)))
-    setDirtyIds(prev => {
-      const next = new Set(prev)
-      next.add(dto.id)
-      return next
-    })
-  }, [])
+    setDirtyIds(prev => new Set(prev).add(dto.id))
+  }
 
   // Called by editor to persist change immediately (accepts DTO)
-  const handleEditorSave = useCallback(async (dto: EditorDTO) => {
-    let updatedTrade: TradeRow | null = null
-    setPositions(prev => {
-      const existing = prev.find(p => p.id === dto.id)
-      if (!existing) return prev
-      updatedTrade = {
-        ...existing,
-        symbol: dto.symbol,
-        entryDate: dto.entryDate ?? existing.entryDate,
-        size: dto.size,
-        price: dto.price,
-        side: dto.side as 'LONG' | 'SHORT',
-        status: (dto as any).status ?? existing.status,
-        notes: dto.notes
-      }
-      return prev.map(p => (p.id === dto.id ? updatedTrade! : p))
-    })
-
-    if (!updatedTrade) {
+  const handleEditorSave = async (dto: EditorDTO) => {
+    const existing = positions.find(p => p.id === dto.id)
+    if (!existing) {
       console.error('Save failed: trade not found', dto.id)
       return
     }
-
+    const updated = { ...existing, symbol: dto.symbol, entryDate: dto.entryDate ?? existing.entryDate, size: dto.size, price: dto.price, side: dto.side as 'LONG' | 'SHORT', notes: dto.notes }
     try {
       if (!repoRef.current) { console.warn('Repository unavailable'); return }
-      const domain = TradeFactory.create(updatedTrade as any)
+      const domain = TradeFactory.create(updated as any)
       await repoRef.current.update(domain)
+      setPositions(prev => prev.map(p => (p.id === dto.id ? updated : p)))
       setDirtyIds(prev => {
         const next = new Set(prev)
         next.delete(dto.id)
@@ -201,8 +149,9 @@ export function TradeJournal({ repo }: TradeJournalProps) {
       })
     } catch (err) {
       console.error('Save failed', err)
+      // do not rethrow to avoid caught-throw warning in build; caller can check side-effects
     }
-  }, [])
+  }
 
   // Handler für das Hinzufügen eines neuen Trades
   type NewTradeForm = NewTradeFormState
@@ -214,7 +163,7 @@ export function TradeJournal({ repo }: TradeJournalProps) {
     price: undefined,
     side: 'LONG',
     status: 'OPEN',
-    market: 'Crypto', // default to Crypto to avoid validation blocking when user doesn't explicitly select
+    market: undefined,
     notes: ''
   })
 
@@ -323,7 +272,7 @@ export function TradeJournal({ repo }: TradeJournalProps) {
       // still update UI so user sees the trade; but surface error in console
       setPositions(prev => [newTrade, ...prev])
     }
-    setForm({ symbol: '', entryDate: EntryDate.toInputValue(), size: undefined, price: undefined, side: 'LONG', status: 'OPEN', market: 'Crypto', notes: '' })
+    setForm({ symbol: '', entryDate: EntryDate.toInputValue(), size: undefined, price: undefined, side: 'LONG', status: 'OPEN', market: undefined, notes: '' })
     setFormErrors({})
     // clear submission / touched state after successful add
     setFormSubmitted(false)
@@ -501,7 +450,7 @@ export function TradeJournal({ repo }: TradeJournalProps) {
       price: undefined,
       side: 'LONG',
       status: 'OPEN',
-      market: 'Crypto',
+      market: undefined,
       notes: '',
       sl: undefined,
       tp1: undefined,
@@ -524,28 +473,11 @@ export function TradeJournal({ repo }: TradeJournalProps) {
   const settings = typeof window !== 'undefined' ? loadSettings() : {}
   const debugUiEnabled = typeof settings.debugUI === 'boolean' ? settings.debugUI : (typeof process !== 'undefined' && (process.env.REACT_APP_DEBUG_UI === 'true' || process.env.NODE_ENV === 'development'))
 
-  // compute the selected trade DTO once to avoid inline IIFE in JSX (linting + readability)
-  const selectedPos = positions.find((p) => p.id === selectedId)
-  const selectedTrade = selectedPos
-    ? {
-        id: selectedPos.id,
-        symbol: selectedPos.symbol,
-        entryDate: selectedPos.entryDate,
-        size: selectedPos.size,
-        price: selectedPos.price,
-        side: selectedPos.side,
-        status: selectedPos.status,
-        notes: selectedPos.notes,
-      }
-    : null
-
   return (
     <>
       <div className={styles.headerRow}>
         <h2 className={styles.title}>Trading Journal</h2>
-        <div className={styles.controls}>
-          {showLoadMockButton && <Button variant="secondary" onClick={() => setMockModalOpen(true)}>Load mock data</Button>}
-        </div>
+        <div className={styles.controls}>{/* moved market filters next to Trades title */}</div>
       </div>
 
       {/* containerRef wraps the grid so we can detect available width */}
@@ -604,7 +536,6 @@ export function TradeJournal({ repo }: TradeJournalProps) {
                              size: t.size,
                              price: t.price,
                              side: t.side,
-                             status: t.status,
                              notes: t.notes,
                            }))}
                            selectedId={selectedId}
@@ -614,9 +545,22 @@ export function TradeJournal({ repo }: TradeJournalProps) {
 
                        <div className={styles.rightPane}>
                          <TradeDetailEditor
-                           trade={selectedTrade}
-                           onChange={handleEditorChange}
-                           onSave={handleEditorSave}
+                           trade={(() => {
+                             const p = positions.find((p) => p.id === selectedId);
+                             return p
+                               ? {
+                                   id: p.id,
+                                   symbol: p.symbol,
+                                   entryDate: p.entryDate,
+                                   size: p.size,
+                                   price: p.price,
+                                   side: p.side,
+                                   notes: p.notes,
+                                 }
+                               : null;
+                           })()}
+                           onChange={(dto) => handleEditorChange(dto)}
+                           onSave={(dto) => handleEditorSave(dto)}
                            onDelete={(id) => handleDeleteFromEditor(id)}
                          />
                        </div>
@@ -644,75 +588,7 @@ export function TradeJournal({ repo }: TradeJournalProps) {
          message={`Sind Sie sicher, dass Sie diese Aktion durchführen möchten?`}
          confirmLabel="Ja"
          cancelLabel="Abbrechen"
-         confirmVariant={confirmAction === 'delete' ? 'danger' : 'primary'}
        />
-
-      {/* Mock data loader modal */}
-      {mockModalOpen && (
-        <div className={styles.backdrop} role="dialog" aria-modal="true">
-          <div className={styles.mockDialog}>
-            <h3>Lade Mock-Daten</h3>
-            <p>Wähle welches Set an Testdaten du laden möchtest. Bereits vorhandene Daten bleiben erhalten.</p>
-            <div style={{ display: 'flex', gap: 8, marginTop: 12, marginBottom: 12 }}>
-              <Button variant={mockLoadOption === 'crypto' ? 'primary' : 'ghost'} onClick={() => setMockLoadOption('crypto')}>Crypto</Button>
-              <Button variant={mockLoadOption === 'forex' ? 'primary' : 'ghost'} onClick={() => setMockLoadOption('forex')}>Forex</Button>
-              <Button variant={mockLoadOption === 'both' ? 'primary' : 'ghost'} onClick={() => setMockLoadOption('both')}>Both</Button>
-            </div>
-            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-              <Button variant="ghost" onClick={() => setMockModalOpen(false)}>Cancel</Button>
-              <Button
-                variant="primary"
-                onClick={async () => {
-                  setMockLoading(true)
-                  try {
-                    const seedSet = mockLoadOption === 'crypto' ? MORE_CRYPTO_MOCK_TRADES : mockLoadOption === 'forex' ? MORE_FOREX_MOCK_TRADES : COMBINED_MOCK_TRADES
-
-                    // prefer calling a seed method if repo supports it
-                    const repoAny = repoRef.current as unknown as { seed?: (trades: RepoTrade[]) => void; save?: (t: any) => Promise<void>; getAll?: () => Promise<any[]> } | null
-                    if (repoAny && typeof repoAny.seed === 'function') {
-                      try { repoAny.seed(seedSet as RepoTrade[]) } catch (err) { console.error('seed() call failed', err) }
-                    } else if (repoAny && typeof repoAny.save === 'function') {
-                      // save each trade sequentially
-                      for (const rt of seedSet) {
-                        try {
-                          const domain = TradeFactory.create(rt as unknown as TradeInput)
-                          await repoAny.save(domain)
-                        } catch (err) {
-                          console.error('Failed to save mock trade via save()', err)
-                        }
-                      }
-                    } else {
-                      // no repo available - update UI only
-                      // Normalize status to avoid UNKNOWN values in the list when mock items lack a status
-                      setPositions(prev => {
-                        const combined = seedSet.map(t => ({ ...t }))
-                        const dto = combined.map(c => ({
-                          ...c,
-                          entryDate: EntryDate.toInputValue(c.entryDate),
-                          status: (c as any).status ?? 'OPEN'
-                        })) as unknown as TradeRow[]
-                        return [...dto, ...prev]
-                      })
-                    }
-
-                    // reload canonical trades from repo
-                    if (repoRef.current && typeof repoRef.current.getAll === 'function') {
-                      const domainTrades = await repoRef.current.getAll()
-                      const dtoTrades = domainTrades.map(dt => TradeFactory.toDTO(dt) as unknown as TradeRow)
-                      setPositions(dtoTrades)
-                    }
-                  } finally {
-                    setMockLoading(false)
-                    setMockModalOpen(false)
-                  }
-                }}
-              >
-                {mockLoading ? 'Loading…' : 'Load'}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
 
        {undoInfo && (
          <div className={styles.undoBanner}>
