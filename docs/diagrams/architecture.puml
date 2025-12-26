@@ -25,3 +25,4 @@ skinparam shadowing false
 skinparam dpi 150
 ' Simple architecture overview: Onion / DDD layers
 
+' ci-trigger: harmless comment to cause a push and run the render workflow
