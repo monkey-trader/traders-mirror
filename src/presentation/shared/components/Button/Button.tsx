@@ -2,7 +2,7 @@ import React from 'react'
 import styles from './Button.module.css'
 
 export type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: 'primary' | 'secondary' | 'ghost'
+  variant?: 'primary' | 'secondary' | 'ghost' | 'danger'
 }
 
 export function Button({ variant = 'primary', children, className = '', ...rest }: ButtonProps) {
@@ -13,4 +13,3 @@ export function Button({ variant = 'primary', children, className = '', ...rest 
     </button>
   )
 }
-

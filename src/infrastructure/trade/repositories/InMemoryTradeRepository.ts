@@ -219,6 +219,12 @@ export class InMemoryTradeRepository {
     const idx = this.trades.findIndex(t => t.id === repoTrade.id)
     if (idx >= 0) this.trades[idx] = { ...this.trades[idx], ...repoTrade }
   }
+
+  // Delete a trade by id
+  async delete(id: string): Promise<void> {
+    const idx = this.trades.findIndex(t => t.id === id)
+    if (idx >= 0) this.trades.splice(idx, 1)
+  }
 }
 
 export default InMemoryTradeRepository

@@ -3,6 +3,8 @@ import styles from './Settings.module.css'
 import { ThemeSwitcher } from '@/presentation/shared/components/ThemeSwitcher/ThemeSwitcher'
 import { loadSettings, saveSettings } from './settingsStorage'
 import { Switch } from '@/presentation/shared/components/Switch/Switch'
+import { Button } from '@/presentation/shared/components/Button/Button'
+import LocalStorageTradeRepository from '@/infrastructure/trade/repositories/LocalStorageTradeRepository'
 
 function DebugToggle() {
   const [enabled, setEnabled] = React.useState<boolean>(() => {
@@ -29,6 +31,46 @@ function DebugToggle() {
   )
 }
 
+function StorageControls() {
+  const clearStoredTrades = () => {
+    if (!window.confirm('Alle gespeicherten Trades entfernen? Diese Aktion kann nicht rückgängig gemacht werden.')) return
+    try {
+      localStorage.removeItem('mt_trades_v1')
+      // reload so app uses the now-empty repository
+      window.location.reload()
+    } catch (err) {
+      console.error('Failed to clear stored trades', err)
+      alert('Fehler beim Löschen der gespeicherten Trades. Siehe Konsole.')
+    }
+  }
+
+  const restoreDemoData = () => {
+    if (!window.confirm('Demo-Daten wiederherstellen? Existierende Daten werden überschrieben.')) return
+    try {
+      // remove existing key then instantiate repository which will seed defaults
+      localStorage.removeItem('mt_trades_v1')
+      // ctor with defaults (seedDefaults default true) writes defaults into storage
+      // eslint-disable-next-line no-new
+      new LocalStorageTradeRepository()
+      window.location.reload()
+    } catch (err) {
+      console.error('Failed to restore demo trades', err)
+      alert('Fehler beim Wiederherstellen der Demo-Daten. Siehe Konsole.')
+    }
+  }
+
+  return (
+    <div className={styles.debugRow} style={{ alignItems: 'center' }}>
+      <label className={styles.fieldLabel}>Storage</label>
+      <div style={{ display: 'flex', gap: 8 }}>
+        <Button variant="secondary" onClick={clearStoredTrades}>Clear stored trades</Button>
+        <Button variant="ghost" onClick={restoreDemoData}>Restore demo data</Button>
+      </div>
+      <p className={styles.help}>Remove or restore the demo trades stored in your browser localStorage (key: mt_trades_v1).</p>
+    </div>
+  )
+}
+
 export function Settings() {
   return (
     <div className={styles.container}>
@@ -45,6 +87,7 @@ export function Settings() {
       <section className={styles.section}>
         <h3>Debug</h3>
         <DebugToggle />
+        <StorageControls />
       </section>
 
     </div>

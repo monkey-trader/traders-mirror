@@ -330,7 +330,7 @@ export function TradeJournal({ repo }: TradeJournalProps) {
   // Confirmation dialog state for SL/close actions
    const [confirmOpen, setConfirmOpen] = useState(false)
    const [confirmTradeId, setConfirmTradeId] = useState<string | null>(null)
-   const [confirmAction, setConfirmAction] = useState<'close' | 'sl-be' | 'sl-hit' | 'toggle-side' | null>(null)
+   const [confirmAction, setConfirmAction] = useState<'close' | 'sl-be' | 'sl-hit' | 'toggle-side' | 'delete' | null>(null)
   // allow undo: store previous trade snapshot and show small undo banner
   const [undoInfo, setUndoInfo] = useState<{ id: string; prev: TradeRow } | null>(null)
   const undoTimerRef = useRef<number | null>(null)
@@ -359,7 +359,22 @@ export function TradeJournal({ repo }: TradeJournalProps) {
     } else if (action === 'close') {
       // user-initiated close -> mark as FILLED (semantic choice)
       updateTradeById(id, { status: 'FILLED' })
-    }
+    } else if (action === 'delete') {
+      // handle delete locally and in repo
+      // set undo info and remove from positions; actual repo deletion will be performed below
+      if (!prev) return
+      setPositions(prevs => prevs.filter(p => p.id !== id))
+      ;(async () => {
+        try {
+          if (!repoRef.current) return
+          await repoRef.current.delete(id)
+        } catch (err) {
+          console.error('Failed to delete trade from repo', err)
+        }
+      })()
+      // if the deleted trade was selected in the editor, clear selection
+      if (selectedId === id) setSelectedId(null)
+     }
 
     // set undo info and auto-clear after 5s
     setUndoInfo({ id, prev: prevCopy })
@@ -384,10 +399,23 @@ export function TradeJournal({ repo }: TradeJournalProps) {
     setConfirmTradeId(null)
   }
 
+  // Request delete flow: open confirm dialog with 'delete' action
+  const requestDeleteTrade = (id: string) => {
+    setConfirmTradeId(id)
+    setConfirmAction('delete')
+    setConfirmOpen(true)
+  }
+
   const handleUndo = () => {
     if (!undoInfo) return
     updateTradeById(undoInfo.id, undoInfo.prev)
     clearUndo()
+  }
+
+  // onDelete passed to TradeDetailEditor - shows confirm dialog and then deletes
+  const handleDeleteFromEditor = async (id: string) => {
+    // Use confirm dialog for UX consistency
+    requestDeleteTrade(id)
   }
 
   // helper: ISO string -> datetime-local format used by input[type=datetime-local]
@@ -875,6 +903,7 @@ export function TradeJournal({ repo }: TradeJournalProps) {
                           })()}
                           onChange={(dto) => handleEditorChange(dto)}
                           onSave={(dto) => handleEditorSave(dto)}
+                          onDelete={(id) => handleDeleteFromEditor(id)}
                         />
                       </div>
                     </div>

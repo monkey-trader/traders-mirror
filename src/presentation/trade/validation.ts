@@ -102,14 +102,27 @@ export function validateTrade(input: TradeInput): Record<string, string | undefi
   }
 
   // Require SL, margin, leverage in detail editor as numbers. Use typeof checks on maybe object.
-  if (typeof maybe.sl !== 'number' || Number.isNaN(maybe.sl as number)) {
-    out.sl = 'Stop Loss (SL) ist erforderlich'
+  // Only validate sl/margin/leverage if the field is present on the input object.
+  // The detail editor does not render margin/leverage, so they should not block saving.
+  if ('sl' in maybe) {
+    const slv = maybe.sl as number
+    if (typeof slv !== 'number' || Number.isNaN(slv)) {
+      out.sl = 'Stop Loss (SL) ist erforderlich'
+    }
   }
-  if (typeof maybe.margin !== 'number' || Number.isNaN(maybe.margin as number) || (maybe.margin as number) <= 0) {
-    out.margin = 'Margin ist erforderlich'
+
+  if ('margin' in maybe) {
+    const mval = maybe.margin as number
+    if (typeof mval !== 'number' || Number.isNaN(mval) || mval <= 0) {
+      out.margin = 'Margin ist erforderlich'
+    }
   }
-  if (typeof maybe.leverage !== 'number' || Number.isNaN(maybe.leverage as number) || (maybe.leverage as number) <= 0) {
-    out.leverage = 'Leverage ist erforderlich'
+
+  if ('leverage' in maybe) {
+    const lval = maybe.leverage as number
+    if (typeof lval !== 'number' || Number.isNaN(lval) || lval <= 0) {
+      out.leverage = 'Leverage ist erforderlich'
+    }
   }
   return out
 }

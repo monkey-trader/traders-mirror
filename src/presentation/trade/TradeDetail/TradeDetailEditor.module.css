@@ -122,6 +122,11 @@
   color: var(--muted);
 }
 
+/* inline delete helper used by TradeDetailEditor */
+.inlineDelete {
+  margin-left: 8px;
+}
+
 /* small helpers for field groups inside the editor */
 .field {
   display: flex;

@@ -33,7 +33,8 @@ function App() {
         <Analysis />
       ) : (
         // create repo at composition root and inject into TradeJournal
-        <TradeJournal repo={new LocalStorageTradeRepository()} />
+        // Do not seed default mock trades for the running app; keep storage empty on first-run
+        <TradeJournal repo={new LocalStorageTradeRepository(undefined, { seedDefaults: false })} />
       )}
     </Layout>
   )

@@ -37,22 +37,27 @@ export class LocalStorageTradeRepository implements TradeRepository {
   private trades: RepoTrade[] = []
   private key: string
 
-  constructor(key = STORAGE_KEY) {
+  // options: { seedDefaults?: boolean } - when false, do not seed DEFAULT_MOCK_TRADES on first run
+  constructor(key = STORAGE_KEY, options?: { seedDefaults?: boolean }) {
     this.key = key
+    const seedDefaults = options?.seedDefaults !== undefined ? options?.seedDefaults : true
     try {
       const raw = window.localStorage.getItem(this.key)
       if (raw) {
         const parsed = JSON.parse(raw) as RepoTrade[]
         this.trades = parsed.map(t => ({ ...t }))
         console.info('[LocalStorageRepo] loaded', this.trades.length, 'trades')
-      } else {
+      } else if (seedDefaults) {
         this.trades = DEFAULT_MOCK_TRADES.map(t => ({ ...t }))
         this.flush()
         console.info('[LocalStorageRepo] initialized with defaults')
+      } else {
+        this.trades = []
+        console.info('[LocalStorageRepo] initialized empty (no defaults)')
       }
     } catch (err) {
       console.error('[LocalStorageRepo] failed to initialize', err)
-      this.trades = DEFAULT_MOCK_TRADES.map(t => ({ ...t }))
+      this.trades = seedDefaults ? DEFAULT_MOCK_TRADES.map(t => ({ ...t })) : []
     }
   }
 
@@ -188,6 +193,16 @@ export class LocalStorageTradeRepository implements TradeRepository {
     } else {
       console.warn('[LocalStorageRepo] update: trade not found, performing save instead', repoTrade.id)
       await this.save(trade)
+    }
+  }
+
+  // Delete a trade by id
+  async delete(id: string): Promise<void> {
+    const idx = this.trades.findIndex(t => t.id === id)
+    if (idx >= 0) {
+      this.trades.splice(idx, 1)
+      console.info('[LocalStorageRepo] delete', id)
+      this.flush()
     }
   }
 }

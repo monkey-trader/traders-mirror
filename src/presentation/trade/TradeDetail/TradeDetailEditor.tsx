@@ -1,16 +1,18 @@
-import React, { useEffect, useState, useMemo } from 'react'
+import React, { useEffect, useState, useMemo, useRef } from 'react'
 import type { TradeInput } from '@/domain/trade/entities/TradeFactory'
 import { validateTrade } from '@/presentation/trade/validation'
 import { mapTradeError } from '@/presentation/trade/errorMapper'
 import styles from './TradeDetailEditor.module.css'
+import { Button } from '@/presentation/shared/components/Button/Button'
 
 export type TradeDetailEditorProps = {
   trade: TradeInput | null
   onChange?: (t: TradeInput) => void
   onSave?: (t: TradeInput) => Promise<void>
+  onDelete?: (id: string) => Promise<void>
 }
 
-export function TradeDetailEditor({ trade, onChange, onSave }: TradeDetailEditorProps) {
+export function TradeDetailEditor({ trade, onChange, onSave, onDelete }: TradeDetailEditorProps) {
   const [local, setLocal] = useState<TradeInput | null>(trade)
   const [errors, setErrors] = useState<Record<string, string | undefined>>({})
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'failed'>('idle')
@@ -21,6 +23,14 @@ export function TradeDetailEditor({ trade, onChange, onSave }: TradeDetailEditor
     setStatus('idle')
   }, [trade?.id])
 
+  // Keep an immutable snapshot of the trade as it was when loaded into the editor.
+  // This avoids a race where parent onChange updates the canonical trade object
+  // and causes a JSON-equality check against `trade` to reset the dirty flag.
+  const initialTradeRef = useRef<TradeInput | null>(trade ?? null)
+  useEffect(() => {
+    initialTradeRef.current = trade ?? null
+  }, [trade?.id])
+
   useEffect(() => {
     // notify parent immediately on change so parent can keep canonical list
     if (local && onChange) onChange(local)
@@ -29,13 +39,15 @@ export function TradeDetailEditor({ trade, onChange, onSave }: TradeDetailEditor
   const validation = useMemo(() => (local ? validateTrade(local) : {}), [local])
   const hasValidationErrors = Object.values(validation).some(Boolean)
   const isDirty = useMemo(() => {
-    if (!local || !trade) return Boolean(local && !trade)
+    if (!local) return false
+    const base = initialTradeRef.current
+    if (!base) return true
     try {
-      return JSON.stringify(local) !== JSON.stringify(trade)
+      return JSON.stringify(local) !== JSON.stringify(base)
     } catch (_e) {
       return true
     }
-  }, [local, trade])
+  }, [local, /* initialTradeRef is stable */ hasValidationErrors])
 
   if (!local) return (
     <div className={styles.empty}>
@@ -130,6 +142,17 @@ export function TradeDetailEditor({ trade, onChange, onSave }: TradeDetailEditor
           >
             {status === 'saving' ? 'Saving…' : status === 'saved' ? 'Saved' : 'Save now'}
           </button>
+          {onDelete && local && (
+            <Button
+              type="button"
+              variant="danger"
+              onClick={() => onDelete(local.id)}
+              className={styles.inlineDelete}
+              style={{ marginLeft: 8 }}
+            >
+              Delete
+            </Button>
+          )}
         </div>
       </div>
     </div>
