@@ -3,6 +3,7 @@ import styles from './Settings.module.css'
 import { ThemeSwitcher } from '@/presentation/shared/components/ThemeSwitcher/ThemeSwitcher'
 import { loadSettings, saveSettings } from './settingsStorage'
 import { Button } from '@/presentation/shared/components/Button/Button'
+import { ConfirmDialog } from '@/presentation/shared/components/ConfirmDialog/ConfirmDialog'
 import { COMBINED_MOCK_TRADES } from '@/infrastructure/trade/repositories/mockData'
 
 function DebugToggle() {
@@ -40,39 +41,90 @@ function DebugToggle() {
 }
 
 function StorageControls() {
-  const clearStoredTrades = () => {
-    if (!window.confirm('Alle gespeicherten Trades entfernen? Diese Aktion kann nicht rückgängig gemacht werden.')) return
+  const [confirmOpen, setConfirmOpen] = React.useState(false)
+  const [confirmAction, setConfirmAction] = React.useState<'clear' | 'restore' | null>(null)
+  const [infoMessage, setInfoMessage] = React.useState<string | null>(null)
+  const infoTimerRef = React.useRef<number | null>(null)
+
+  const openConfirm = (action: 'clear' | 'restore') => {
+    setConfirmAction(action)
+    setConfirmOpen(true)
+  }
+
+  const onConfirm = async () => {
+    if (!confirmAction) { setConfirmOpen(false); return }
     try {
-      localStorage.removeItem('mt_trades_v1')
-      // reload so app uses the now-empty repository
-      window.location.reload()
-    } catch (err) {
-      console.error('Failed to clear stored trades', err)
-      alert('Fehler beim Löschen der gespeicherten Trades. Siehe Konsole.')
+      if (confirmAction === 'clear') {
+        // count existing stored trades before clearing
+        const raw = localStorage.getItem('mt_trades_v1')
+        let count = 0
+        try {
+          const parsed = raw ? JSON.parse(raw) : []
+          if (Array.isArray(parsed)) count = parsed.length
+        } catch (_e) { count = 0 }
+        localStorage.removeItem('mt_trades_v1')
+        setInfoMessage(`Deleted ${count} stored trade${count === 1 ? '' : 's'}`)
+        // keep message visible briefly then reload
+        if (infoTimerRef.current) window.clearTimeout(infoTimerRef.current)
+        infoTimerRef.current = window.setTimeout(() => window.location.reload(), 1200) as unknown as number
+      } else if (confirmAction === 'restore') {
+        const count = Array.isArray(COMBINED_MOCK_TRADES) ? COMBINED_MOCK_TRADES.length : 0
+        localStorage.setItem('mt_trades_v1', JSON.stringify(COMBINED_MOCK_TRADES))
+        setInfoMessage(`Loaded ${count} demo trade${count === 1 ? '' : 's'}`)
+        if (infoTimerRef.current) window.clearTimeout(infoTimerRef.current)
+        infoTimerRef.current = window.setTimeout(() => window.location.reload(), 1200) as unknown as number
+      }
+    } finally {
+      setConfirmOpen(false)
+      setConfirmAction(null)
     }
   }
 
-  const restoreDemoData = () => {
-    if (!window.confirm('Demo-Daten wiederherstellen? Existierende Daten werden überschrieben.')) return
-    try {
-      // Replace the stored trades with the full combined mock dataset (replace semantics)
-      localStorage.setItem('mt_trades_v1', JSON.stringify(COMBINED_MOCK_TRADES))
-      // reload to reflect seeded trades
-      window.location.reload()
-    } catch (err) {
-      console.error('Failed to restore demo trades', err)
-      alert('Fehler beim Wiederherstellen der Demo-Daten. Siehe Konsole.')
+  const onCancel = () => {
+    setConfirmOpen(false)
+    setConfirmAction(null)
+  }
+
+  // Clean up any pending info timer on unmount
+  React.useEffect(() => {
+    return () => {
+      if (infoTimerRef.current) {
+        try { window.clearTimeout(infoTimerRef.current) } catch (_e) { /* ignore */ }
+        infoTimerRef.current = null
+      }
     }
+  }, [])
+
+  const clearStoredTrades = () => {
+    openConfirm('clear')
+  }
+
+  const restoreDemoData = () => {
+    openConfirm('restore')
   }
 
   return (
     <div className={styles.debugRow} style={{ alignItems: 'center' }}>
       <label className={styles.fieldLabel}>Storage</label>
       <div className={styles.storageButtons}>
-        <Button variant="danger" onClick={clearStoredTrades}>Clear demo data</Button>
-        <Button variant="primary" onClick={restoreDemoData}>Add demo data</Button>
+        <Button variant="danger" onClick={clearStoredTrades}>Clear stored trades</Button>
+        <Button variant="primary" onClick={restoreDemoData}>Restore demo data</Button>
       </div>
+      <ConfirmDialog
+        open={confirmOpen}
+        title={confirmAction === 'clear' ? 'Clear stored trades' : 'Restore demo data'}
+        message={confirmAction === 'clear' ? 'Alle gespeicherten Trades entfernen? Diese Aktion kann nicht rückgängig gemacht werden.' : 'Demo-Daten wiederherstellen? Existierende Daten werden überschrieben.'}
+        confirmLabel={confirmAction === 'clear' ? 'Löschen' : 'Wiederherstellen'}
+        cancelLabel="Abbrechen"
+        onConfirm={onConfirm}
+        onCancel={onCancel}
+        confirmVariant={confirmAction === 'clear' ? 'danger' : 'primary'}
+      />
       <p className={styles.help}>Remove or restore the demo trades stored in your browser localStorage (key: mt_trades_v1).</p>
+      {/* transitory info banner (placed below the description as requested) */}
+      {infoMessage && (
+        <div role="status" aria-live="polite" className={styles.infoBanner}>{infoMessage}</div>
+      )}
     </div>
   )
 }
