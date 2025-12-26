@@ -46,7 +46,8 @@ export class TradeFactory {
     return {
       id: trade.id,
       symbol: trade.symbol.value,
-      entryDate: trade.entryDate.value,
+      // For presentation (inputs) provide a value suitable for <input type="datetime-local">
+      entryDate: EntryDate.toInputValue(trade.entryDate.value),
       size: trade.size.value,
       price: trade.price.value,
       side: trade.side.value,
