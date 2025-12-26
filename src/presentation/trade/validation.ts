@@ -45,8 +45,19 @@ export function validateNewTrade(input: TradeForm): ValidationResult[] {
     errors.push({ field: 'market', message: 'Bitte Markt auswählen' })
   }
 
-  // Note: SL, Margin and Leverage are optional for the quick "New Trade" form to improve UX.
-  // They are still validated in the detail editor when present.
+  // Require SL, Margin and Leverage for the quick "New Trade" form
+  // Tests (and some flows) expect these fields to be present and valid numbers.
+  if (typeof input.sl !== 'number' || Number.isNaN(input.sl)) {
+    errors.push({ field: 'sl', message: 'Stop Loss (SL) ist erforderlich' })
+  }
+
+  if (typeof input.margin !== 'number' || Number.isNaN(input.margin) || input.margin <= 0) {
+    errors.push({ field: 'margin', message: 'Margin ist erforderlich' })
+  }
+
+  if (typeof input.leverage !== 'number' || Number.isNaN(input.leverage) || input.leverage <= 0) {
+    errors.push({ field: 'leverage', message: 'Leverage ist erforderlich' })
+  }
 
   return errors
 }
@@ -97,21 +108,21 @@ export function validateTrade(input: TradeInput): Record<string, string | undefi
   // The detail editor does not render margin/leverage, so they should not block saving.
   if ('sl' in maybe) {
     const slv = maybe.sl as number
-    if (typeof slv !== 'number' || Number.isNaN(slv)) {
+    if (Number.isNaN(slv)) {
       out.sl = 'Stop Loss (SL) ist erforderlich'
     }
   }
 
   if ('margin' in maybe) {
     const mval = maybe.margin as number
-    if (typeof mval !== 'number' || Number.isNaN(mval) || mval <= 0) {
+    if (Number.isNaN(mval) || mval <= 0) {
       out.margin = 'Margin ist erforderlich'
     }
   }
 
   if ('leverage' in maybe) {
     const lval = maybe.leverage as number
-    if (typeof lval !== 'number' || Number.isNaN(lval) || lval <= 0) {
+    if (Number.isNaN(lval) || lval <= 0) {
       out.leverage = 'Leverage ist erforderlich'
     }
   }
