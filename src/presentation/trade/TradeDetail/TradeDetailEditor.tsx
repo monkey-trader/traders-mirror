@@ -132,16 +132,17 @@ export function TradeDetailEditor({ trade, onChange, onSave, onDelete }: TradeDe
         <textarea aria-label="Notes" className={styles.textarea} value={local.notes ?? ''} onChange={(e) => fieldChange('notes', e.target.value)} onBlur={handleBlurOrSave} />
 
         <div style={{ marginTop: 12 }}>
-          <button
+          <Button
             type="button"
-            className={`${styles.saveBtn} ${status === 'saving' ? styles.savingPulse : ''}`}
+            variant="primary"
             onClick={handleBlurOrSave}
             disabled={saveDisabled}
             aria-disabled={saveDisabled}
             aria-busy={status === 'saving'}
+            className={`${styles.saveBtn} ${status === 'saving' ? styles.savingPulse : ''}`}
           >
             {status === 'saving' ? 'Saving…' : status === 'saved' ? 'Saved' : 'Save now'}
-          </button>
+          </Button>
           {onDelete && local && (
             <Button
               type="button"
