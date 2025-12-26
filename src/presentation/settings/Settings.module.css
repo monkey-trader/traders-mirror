@@ -158,19 +158,3 @@
   outline: none;
   box-shadow: 0 0 0 4px rgba(99,102,241,0.12), inset 0 1px 0 rgba(255,255,255,0.02);
 }
-
-.infoBanner {
-  margin-top: 12px;
-  padding: 8px 12px;
-  border-radius: 8px;
-  background: linear-gradient(90deg, rgba(124,92,255,0.09), rgba(34,193,195,0.04));
-  color: var(--text);
-  font-weight: 700;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.45);
-}
-
-/* position infoBanner in the 2nd column of the debugRow grid (under the help text) */
-.infoBanner {
-  grid-column: 2 / 3;
-  align-self: start;
-}
