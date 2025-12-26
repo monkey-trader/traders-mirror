@@ -6,6 +6,7 @@
   --muted: #9fb0c6;
   --color-text: #e6e6e6;
   --color-primary: #00bcd4;
+  color-scheme: dark; /* hint to Chromium to use dark native UI for controls like datepickers */
 }
 
 html, body, #root {
@@ -45,3 +46,4 @@ input[type="number"]::-webkit-inner-spin-button {
 input[type="number"] {
   -moz-appearance: textfield; /* Firefox */
 }
+

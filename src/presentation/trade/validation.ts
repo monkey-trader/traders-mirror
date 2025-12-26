@@ -44,18 +44,9 @@ export function validateNewTrade(input: TradeForm): ValidationResult[] {
   if (!input.market || (input.market !== 'Forex' && input.market !== 'Crypto')) {
     errors.push({ field: 'market', message: 'Bitte Markt auswählen' })
   }
-  // New required fields: SL, Margin, Leverage (now typed as numbers)
-  if (typeof input.sl !== 'number' || Number.isNaN(input.sl)) {
-    errors.push({ field: 'sl', message: 'Stop Loss (SL) ist erforderlich' })
-  }
 
-  if (typeof input.margin !== 'number' || Number.isNaN(input.margin) || input.margin <= 0) {
-    errors.push({ field: 'margin', message: 'Margin ist erforderlich' })
-  }
-
-  if (typeof input.leverage !== 'number' || Number.isNaN(input.leverage) || input.leverage <= 0) {
-    errors.push({ field: 'leverage', message: 'Leverage ist erforderlich' })
-  }
+  // Note: SL, Margin and Leverage are optional for the quick "New Trade" form to improve UX.
+  // They are still validated in the detail editor when present.
 
   return errors
 }

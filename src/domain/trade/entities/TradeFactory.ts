@@ -14,6 +14,7 @@ export type TradeInput = {
   size: number
   price: number
   side: string
+  status?: 'OPEN' | 'CLOSED' | 'FILLED'
   notes?: string
   market?: string
   sl?: number
@@ -35,6 +36,7 @@ export class TradeFactory {
       new Price(input.price),
       new Side(input.side),
       new Market(input.market ?? 'All'),
+      input.status,
       input.notes,
       typeof input.sl === 'number' ? new Price(input.sl) : undefined,
       typeof input.tp1 === 'number' ? new Price(input.tp1) : undefined,
@@ -53,6 +55,8 @@ export class TradeFactory {
       size: trade.size.value,
       price: trade.price.value,
       side: trade.side.value,
+      // Normalize status to a primitive and provide a sensible default to avoid UNKNOWN states in UI
+      status: trade.status ?? 'OPEN',
       notes: trade.notes,
       market: trade.market.value,
       sl: trade.sl?.value,

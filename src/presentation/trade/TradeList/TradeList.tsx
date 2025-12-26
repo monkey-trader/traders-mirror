@@ -7,6 +7,7 @@ export type TradeListItem = {
   size: number
   price: number
   side: string
+  status?: string
   notes?: string
 }
 
@@ -30,6 +31,14 @@ export function TradeList({ trades, selectedId, onSelect }: TradeListProps) {
 
         const sideClass = sideKey === 'long' ? styles.sideLong : styles.sideShort
 
+        const rawStatus = (t.status || '').toString().trim().toUpperCase()
+        const statusClass =
+          rawStatus === 'OPEN'
+            ? styles.statusOpen
+            : rawStatus === 'CLOSED'
+            ? styles.statusClosed
+            : styles.statusFilled
+
         return (
           <button
             key={t.id}
@@ -45,6 +54,13 @@ export function TradeList({ trades, selectedId, onSelect }: TradeListProps) {
             <div className={styles.rowRight}>
               <div className={[styles.side, sideClass].join(' ')} aria-label={`Side: ${sideKey}`} title={sideKey}>
                 {sideKey.toUpperCase()}
+              </div>
+              <div
+                className={[styles.status, statusClass].join(' ')}
+                aria-label={`Status: ${rawStatus}`}
+                title={rawStatus}
+              >
+                {rawStatus || 'UNKNOWN'}
               </div>
             </div>
           </button>

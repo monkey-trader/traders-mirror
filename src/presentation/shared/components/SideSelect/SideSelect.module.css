@@ -77,3 +77,18 @@
   background: rgba(255,107,107,0.10);
   color: #ff6b6b;
 }
+
+.error {
+  outline: 1px solid rgba(255,107,107,0.12);
+  box-shadow: 0 0 0 3px rgba(255,107,107,0.04);
+}
+
+.containerFull {
+  width: 100%;
+}
+
+/* ensure the select inside a full container fills it */
+.containerFull select {
+  width: 100%;
+  box-sizing: border-box;
+}

@@ -4,6 +4,8 @@ import { validateTrade } from '@/presentation/trade/validation'
 import { mapTradeError } from '@/presentation/trade/errorMapper'
 import styles from './TradeDetailEditor.module.css'
 import { Button } from '@/presentation/shared/components/Button/Button'
+import { SideSelect, type SideValue } from '@/presentation/shared/components/SideSelect/SideSelect'
+import { StatusSelect, type StatusValue } from '@/presentation/shared/components/StatusSelect/StatusSelect'
 
 export type TradeDetailEditorProps = {
   trade: TradeInput | null
@@ -69,6 +71,18 @@ export function TradeDetailEditor({ trade, onChange, onSave, onDelete }: TradeDe
     setStatus('idle')
   }
 
+  // Restore the editor contents to the initial loaded trade snapshot
+  const restoreInitial = () => {
+    const base = initialTradeRef.current
+    if (!base) return
+    // create a defensive clone so editors won't accidentally mutate the ref
+    const clone: TradeInput = JSON.parse(JSON.stringify(base))
+    setLocal(clone)
+    setErrors({})
+    setStatus('idle')
+    if (onChange) onChange(clone)
+  }
+
   const handleBlurOrSave = async () => {
     if (!local) return
     const v = validateTrade(local)
@@ -122,11 +136,31 @@ export function TradeDetailEditor({ trade, onChange, onSave, onDelete }: TradeDe
         {errors.price && <div className={styles.fieldError}>{errors.price}</div>}
 
         <label className={styles.label}>Side</label>
-        <select aria-label="Side" className={styles.input} value={local.side} onChange={(e) => fieldChange('side', e.target.value)} onBlur={handleBlurOrSave}>
-          <option value="LONG">LONG</option>
-          <option value="SHORT">SHORT</option>
-        </select>
-        {errors.side && <div className={styles.fieldError}>{errors.side}</div>}
+        <SideSelect
+          value={local.side as SideValue}
+          onChange={(v: SideValue) => fieldChange('side', v)}
+          ariaLabel="Trade side"
+          showBadge={false}
+          colored
+          onBlur={() => handleBlurOrSave()}
+          hasError={Boolean(errors.side)}
+          ariaDescribedBy={errors.side ? 'detail-side-error' : undefined}
+          className={styles.input}
+        />
+        {errors.side && <div id="detail-side-error" className={styles.fieldError}>{errors.side}</div>}
+
+        <label className={styles.label}>Status</label>
+        <StatusSelect
+          value={(local as any).status ?? 'OPEN'}
+          onChange={(v: StatusValue) => fieldChange('status' as any, v as any)}
+          ariaLabel="Trade status"
+          compact
+          colored
+          onBlur={() => handleBlurOrSave()}
+          hasError={Boolean(errors.status)}
+          ariaDescribedBy={errors.status ? 'detail-status-error' : undefined}
+        />
+        {errors.status && <div id="detail-status-error" className={styles.fieldError}>{errors.status}</div>}
 
         <label className={styles.label}>Notes</label>
         <textarea aria-label="Notes" className={styles.textarea} value={local.notes ?? ''} onChange={(e) => fieldChange('notes', e.target.value)} onBlur={handleBlurOrSave} />
@@ -134,12 +168,22 @@ export function TradeDetailEditor({ trade, onChange, onSave, onDelete }: TradeDe
         <div style={{ marginTop: 12 }}>
           <Button
             type="button"
+            variant="ghost"
+            onClick={restoreInitial}
+            disabled={!isDirty}
+            aria-disabled={!isDirty}
+            style={{ marginRight: 8 }}
+          >
+            Restore
+          </Button>
+          <Button
+            type="button"
             variant="primary"
             onClick={handleBlurOrSave}
             disabled={saveDisabled}
             aria-disabled={saveDisabled}
             aria-busy={status === 'saving'}
-            className={`${styles.saveBtn} ${status === 'saving' ? styles.savingPulse : ''}`}
+            className={status === 'saving' ? styles.savingPulse : ''}
           >
             {status === 'saving' ? 'Saving…' : status === 'saved' ? 'Saved' : 'Save now'}
           </Button>

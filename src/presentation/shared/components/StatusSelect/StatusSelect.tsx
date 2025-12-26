@@ -1,5 +1,6 @@
 import React from 'react'
 import styles from './StatusSelect.module.css'
+import inputStyles from '@/presentation/shared/components/Input/Input.module.css'
 
 export type StatusValue = 'OPEN' | 'CLOSED' | 'FILLED'
 
@@ -11,9 +12,12 @@ export type StatusSelectProps = {
   colored?: boolean
   onBlur?: (e: React.FocusEvent<HTMLSelectElement>) => void
   autoFocus?: boolean
+  label?: string
+  hasError?: boolean
+  ariaDescribedBy?: string
 }
 
-export function StatusSelect({ value, onChange, ariaLabel, compact = false, colored = true, onBlur, autoFocus = false }: StatusSelectProps) {
+export function StatusSelect({ value, onChange, ariaLabel, compact = false, colored = true, onBlur, autoFocus = false, label, hasError = false, ariaDescribedBy }: StatusSelectProps) {
   const baseClass = compact ? `${styles.select} ${styles.selectCompact}` : styles.select
   const coloredClass = colored
     ? value === 'OPEN'
@@ -23,9 +27,11 @@ export function StatusSelect({ value, onChange, ariaLabel, compact = false, colo
       : `${baseClass} ${styles.colored} ${styles.coloredFilled}`
     : baseClass
 
-  return (
+  const selectClass = `${coloredClass} ${hasError ? styles.error : ''}`.trim()
+
+  const control = (
     <select
-      className={coloredClass}
+      className={selectClass}
       value={value}
       onChange={e => {
         const v = e.target.value as StatusValue
@@ -36,10 +42,22 @@ export function StatusSelect({ value, onChange, ariaLabel, compact = false, colo
       aria-label={ariaLabel}
       onBlur={onBlur}
       autoFocus={autoFocus}
+      aria-describedby={ariaDescribedBy}
     >
       <option value="OPEN">OPEN</option>
       <option value="CLOSED">CLOSED</option>
       <option value="FILLED">FILLED</option>
     </select>
   )
+
+  if (label) {
+    return (
+      <label className={inputStyles.wrapper}>
+        <span className={inputStyles.label}>{label}</span>
+        {control}
+      </label>
+    )
+  }
+
+  return control
 }

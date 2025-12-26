@@ -17,6 +17,8 @@
   border-radius: 8px;
   outline: none;
   transition: box-shadow 150ms ease, border-color 150ms ease;
+  box-sizing: border-box; /* ensure padding included in width */
+  width: 100%; /* ensure inputs expand to fill grid cell; avoids Firefox min-width issues */
 }
 
 .input:focus {
@@ -32,4 +34,9 @@
 .inputError:focus {
   box-shadow: 0 6px 20px rgba(255,107,107,0.06);
   border-color: var(--danger);
+}
+
+/* ensure number input doesn't overflow in Firefox */
+input[type="number"] {
+  min-width: 0;
 }

@@ -3,6 +3,7 @@
 // - report when docs/diagrams does not exist
 // - print a helpful hint when `plantuml` binary is missing (ENOENT)
 // - ensure informative logs when no .puml files are found
+// - write generated PNGs into both docs/build/assets/diagrams and docs/diagrams
 import { promises as fs } from 'fs'
 import { spawnSync } from 'child_process'
 import path from 'path'
@@ -29,7 +30,8 @@ async function findPumlFiles(dir) {
 async function main() {
   const repoRoot = process.cwd()
   const diagramsDir = path.join(repoRoot, 'docs', 'diagrams')
-  const outDir = path.join(repoRoot, 'docs', 'build', 'assets', 'diagrams')
+  const outDirBuild = path.join(repoRoot, 'docs', 'build', 'assets', 'diagrams')
+  const outDirDiagrams = diagramsDir // write PNGs next to .puml files
 
   console.log('plantuml-build: repoRoot=', repoRoot)
 
@@ -46,7 +48,9 @@ async function main() {
     return
   }
 
-  await fs.mkdir(outDir, { recursive: true })
+  // Ensure both output directories exist (build and diagrams)
+  await fs.mkdir(outDirBuild, { recursive: true })
+  await fs.mkdir(outDirDiagrams, { recursive: true })
 
   const pumlFiles = await findPumlFiles(diagramsDir)
 
@@ -57,9 +61,10 @@ async function main() {
 
   for (const file of pumlFiles) {
     const baseName = path.basename(file, '.puml')
-    const outPath = path.join(outDir, `${baseName}.png`)
+    const outPathBuild = path.join(outDirBuild, `${baseName}.png`)
+    const outPathDiagrams = path.join(outDirDiagrams, `${baseName}.png`)
 
-    console.log(`Rendering ${path.relative(repoRoot, file)} -> ${path.relative(repoRoot, outPath)}`)
+    console.log(`Rendering ${path.relative(repoRoot, file)} -> ${path.relative(repoRoot, outPathBuild)} and ${path.relative(repoRoot, outPathDiagrams)}`)
 
     const inputBuffer = await fs.readFile(file)
 
@@ -86,8 +91,13 @@ async function main() {
     }
 
     // result.stdout contains the PNG bytes
-    await fs.writeFile(outPath, result.stdout)
-    console.log(`Wrote ${path.relative(repoRoot, outPath)}`)
+    await fs.writeFile(outPathBuild, result.stdout)
+    console.log(`Wrote ${path.relative(repoRoot, outPathBuild)}`)
+
+    // Also write the image into the diagrams folder (next to the .puml)
+    // This ensures PNG fallbacks live alongside the source diagrams and makes them easy to commit
+    await fs.writeFile(outPathDiagrams, result.stdout)
+    console.log(`Wrote ${path.relative(repoRoot, outPathDiagrams)}`)
   }
 
   console.log('PlantUML rendering completed successfully')

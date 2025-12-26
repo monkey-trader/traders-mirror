@@ -3,17 +3,27 @@ left to right direction
 actor Trader
 rectangle "Traders Mirror" {
   usecase "Record Trade" as U1
+  usecase "Edit Trade" as U4
   usecase "Analyze Performance" as U2
   usecase "Track Metrics" as U3
+  usecase "Export/Import" as U5
 }
 Trader --> U1
+Trader --> U4
 Trader --> U2
 Trader --> U3
+Trader --> U5
 
 note right of U2
-  Beispielanalysen:
+  Analyses:
   - Winrate
   - Average PnL
   - Risk/Reward
+  - Equity Curve
+end note
+
+note left of U5
+  Export: CSV/JSON
+  Import: JSON (normalized DTO)
 end note
 @enduml
