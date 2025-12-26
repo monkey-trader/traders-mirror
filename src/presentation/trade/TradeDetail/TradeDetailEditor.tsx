@@ -4,6 +4,7 @@ import { validateTrade } from '@/presentation/trade/validation'
 import { mapTradeError } from '@/presentation/trade/errorMapper'
 import styles from './TradeDetailEditor.module.css'
 import { Button } from '@/presentation/shared/components/Button/Button'
+import { SideSelect, type SideValue } from '@/presentation/shared/components/SideSelect/SideSelect'
 
 export type TradeDetailEditorProps = {
   trade: TradeInput | null
@@ -122,11 +123,18 @@ export function TradeDetailEditor({ trade, onChange, onSave, onDelete }: TradeDe
         {errors.price && <div className={styles.fieldError}>{errors.price}</div>}
 
         <label className={styles.label}>Side</label>
-        <select aria-label="Side" className={styles.input} value={local.side} onChange={(e) => fieldChange('side', e.target.value)} onBlur={handleBlurOrSave}>
-          <option value="LONG">LONG</option>
-          <option value="SHORT">SHORT</option>
-        </select>
-        {errors.side && <div className={styles.fieldError}>{errors.side}</div>}
+        <SideSelect
+          value={local.side as SideValue}
+          onChange={(v: SideValue) => fieldChange('side', v)}
+          ariaLabel="Trade side"
+          showBadge={false}
+          colored
+          onBlur={() => handleBlurOrSave()}
+          hasError={Boolean(errors.side)}
+          ariaDescribedBy={errors.side ? 'detail-side-error' : undefined}
+          className={styles.input}
+        />
+        {errors.side && <div id="detail-side-error" className={styles.fieldError}>{errors.side}</div>}
 
         <label className={styles.label}>Notes</label>
         <textarea aria-label="Notes" className={styles.textarea} value={local.notes ?? ''} onChange={(e) => fieldChange('notes', e.target.value)} onBlur={handleBlurOrSave} />
