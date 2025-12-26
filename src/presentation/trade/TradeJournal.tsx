@@ -662,9 +662,14 @@ export function TradeJournal({ repo }: TradeJournalProps) {
                       }
                     } else {
                       // no repo available - update UI only
+                      // Normalize status to avoid UNKNOWN values in the list when mock items lack a status
                       setPositions(prev => {
                         const combined = seedSet.map(t => ({ ...t }))
-                        const dto = combined.map(c => ({ ...c, entryDate: EntryDate.toInputValue(c.entryDate) })) as unknown as TradeRow[]
+                        const dto = combined.map(c => ({
+                          ...c,
+                          entryDate: EntryDate.toInputValue(c.entryDate),
+                          status: (c as any).status ?? 'OPEN'
+                        })) as unknown as TradeRow[]
                         return [...dto, ...prev]
                       })
                     }
