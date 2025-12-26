@@ -26,9 +26,26 @@ jobs:
       - name: Check last commit author to avoid loop
         id: check
         run: |
-          author=$(git log -1 --pretty=format:'%an') || true
-          echo "Last commit author: $author"
-          if [ "$author" = "github-actions[bot]" ] || [ "$author" = "GitHub Actions" ]; then
+          info=$(git log -1 --pretty=format:'%an <%ae>|%s') || true
+          echo "Last commit info: $info"
+          author=$(echo "$info" | cut -d'|' -f1)
+          subject=$(echo "$info" | cut -d'|' -f2)
+          # normalize
+          lower_author=$(echo "$author" | tr '[:upper:]' '[:lower:]')
+          lower_subject=$(echo "$subject" | tr '[:upper:]' '[:lower:]')
+
+          # detect typical Actions bot names/emails and auto commit markers
+          if echo "$lower_author" | grep -q 'github-actions' ; then
+            echo "detected github-actions in author: $author"
+            echo "skip=true" >> $GITHUB_OUTPUT
+          elif echo "$author" | grep -q 'github-actions\[bot\]' ; then
+            echo "detected github-actions[bot] in author: $author"
+            echo "skip=true" >> $GITHUB_OUTPUT
+          elif echo "$author" | grep -q 'users.noreply.github' ; then
+            echo "detected noreply email in author: $author"
+            echo "skip=true" >> $GITHUB_OUTPUT
+          elif echo "$lower_subject" | grep -q '\[auto\]' ; then
+            echo "detected [auto] in commit message: $subject"
             echo "skip=true" >> $GITHUB_OUTPUT
           else
             echo "skip=false" >> $GITHUB_OUTPUT
