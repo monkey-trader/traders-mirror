@@ -45,6 +45,27 @@ type TradeRow = {
 type TradeJournalProps = { repo?: TradeRepository }
 
 export function TradeJournal({ repo }: TradeJournalProps) {
+  // read user setting to decide whether to show Load mock data control
+  const [showLoadMockButton, setShowLoadMockButton] = useState<boolean>(() => {
+    try {
+      const s = loadSettings()
+      return typeof s.showLoadMockButton === 'boolean' ? s.showLoadMockButton : true
+    } catch (_e) {
+      return true
+    }
+  })
+  // keep in sync if settings change elsewhere (optional: could add a storage event listener)
+  useEffect(() => {
+    const handler = () => {
+      try {
+        const s = loadSettings()
+        setShowLoadMockButton(typeof s.showLoadMockButton === 'boolean' ? s.showLoadMockButton : true)
+      } catch (_e) { /* ignore */ }
+    }
+    window.addEventListener('storage', handler)
+    return () => window.removeEventListener('storage', handler)
+  }, [])
+
   // modal state for loading mock data
   const [mockModalOpen, setMockModalOpen] = useState(false)
   const [mockLoadOption, setMockLoadOption] = useState<'crypto' | 'forex' | 'both'>('both')
@@ -523,7 +544,7 @@ export function TradeJournal({ repo }: TradeJournalProps) {
       <div className={styles.headerRow}>
         <h2 className={styles.title}>Trading Journal</h2>
         <div className={styles.controls}>
-          <Button variant="secondary" onClick={() => setMockModalOpen(true)}>Load mock data</Button>
+          {showLoadMockButton && <Button variant="secondary" onClick={() => setMockModalOpen(true)}>Load mock data</Button>}
         </div>
       </div>
 

@@ -40,6 +40,39 @@ function DebugToggle() {
   )
 }
 
+function MockLoaderToggle() {
+  const [enabled, setEnabled] = React.useState<boolean>(() => {
+    const s = loadSettings()
+    // default: show the Load mock data button unless user explicitly disables it
+    return typeof s.showLoadMockButton === 'boolean' ? s.showLoadMockButton : true
+  })
+
+  const onToggle = (v: boolean) => {
+    setEnabled(v)
+    const s = loadSettings()
+    saveSettings({ ...s, showLoadMockButton: v })
+  }
+
+  return (
+    <div className={styles.debugRow}>
+      <label className={styles.fieldLabel}>Show "Load mock data"</label>
+      <div>
+        <button
+          role="switch"
+          aria-checked={enabled}
+          aria-label="Toggle show load mock button"
+          className={`${styles.debugBtn} ${enabled ? styles.on : styles.off}`}
+          onClick={() => onToggle(!enabled)}
+          type="button"
+        >
+          {enabled ? 'Visible' : 'Hidden'}
+        </button>
+      </div>
+      <p className={styles.help}>Show or hide the "Load mock data" control in the Trading Journal. Stored in browser settings.</p>
+    </div>
+  )
+}
+
 function StorageControls() {
   const [confirmOpen, setConfirmOpen] = React.useState(false)
   const [confirmAction, setConfirmAction] = React.useState<'clear' | 'restore' | null>(null)
@@ -145,6 +178,7 @@ export function Settings() {
       <section className={styles.section}>
         <h3>Debug</h3>
         <DebugToggle />
+        <MockLoaderToggle />
         <StorageControls />
       </section>
 
