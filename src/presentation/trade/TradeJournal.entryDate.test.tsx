@@ -16,13 +16,13 @@ class FakeResizeObserver {
 // render with injected repo to avoid warnings
 describe('TradeJournal entryDate', () => {
   it('prefills entryDate with current datetime (within 2 minutes)', async () => {
-    render(<TradeJournal repo={new InMemoryTradeRepository()} />)
+    const { container } = render(<TradeJournal repo={new InMemoryTradeRepository()} />)
 
-    const entryInput = await screen.findByLabelText(/Entry Date/i) as HTMLInputElement
+    const entryInput = container.querySelector('#entryDate') as HTMLInputElement | null
     expect(entryInput).toBeTruthy()
 
     // parse value and compare with now (allow 2 minute tolerance)
-    const val = entryInput.value
+    const val = entryInput!.value
     const parsed = new Date(val)
     expect(isNaN(parsed.getTime())).toBe(false)
 

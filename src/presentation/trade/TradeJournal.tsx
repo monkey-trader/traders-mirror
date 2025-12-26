@@ -110,11 +110,19 @@ export function TradeJournal({ repo }: TradeJournalProps) {
   }
 
   // Called by editor when fields change; mark as dirty and update local positions
-  // Editor works with the presentation DTO shape (id, symbol, entryDate, size, price, side, notes)
-  type EditorDTO = { id: string; symbol: string; entryDate: string; size: number; price: number; side: string; notes?: string }
+  // Editor works with the presentation DTO shape (id, symbol, entryDate?, size, price, side, notes)
+  type EditorDTO = { id: string; symbol: string; entryDate?: string; size: number; price: number; side: string; notes?: string }
 
   const handleEditorChange = (dto: EditorDTO) => {
-    setPositions(prev => prev.map(p => (p.id === dto.id ? ({ ...p, symbol: dto.symbol, entryDate: dto.entryDate, size: dto.size, price: dto.price, side: dto.side as 'LONG' | 'SHORT', notes: dto.notes }) : p)))
+    setPositions(prev => prev.map(p => (p.id === dto.id ? ({
+      ...p,
+      symbol: dto.symbol,
+      entryDate: dto.entryDate ?? p.entryDate,
+      size: dto.size,
+      price: dto.price,
+      side: dto.side as 'LONG' | 'SHORT',
+      notes: dto.notes
+    }) : p)))
     setDirtyIds(prev => new Set(prev).add(dto.id))
   }
 
@@ -125,7 +133,7 @@ export function TradeJournal({ repo }: TradeJournalProps) {
       console.error('Save failed: trade not found', dto.id)
       return
     }
-    const updated = { ...existing, symbol: dto.symbol, entryDate: dto.entryDate, size: dto.size, price: dto.price, side: dto.side as 'LONG' | 'SHORT', notes: dto.notes }
+    const updated = { ...existing, symbol: dto.symbol, entryDate: dto.entryDate ?? existing.entryDate, size: dto.size, price: dto.price, side: dto.side as 'LONG' | 'SHORT', notes: dto.notes }
     try {
       if (!repoRef.current) { console.warn('Repository unavailable'); return }
       const domain = TradeFactory.create(updated as any)
@@ -472,6 +480,8 @@ export function TradeJournal({ repo }: TradeJournalProps) {
                 <span style={{ fontWeight: 700, color: 'var(--text)' }}>New Trade</span>
               </div>
 
+              {/* Entry date is hidden for new trades (value preserved via hidden input inside the form) */}
+
               {/* Visible status & validation summary */}
               {debugUiEnabled && (lastStatus || Object.keys(formErrors).length > 0) && (
                 <div className={styles.inlineStatus} style={{ margin: '8px 0', color: 'var(--muted)' }}>
@@ -490,6 +500,8 @@ export function TradeJournal({ repo }: TradeJournalProps) {
               )}
 
                <form key={formKey} className={styles.form} onSubmit={handleAdd}>
+                {/* keep a plain hidden input for entryDate so state/DTO remains available but no grid space is used */}
+                <input id="entryDate" type="hidden" value={form.entryDate} />
                 <div className={styles.newTradeGrid}>
                   {/* Row 1: Symbol | Market */}
 
@@ -529,25 +541,6 @@ export function TradeJournal({ repo }: TradeJournalProps) {
                     {(formErrors.symbol && (touched.symbol || formSubmitted)) && (
                       <div id="symbol-error" className={styles.fieldError}>
                         {formErrors.symbol}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Entry Date input (prefilled with now) */}
-                  <div className={styles.newTradeField}>
-                    <Input
-                      id="entryDate"
-                      label="Entry Date"
-                      type="datetime-local"
-                      value={form.entryDate}
-                      onChange={(e) => setForm({ ...form, entryDate: e.target.value })}
-                      onBlur={() => setTouched(prev => ({ ...prev, entryDate: true }))}
-                      hasError={Boolean(formErrors.entryDate && (touched.entryDate || formSubmitted))}
-                      aria-describedby={formErrors.entryDate && (touched.entryDate || formSubmitted) ? 'entryDate-error' : undefined}
-                    />
-                    {(formErrors.entryDate && (touched.entryDate || formSubmitted)) && (
-                      <div id="entryDate-error" className={styles.fieldError}>
-                        {formErrors.entryDate}
                       </div>
                     )}
                   </div>

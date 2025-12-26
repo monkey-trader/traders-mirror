@@ -10,7 +10,7 @@ import { Leverage } from '../valueObjects/Leverage'
 export type TradeInput = {
   id: string
   symbol: string
-  entryDate: string
+  entryDate?: string
   size: number
   price: number
   side: string
@@ -25,10 +25,12 @@ export type TradeInput = {
 
 export class TradeFactory {
   static create(input: TradeInput): Trade {
+    // If entryDate omitted (e.g. Add form hides it), default to now here in the factory
+    const entryDateValue = input.entryDate ?? new Date().toISOString()
     return new Trade(
       input.id,
       new TradeSymbol(input.symbol),
-      new EntryDate(input.entryDate),
+      new EntryDate(entryDateValue),
       new Size(input.size),
       new Price(input.price),
       new Side(input.side),
