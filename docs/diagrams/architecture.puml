@@ -1,28 +1,48 @@
 @startuml
-}
-@enduml
-
-I --> D : stores primitives
-D <.. A : pure logic
-A --> I : repositories (ports -> adapters)
-A --> D : use factories / entities
-P --> A : user actions
-  [InMemoryTradeRepository]
-package "Infrastructure" as I #EECCCC {
-}
-  [Entities]
-  [ValueObjects]
-  [TradeFactory]
-package "Domain" as D #AAEEFF {
-}
-  [TradeService]
-package "Application" as A #CCEEFF {
-}
-  [TradeJournal]
-package "Presentation" as P #DDDDFF {
-
-skinparam shadowing false
+' Onion architecture overview for Traders Mirror
 skinparam dpi 150
-' Simple architecture overview: Onion / DDD layers
+skinparam shadowing false
+left to right direction
 
-' ci-trigger: harmless comment to cause a push and run the render workflow
+actor "User / Browser" as User
+
+package "Presentation\n(React UI)" as P #DDDDFF {
+  [TradeJournal]
+  [TradeDetail]
+  [Settings]
+}
+
+package "Application\n(Use-Cases / Services)" as A #CCEEFF {
+  [TradeService]
+  [AnalysisService]
+}
+
+package "Domain\n(Entities / Value Objects)" as D #AAEEFF {
+  [Trade]
+  [TradeFactory]
+  [ValueObjects\n(TradeSymbol, EntryDate, Size, Price, Side)]
+}
+
+package "Infrastructure\n(Adapters / Repos)" as I #EECCCC {
+  [InMemoryTradeRepository]
+  [LocalStorageSettings]
+}
+
+' interactions
+User -> P : interact
+P --> A : calls use-cases
+A --> D : uses factories/entities
+A --> I : calls repository adapters (ports -> adapters)
+I --> D : persists primitives
+
+note left of A
+  Application layer orchestrates
+  domain logic and repositories
+end note
+
+note right of D
+  Domain contains typed
+  Value Objects and Domain Errors
+end note
+
+@enduml

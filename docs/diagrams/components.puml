@@ -1,23 +1,38 @@
 @startuml
+' Components diagram for Traders Mirror (DDD / Onion)
+left to right direction
+skinparam dpi 150
+skinparam shadowing false
+
 package Domain {
   class TradeFactory
   class Trade
-  class Price
-  class Size
   class TradeSymbol
+  class EntryDate
+  class Size
+  class Price
+  class Side
 }
+
 package Application {
   class TradeService
+  class AnalysisService
 }
+
 package Infrastructure {
   class InMemoryTradeRepository
+  class LocalStorageSettings
 }
+
 package Presentation {
   class TradeJournal
   class TradeDetailEditor
+  class SettingsUI
 }
 
 TradeJournal --> TradeService : uses
+TradeDetailEditor --> TradeService : uses
+SettingsUI --> LocalStorageSettings : reads/writes
 TradeService --> TradeFactory : creates/validates
 TradeService --> InMemoryTradeRepository : persists
 InMemoryTradeRepository --> Trade : stores primitives

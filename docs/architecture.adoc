@@ -20,20 +20,26 @@ else[]
 image::diagrams/architecture.png[Architecture diagram,alt="Architecture diagram"]
 endif::[]
 
-== Domäne
-Die Domäne enthält die fachlichen Konzepte rund um einen Trade:
+== Components
+Die wichtigsten Komponenten sind in der Komponenten-Übersicht dargestellt. Kurzbeschreibung:
 
-* Entities: `Trade` (ID, symbol, entryDate, size, price, side, ...)
-* ValueObjects: `TradeSymbol`, `EntryDate`, `Size`, `Price`, `Side`, `Market`, `Leverage`
-* Domain Errors: typisierte Fehlerklassen (z. B. `SizeMustBePositiveError`, `EntryDateInvalidError`)
+* Presentation
+** `TradeJournal` – Haupt-UI, listet Trades, öffnet Editor, führt Filter/Sort aus
+** `TradeDetail` / `TradeDetailEditor` – Einzelnen Trade anzeigen und bearbeiten
+** `Settings` – Nutzer-Einstellungen (z. B. Debug UI, Import/Export)
 
-Die ValueObjects validieren und normalisieren Eingaben (z. B. Symbol -> uppercase, EntryDate -> ISOString).
+* Application
+** `TradeService` – Use-Cases zum Erstellen, Aktualisieren, Löschen und Abfragen von Trades
+** `AnalysisService` – Aggregationen/Analysen (Winrate, PnL, Equity Curve)
 
-== Application Layer
-Use-Cases (z. B. `TradeService`) orchestrieren Domänenobjekte:
+* Domain
+** `Trade` – Entity mit Feldern (symbol, entryDate, size, price, side, market, leverage)
+** `ValueObjects` – `TradeSymbol`, `EntryDate`, `Size`, `Price`, `Side` (validierung/normierung)
+** `TradeFactory` – baut Entitäten aus DTOs/VOs und liefert primitive DTOs zurück
 
-* Annahme von stabilen primitiven DTOs (z. B. `TradeInput`) — Factories normalisieren und bauen Domänenobjekte
-* Rückgabe von stabilen primitiven DTOs via `toDTO` (Application bleibt unabhängig von VOs)
+* Infrastructure
+** `InMemoryTradeRepository` – Beispiel-Adapter, speichert Trades als primitive Objekte
+** `LocalStorageSettings` – Adapter zum Lesen/Schreiben von Settings in localStorage
 
 ifdef::plantuml[]
 include::diagrams/components.puml[]
@@ -41,20 +47,35 @@ else[]
 image::diagrams/components.png[Components diagram,alt="Components diagram"]
 endif::[]
 
-== Infrastructure Layer
-Adapter implementieren Ports (Repository Interfaces). Aktuelles Beispiel: `InMemoryTradeRepository`.
+== Use Cases
+Die Hauptfunktionen der Anwendung (Use Cases) sind:
 
-== Presentation Layer
-React-Komponenten rendern UI und binden Validierung + ErrorMapper ein. Wichtige Punkte:
+* Record Trade
+** Nutzer füllt Formular (Symbol, Datum, Grösse, Preis, Side, Market, Leverage)
+** Presentation validiert Eingaben (basic UI validation)
+** Application (`TradeService`) ruft `TradeFactory.create` auf, validiert Domain-Regeln
+** Repository persistiert das Ergebnis
 
-* Validation: Presentation führt UI-spezifische Validierung (z. B. `validateNewTrade`) und mappt Domain-Errors zu Feldfehlern
-* ErrorMapper: mappt `instanceof` Domain-Errors zu field/global messages
-* Keine Business-Logik in UI
+* Edit Trade
+** Nutzer öffnet TradeDetail und passt Felder an
+** Gleiches Flussmuster wie Record Trade, mit Update-Operation
+
+* Analyze Performance
+** `AnalysisService` aggregiert Trades und berechnet Kennzahlen wie Winrate, Average PnL, Risk/Reward, Equity Curve
+** Ergebnisse werden in der UI visualisiert (Charts / Tabellen)
+
+* Track Metrics
+** Laufende Metriken (z. B. tägliche PnL, max drawdown)
+** Filter/Group-By (Symbol, Market, Timeframe)
+
+* Export/Import
+** Export als CSV/JSON für externe Analyse
+** Import von JSON-DTOs zur Migration oder Bulk-Import
 
 ifdef::plantuml[]
-include::diagrams/sequence.puml[]
+include::diagrams/usecases.puml[]
 else[]
-image::diagrams/sequence.png[Sequence diagram,alt="Sequence diagram"]
+image::diagrams/usecases.png[Use cases diagram,alt="Use cases diagram"]
 endif::[]
 
 == How to render diagrams
