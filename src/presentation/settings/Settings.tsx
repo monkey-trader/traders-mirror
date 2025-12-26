@@ -3,7 +3,7 @@ import styles from './Settings.module.css'
 import { ThemeSwitcher } from '@/presentation/shared/components/ThemeSwitcher/ThemeSwitcher'
 import { loadSettings, saveSettings } from './settingsStorage'
 import { Button } from '@/presentation/shared/components/Button/Button'
-import LocalStorageTradeRepository from '@/infrastructure/trade/repositories/LocalStorageTradeRepository'
+import { COMBINED_MOCK_TRADES } from '@/infrastructure/trade/repositories/mockData'
 
 function DebugToggle() {
   const [enabled, setEnabled] = React.useState<boolean>(() => {
@@ -55,11 +55,9 @@ function StorageControls() {
   const restoreDemoData = () => {
     if (!window.confirm('Demo-Daten wiederherstellen? Existierende Daten werden überschrieben.')) return
     try {
-      // remove existing key then instantiate repository which will seed defaults
-      localStorage.removeItem('mt_trades_v1')
-      // ctor with defaults (seedDefaults default true) writes defaults into storage
-      // eslint-disable-next-line no-new
-      new LocalStorageTradeRepository()
+      // Replace the stored trades with the full combined mock dataset (replace semantics)
+      localStorage.setItem('mt_trades_v1', JSON.stringify(COMBINED_MOCK_TRADES))
+      // reload to reflect seeded trades
       window.location.reload()
     } catch (err) {
       console.error('Failed to restore demo trades', err)
@@ -71,8 +69,8 @@ function StorageControls() {
     <div className={styles.debugRow} style={{ alignItems: 'center' }}>
       <label className={styles.fieldLabel}>Storage</label>
       <div className={styles.storageButtons}>
-        <Button className={styles.dangerBtn} variant="secondary" onClick={clearStoredTrades}>Clear stored trades</Button>
-        <Button className={styles.restoreBtn} variant="ghost" onClick={restoreDemoData}>Restore demo data</Button>
+        <Button variant="danger" onClick={clearStoredTrades}>Clear demo data</Button>
+        <Button variant="primary" onClick={restoreDemoData}>Add demo data</Button>
       </div>
       <p className={styles.help}>Remove or restore the demo trades stored in your browser localStorage (key: mt_trades_v1).</p>
     </div>

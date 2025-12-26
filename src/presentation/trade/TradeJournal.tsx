@@ -52,9 +52,12 @@ export function TradeJournal({ repo }: TradeJournalProps) {
 
   // repository instance must be injected via props (composition root). Do not require() here.
   const repoRef = useRef<TradeRepository | null>(repo ?? null)
-  if (repoRef.current === null) {
+  // Keep ref in sync if prop changes (composition root may re-create repo)
+  useEffect(() => { repoRef.current = repo ?? null }, [repo])
+  if (!repoRef.current) {
     // Do not auto-create adapters here to keep component testable and avoid require()/dynamic imports.
-    console.warn('No TradeRepository provided to TradeJournal; persistence disabled. Provide repo prop from composition root.')
+    // Only warn once in dev
+    if (typeof process !== 'undefined' && process.env.NODE_ENV === 'development') console.warn('No TradeRepository provided to TradeJournal; persistence disabled. Provide repo prop from composition root.')
   }
 
   // State für Positionsdaten (editierbar)
@@ -599,6 +602,7 @@ export function TradeJournal({ repo }: TradeJournalProps) {
          message={`Sind Sie sicher, dass Sie diese Aktion durchführen möchten?`}
          confirmLabel="Ja"
          cancelLabel="Abbrechen"
+         confirmVariant={confirmAction === 'delete' ? 'danger' : 'primary'}
        />
 
       {/* Mock data loader modal */}
@@ -608,9 +612,9 @@ export function TradeJournal({ repo }: TradeJournalProps) {
             <h3>Lade Mock-Daten</h3>
             <p>Wähle welches Set an Testdaten du laden möchtest. Bereits vorhandene Daten bleiben erhalten.</p>
             <div style={{ display: 'flex', gap: 8, marginTop: 12, marginBottom: 12 }}>
-              <button className={styles.mockOption} onClick={() => setMockLoadOption('crypto')} aria-pressed={mockLoadOption === 'crypto'}>Crypto</button>
-              <button className={styles.mockOption} onClick={() => setMockLoadOption('forex')} aria-pressed={mockLoadOption === 'forex'}>Forex</button>
-              <button className={styles.mockOption} onClick={() => setMockLoadOption('both')} aria-pressed={mockLoadOption === 'both'}>Both</button>
+              <Button variant={mockLoadOption === 'crypto' ? 'primary' : 'ghost'} onClick={() => setMockLoadOption('crypto')}>Crypto</Button>
+              <Button variant={mockLoadOption === 'forex' ? 'primary' : 'ghost'} onClick={() => setMockLoadOption('forex')}>Forex</Button>
+              <Button variant={mockLoadOption === 'both' ? 'primary' : 'ghost'} onClick={() => setMockLoadOption('both')}>Both</Button>
             </div>
             <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
               <Button variant="ghost" onClick={() => setMockModalOpen(false)}>Cancel</Button>
@@ -619,37 +623,33 @@ export function TradeJournal({ repo }: TradeJournalProps) {
                 onClick={async () => {
                   setMockLoading(true)
                   try {
-                    const repoInstance = repoRef.current as unknown as { seed?: (trades: RepoTrade[]) => void } | null
-                    if (!repoInstance || typeof repoInstance.seed !== 'function') {
-                      // fallback: if repo doesn't support seed, attempt to save each trade via save()
-                      const toSeed = mockLoadOption === 'crypto' ? MORE_CRYPTO_MOCK_TRADES : mockLoadOption === 'forex' ? MORE_FOREX_MOCK_TRADES : COMBINED_MOCK_TRADES
-                      if (repoRef.current && typeof repoRef.current.save === 'function') {
-                        for (const rt of toSeed) {
-                          try {
-                            // convert to domain via TradeFactory.create to use save domain contract
-                            const domain = TradeFactory.create(rt as unknown as TradeInput)
-                            await repoRef.current.save(domain)
-                          } catch (err) {
-                            console.error('Failed to save mock trade via save()', err)
-                          }
+                    const seedSet = mockLoadOption === 'crypto' ? MORE_CRYPTO_MOCK_TRADES : mockLoadOption === 'forex' ? MORE_FOREX_MOCK_TRADES : COMBINED_MOCK_TRADES
+
+                    // prefer calling a seed method if repo supports it
+                    const repoAny = repoRef.current as unknown as { seed?: (trades: RepoTrade[]) => void; save?: (t: any) => Promise<void>; getAll?: () => Promise<any[]> } | null
+                    if (repoAny && typeof repoAny.seed === 'function') {
+                      try { repoAny.seed(seedSet as RepoTrade[]) } catch (err) { console.error('seed() call failed', err) }
+                    } else if (repoAny && typeof repoAny.save === 'function') {
+                      // save each trade sequentially
+                      for (const rt of seedSet) {
+                        try {
+                          const domain = TradeFactory.create(rt as unknown as TradeInput)
+                          await repoAny.save(domain)
+                        } catch (err) {
+                          console.error('Failed to save mock trade via save()', err)
                         }
-                      } else {
-                        console.warn('Repository does not support seeding or saving; updating UI only')
-                        setPositions(prev => {
-                          const combined = (mockLoadOption === 'crypto' ? MORE_CRYPTO_MOCK_TRADES : mockLoadOption === 'forex' ? MORE_FOREX_MOCK_TRADES : COMBINED_MOCK_TRADES).map(t => ({ ...t }))
-                          // convert entryDate to input form used by UI
-                          const dto = combined.map(c => ({ ...c, entryDate: EntryDate.toInputValue(c.entryDate) })) as unknown as TradeRow[]
-                          return [...dto, ...prev]
-                        })
                       }
                     } else {
-                      // repository exposes seed(trades)
-                      const seedArg = mockLoadOption === 'crypto' ? MORE_CRYPTO_MOCK_TRADES : mockLoadOption === 'forex' ? MORE_FOREX_MOCK_TRADES : COMBINED_MOCK_TRADES
-                      repoInstance.seed(seedArg as RepoTrade[])
+                      // no repo available - update UI only
+                      setPositions(prev => {
+                        const combined = seedSet.map(t => ({ ...t }))
+                        const dto = combined.map(c => ({ ...c, entryDate: EntryDate.toInputValue(c.entryDate) })) as unknown as TradeRow[]
+                        return [...dto, ...prev]
+                      })
                     }
 
-                    // reload positions from repo if available
-                    if (repoRef.current) {
+                    // reload canonical trades from repo
+                    if (repoRef.current && typeof repoRef.current.getAll === 'function') {
                       const domainTrades = await repoRef.current.getAll()
                       const dtoTrades = domainTrades.map(dt => TradeFactory.toDTO(dt) as unknown as TradeRow)
                       setPositions(dtoTrades)

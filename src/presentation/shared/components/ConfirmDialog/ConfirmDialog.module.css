@@ -5,4 +5,4 @@
 .actions { display:flex; gap:8px; justify-content:flex-end }
 .cancel { background:transparent; border:1px solid rgba(255,255,255,0.04); padding:8px 12px; border-radius:8px; color:var(--text) }
 .confirm { background: linear-gradient(180deg,var(--accent), color-mix(in srgb,var(--accent) 70%, black)); border:none; padding:8px 12px; border-radius:8px; color:var(--surface) }
-
+.confirmDanger { background: linear-gradient(180deg,#ff6b6b,#c41d1d); border:none; padding:8px 12px; border-radius:8px; color:var(--surface) }
