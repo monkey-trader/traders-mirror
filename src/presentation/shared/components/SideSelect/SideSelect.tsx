@@ -15,20 +15,17 @@ export type SideSelectProps = {
   label?: string
   hasError?: boolean
   ariaDescribedBy?: string
-  className?: string
 }
 
-export function SideSelect({ value, onChange, ariaLabel, showBadge = false, compact = false, onBlur, colored = false, label, hasError = false, ariaDescribedBy, className }: SideSelectProps) {
+export function SideSelect({ value, onChange, ariaLabel, showBadge = false, compact = false, onBlur, colored = false, label, hasError = false, ariaDescribedBy }: SideSelectProps) {
   const baseClass = compact ? `${styles.select} ${styles.selectCompact}` : styles.select
   const coloredClass = colored ? (value === 'LONG' ? `${baseClass} ${styles.colored} ${styles.coloredLong}` : `${baseClass} ${styles.colored} ${styles.coloredShort}`) : baseClass
   const selectClass = `${coloredClass} ${hasError ? styles.error : ''}`.trim()
 
-  const containerClass = [styles.container, className ? styles.containerFull : ''].filter(Boolean).join(' ')
-
   const control = (
-    <div className={containerClass}>
+    <div className={styles.container}>
       <select
-        className={[selectClass, className].filter(Boolean).join(' ')}
+        className={selectClass}
         value={value}
         onChange={e => onChange(e.target.value as SideValue)}
         onBlur={onBlur}
