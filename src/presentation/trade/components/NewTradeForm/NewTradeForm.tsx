@@ -79,21 +79,21 @@ export function NewTradeForm({
           <input id="entryDate" type="hidden" value={form.entryDate} />
           <div className={styles.newTradeGrid}>
             <div className={styles.newTradeField}>
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span className={styles.fieldLabel}>Market</span>
-                <MarketSelect
-                  value={(form.market ?? '') as MarketValue}
-                  onChange={(v) => {
-                    onChangeForm({ market: v })
-                    onBlurField('market')
-                    if (v) setMarketFilter(v)
-                  }}
-                  compact
-                  showAll={false}
-                />
-              </div>
+              <MarketSelect
+                label="Market"
+                value={(form.market ?? '') as MarketValue}
+                onChange={(v) => {
+                  onChangeForm({ market: v })
+                  onBlurField('market')
+                  if (v) setMarketFilter(v)
+                }}
+                compact
+                showAll={false}
+                hasError={Boolean(formErrors.market && (touched.market || formSubmitted))}
+                ariaDescribedBy={formErrors.market && (touched.market || formSubmitted) ? 'market-error' : undefined}
+              />
               {(formErrors.market && (touched.market || formSubmitted)) && (
-                <div className={styles.fieldError}>{formErrors.market}</div>
+                <div id="market-error" className={styles.fieldError}>{formErrors.market}</div>
               )}
             </div>
 
