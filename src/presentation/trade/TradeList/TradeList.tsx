@@ -44,7 +44,7 @@ export function TradeList({ trades, selectedId, onSelect }: TradeListProps) {
             </div>
             <div className={styles.rowRight}>
               <div className={[styles.side, sideClass].join(' ')} aria-label={`Side: ${sideKey}`} title={sideKey}>
-                {t.side}
+                {sideKey.toUpperCase()}
               </div>
             </div>
           </button>

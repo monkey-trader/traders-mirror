@@ -55,42 +55,46 @@
 }
 
 .side {
-  /* removed earlier padding to avoid duplicate declarations; final padding below keeps horizontal breathing */
   border-radius: 999px;
-  font-weight: 800;
+  font-weight: 700;
   font-size: 12px;
-  color: #07101a;
-  /* keep a neutral gradient by default; overridden by .sideLong/.sideShort */
-  background: linear-gradient(90deg, #7ef1c6, #22c1c3);
+  text-transform: uppercase;
+  /* base neutral appearance similar to SideSelect */
+  background: transparent;
+  color: var(--color-text);
+  border: 1px solid transparent;
 
-  /* Ensure all badges are the same size */
   display: inline-flex;
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  width: 55px; /* fixed width for consistent badges */
-  height: 25px; /* fixed height */
-  padding: 0 8px; /* reduced horizontal padding to better fit text */
+  min-width: 64px; /* align with SideSelect.colored */
+  height: 28px; /* align with SideSelect height */
+  padding: 4px 10px; /* similar breathing room */
   text-align: center;
-  white-space: nowrap;      /* prevent wrapping */
-  overflow: hidden;        /* hide overflowed text */
-  text-overflow: ellipsis; /* show ellipsis if text is too long */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* Only Long/Short variants (no neutral/outline) */
+/* Colored pill variants (light tint background + colored border/text) */
 .sideLong {
-  background: linear-gradient(90deg, var(--color-long-600), var(--color-long-800));
-  color: white;
+  /* rgba(15,157,88,0.10) using --color-long-600 (#0F9D58) */
+  background: rgba(15,157,88,0.10);
+  color: var(--color-long-600);
+  border: 1px solid rgba(15,157,88,0.18);
 }
 
 .sideShort {
-  background: linear-gradient(90deg, var(--color-short-600), var(--color-short-800));
-  color: white;
+  /* rgba(219,68,55,0.10) using --color-short-600 (#DB4437) */
+  background: rgba(219,68,55,0.10);
+  color: var(--color-short-600);
+  border: 1px solid rgba(219,68,55,0.18);
 }
 
 /* focus visible for keyboard users */
 .item:focus-visible {
-  outline: 3px solid rgba(124,92,255,0.16);
+  outline: 3px solid rgba(124,92,255,0.12);
   outline-offset: 2px;
 }
 
