@@ -55,7 +55,8 @@ export class TradeFactory {
       size: trade.size.value,
       price: trade.price.value,
       side: trade.side.value,
-      status: trade.status,
+      // Normalize status to a primitive and provide a sensible default to avoid UNKNOWN states in UI
+      status: trade.status ?? 'OPEN',
       notes: trade.notes,
       market: trade.market.value,
       sl: trade.sl?.value,
