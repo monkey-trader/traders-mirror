@@ -10,14 +10,12 @@ describe('TradeJournal compact editor toggle', () => {
     const repo = new InMemoryTradeRepository()
     const { container } = render(<TradeJournal repo={repo} forceCompact />)
 
-    // Wait for list items to render
-    const itemsRendered = await screen.findAllByRole('listitem', {}, { timeout: 1000 })
-    expect(itemsRendered.length).toBeGreaterThan(0)
+    // Wait for PositionCard symbols to render (compact view uses PositionCard)
+    const symbols = await screen.findAllByText(/USD$/, {}, { timeout: 1000 })
+    expect(symbols.length).toBeGreaterThan(0)
 
-    // Click the first trade button to select it
-    const items = container.querySelectorAll('button[role="listitem"]')
-    expect(items.length).toBeGreaterThan(0)
-    fireEvent.click(items[0])
+    // Click the first symbol element to select that trade (PositionCard renders symbol text)
+    fireEvent.click(symbols[0])
 
     // Now the compact summary should show a Show details button
     const show = await screen.findByRole('button', { name: /show details/i })
