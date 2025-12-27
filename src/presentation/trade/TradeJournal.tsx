@@ -115,6 +115,20 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
     return () => { mounted = false }
   }, [])
 
+  // Mobile modal state for New Trade (used on small screens)
+  const [isMobile, setIsMobile] = useState<boolean>(() => typeof window !== 'undefined' ? window.matchMedia('(max-width:480px)').matches : false)
+  const [newTradeModalOpen, setNewTradeModalOpen] = useState(false)
+
+  // listen for viewport changes to toggle mobile mode
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia === 'undefined') return
+    const mq = window.matchMedia('(max-width:480px)')
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches)
+    try { mq.addEventListener('change', handler) } catch (_e) { mq.addListener(handler) }
+    setIsMobile(mq.matches)
+    return () => { try { mq.removeEventListener('change', handler) } catch (_e) { mq.removeListener(handler) } }
+  }, [])
+
   // Trades nach Markt filtern (berechnet aus editierbaren Positionen)
   const trades = (() => {
     let filtered = positions
@@ -227,7 +241,7 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
   // key to force remount the New Trade form and its inputs (useful to fully clear internal input state)
   const [formKey, setFormKey] = useState(0)
 
-  const handleAdd = async (e?: React.FormEvent) => {
+    const handleAdd = async (e?: React.FormEvent) => {
     if (e) e.preventDefault()
     setFormSubmitted(true)
     console.info('[TradeJournal] handleAdd start', { form })
@@ -319,18 +333,26 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
           setPositions(prev => [newTrade, ...prev])
         }
       }
+      setLastStatus('Saved')
+      // If we added a trade from the mobile modal, close it and reset form
+      if (newTradeModalOpen) {
+        setNewTradeModalOpen(false)
+      }
+      // reset form
+      setForm({ symbol: '', entryDate: EntryDate.toInputValue(), size: undefined, price: undefined, side: 'LONG', status: 'OPEN', market: 'Crypto', notes: '' })
+      setFormSubmitted(false)
+      setFormKey(k => k + 1)
     } catch (err) {
       console.error('[TradeJournal] Failed to persist new trade to repository', err)
       setLastStatus('persist error')
       // still update UI so user sees the trade; but surface error in console
       setPositions(prev => [newTrade, ...prev])
     }
-    setForm({ symbol: '', entryDate: EntryDate.toInputValue(), size: undefined, price: undefined, side: 'LONG', status: 'OPEN', market: 'Crypto', notes: '' })
     setFormErrors({})
     // clear submission / touched state after successful add
     setFormSubmitted(false)
     setTouched({})
-  }
+    }
 
   // responsive fallback: switch to single-column grid when container is too narrow
   const containerRef = useRef<HTMLDivElement | null>(null)
@@ -547,13 +569,22 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
       }
     : null
 
-  return (
+    return (
     <>
       <div className={styles.headerRow}>
         <h2 className={styles.title}>Trading Journal</h2>
         <div className={styles.controls}>
           {showLoadMockButton && <Button variant="secondary" onClick={() => setMockModalOpen(true)}>Load mock data</Button>}
         </div>
+      </div>
+
+      {/* Mobile-only New Trade button: opens modal instead of showing inline form */}
+      <div className={styles.mobileNewTradeBtnWrap}>
+        {isMobile && (
+          <button type="button" className={styles.mobileNewTradeBtn} onClick={() => setNewTradeModalOpen(true)}>
+            New Trade
+          </button>
+        )}
       </div>
 
       {/* containerRef wraps the grid so we can detect available width */}
@@ -566,20 +597,23 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
         }
       >
         <div className={styles.left}>
-          <NewTradeForm
-            form={form}
-            formErrors={formErrors}
-            touched={touched}
-            formSubmitted={formSubmitted}
-            formKey={formKey}
-            debugUiEnabled={debugUiEnabled}
-            lastStatus={lastStatus}
-            onChangeForm={(patch) => setForm((prev) => ({ ...prev, ...patch }))}
-            onBlurField={(f) => setTouched((prev) => ({ ...prev, [f]: true }))}
-            onSubmit={(e?: React.FormEvent) => { setFormSubmitted(true); setTouched(prev => ({ ...prev, price: true })); handleAdd(e) }}
-            onReset={resetNewTradeForm}
-            setMarketFilter={(m) => setMarketFilter(m === '' ? 'All' : (m as 'All' | 'Crypto' | 'Forex'))}
-          />
+          {/* Desktop & tablet: show inline NewTradeForm; Mobile: hide inline and use modal */}
+          {!isMobile && (
+            <NewTradeForm
+              form={form}
+              formErrors={formErrors}
+              touched={touched}
+              formSubmitted={formSubmitted}
+              formKey={formKey}
+              debugUiEnabled={debugUiEnabled}
+              lastStatus={lastStatus}
+              onChangeForm={(patch) => setForm((prev) => ({ ...prev, ...patch }))}
+              onBlurField={(f) => setTouched((prev) => ({ ...prev, [f]: true }))}
+              onSubmit={(e?: React.FormEvent) => { setFormSubmitted(true); setTouched(prev => ({ ...prev, price: true })); handleAdd(e) }}
+              onReset={resetNewTradeForm}
+              setMarketFilter={(m) => setMarketFilter(m === '' ? 'All' : (m as 'All' | 'Crypto' | 'Forex'))}
+            />
+          )}
          </div>
 
          <div className={styles.right}>
@@ -798,6 +832,68 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
            {lastStatus && <div className={styles.statusMessage}>{lastStatus}</div>}
          </div>
        )}
+      {/* Mobile modal for New Trade */}
+      {isMobile && newTradeModalOpen && (
+        <div className={styles.mobileModalBackdrop} role="dialog" aria-modal="true" tabIndex={-1}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.45)',
+            zIndex: 1000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
+          onClick={() => setNewTradeModalOpen(false)}
+        >
+          <div
+            className={styles.mobileModalContent}
+            style={{
+              background: 'var(--card-bg, #fff)',
+              borderRadius: 12,
+              maxWidth: 400,
+              width: '90vw',
+              padding: 24,
+              boxShadow: '0 4px 32px rgba(0,0,0,0.18)',
+              position: 'relative'
+            }}
+            onClick={e => e.stopPropagation()}
+            tabIndex={0}
+          >
+            <button
+              type="button"
+              aria-label="Close"
+              onClick={() => setNewTradeModalOpen(false)}
+              style={{
+                position: 'absolute',
+                top: 8,
+                right: 8,
+                background: 'none',
+                border: 'none',
+                fontSize: 22,
+                cursor: 'pointer'
+              }}
+            >
+              ×
+            </button>
+            <div style={{ marginBottom: 12, fontWeight: 700, fontSize: 18 }}>New Trade</div>
+            <NewTradeForm
+              form={form}
+              formErrors={formErrors}
+              touched={touched}
+              formSubmitted={formSubmitted}
+              formKey={formKey}
+              debugUiEnabled={debugUiEnabled}
+              lastStatus={lastStatus}
+              onChangeForm={(patch) => setForm((prev) => ({ ...prev, ...patch }))}
+              onBlurField={(f) => setTouched((prev) => ({ ...prev, [f]: true }))}
+              onSubmit={(e?: React.FormEvent) => { setFormSubmitted(true); setTouched(prev => ({ ...prev, price: true })); handleAdd(e) }}
+              onReset={resetNewTradeForm}
+              setMarketFilter={(m) => setMarketFilter(m === '' ? 'All' : (m as 'All' | 'Crypto' | 'Forex'))}
+            />
+          </div>
+        </div>
+      )}
     </>
-   );
-  }
+     );
+    }

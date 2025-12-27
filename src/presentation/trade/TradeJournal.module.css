@@ -1002,3 +1002,33 @@
   .newTradeWrapper .actions button { flex: 1 1 auto; }
 }
 
+/* Mobile new trade quick button */
+.mobileNewTradeBtnWrap {
+  display: none;
+  margin-bottom: 12px;
+}
+.mobileNewTradeBtn {
+  display: inline-block;
+  background: linear-gradient(90deg, var(--primary), color-mix(in srgb, var(--primary) 60%, black));
+  color: var(--surface, #fff);
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+/* Mobile modal styles (fallback, inline styles used for main layout) */
+.mobileModalBackdrop {
+  display: none;
+}
+.mobileModalContent {
+  display: block;
+}
+
+@media (max-width: 480px) {
+  .mobileNewTradeBtnWrap { display: block; }
+  .mobileNewTradeBtn { width: 100%; }
+
+  .mobileModalBackdrop { display: flex; }
+}
