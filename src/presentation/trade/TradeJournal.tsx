@@ -876,6 +876,21 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
                onReset={resetNewTradeForm}
                setMarketFilter={(m) => setMarketFilter(m === '' ? 'All' : (m as 'All' | 'Crypto' | 'Forex'))}
              />
+             {/* Mobile sticky footer: always visible in the sheet so Add/Close are accessible */}
+             <div className={styles.mobileModalFooter}>
+               <Button variant="ghost" onClick={() => setNewTradeModalOpen(false)}>Close</Button>
+               <Button
+                 variant="primary"
+                 onClick={async () => {
+                   // ensure validation messages appear
+                   setFormSubmitted(true)
+                   setTouched(prev => ({ ...prev, price: true }))
+                   await handleAdd()
+                 }}
+               >
+                 Add
+               </Button>
+             </div>
            </div>
          </div>
        )}
