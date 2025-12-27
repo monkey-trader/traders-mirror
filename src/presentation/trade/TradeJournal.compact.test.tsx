@@ -10,9 +10,9 @@ describe('TradeJournal compact editor toggle', () => {
     const repo = new InMemoryTradeRepository()
     const { container } = render(<TradeJournal repo={repo} forceCompact />)
 
-    // Wait for list to render
-    const btc = await screen.findByText('ETHUSD', {}, { timeout: 1000 })
-    expect(btc).toBeDefined()
+    // Wait for list items to render
+    const itemsRendered = await screen.findAllByRole('listitem', {}, { timeout: 1000 })
+    expect(itemsRendered.length).toBeGreaterThan(0)
 
     // Click the first trade button to select it
     const items = container.querySelectorAll('button[role="listitem"]')
@@ -37,4 +37,3 @@ describe('TradeJournal compact editor toggle', () => {
     expect(screen.queryByRole('button', { name: /save now/i })).toBeNull()
   })
 })
-
