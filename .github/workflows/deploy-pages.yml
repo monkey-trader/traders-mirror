@@ -1,0 +1,89 @@
+name: Deploy Pages (manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      source:
+        description: 'Source artifact to deploy (artifact name or "latest")'
+        required: false
+        default: 'pages'
+      force:
+        description: 'Force deploy even if no changes'
+        required: false
+        default: 'false'
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  deploy:
+    name: Deploy to GitHub Pages (manual approval)
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      # optional reviewers can be set on the repo environment to require approval
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Download pages artifact (if available)
+        if: ${{ github.event.inputs.source != '' }}
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ github.event.inputs.source }}
+          path: ./artifact_build
+
+      - name: Prepare deploy directory
+        run: |
+          set -e
+          export GIT_EMAIL="41898282+github-actions[bot]@users.noreply.github.com"
+          export GIT_NAME="github-actions[bot]"
+          git config --global user.email "$GIT_EMAIL"
+          git config --global user.name "$GIT_NAME"
+
+          TMPDIR=$(mktemp -d)
+          REPO_URL="https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
+
+          echo "Cloning gh-pages branch into $TMPDIR"
+          git clone --branch gh-pages --single-branch "$REPO_URL" "$TMPDIR" || (
+            git clone "$REPO_URL" "$TMPDIR"
+            cd "$TMPDIR"
+            git checkout --orphan gh-pages
+          )
+
+          # clear old content
+          rm -rf "$TMPDIR"/*
+
+          # prefer artifact contents if present
+          if [ -d ./artifact_build ] && [ "$(ls -A ./artifact_build)" ]; then
+            echo "Using downloaded artifact contents for deployment"
+            cp -r ./artifact_build/* "$TMPDIR"/
+          else
+            echo "No artifact found — attempt to build from repository"
+            npm ci || npm install
+            npm run build
+            cp -r ./build/* "$TMPDIR"/
+          fi
+
+          cd "$TMPDIR"
+          git add --all
+
+          if [ "${{ github.event.inputs.force }}" != 'true' ] && git diff --staged --quiet; then
+            echo "No changes to deploy"
+            exit 0
+          fi
+
+          git commit -m "chore(pages): deploy ${{ github.sha }}" || echo "Nothing to commit"
+          git push origin gh-pages --force
+
+      - name: Finish
+        run: echo "Deployment finished"
+
