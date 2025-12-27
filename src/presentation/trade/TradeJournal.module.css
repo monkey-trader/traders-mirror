@@ -1018,6 +1018,11 @@
   font-weight: 700;
 }
 
+/* Show mobile quick button on small screens */
+@media (max-width: 480px) {
+  .mobileNewTradeBtnWrap { display: block; margin-bottom: 10px; }
+}
+
 /* Mobile modal styles (fallback, inline styles used for main layout) */
 .mobileModalBackdrop {
   display: none;
