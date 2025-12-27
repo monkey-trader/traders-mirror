@@ -65,6 +65,14 @@
 - Keine doppelten oder toten Imports.
 - Event-Handler gehören in die jeweilige Komponente, nicht in separate Dateien.
 
+### Mobile / Responsive Requirement
+- Alle neuen Präsentations-Komponenten müssen von Anfang an mobile-first und responsive gestaltet werden. Praktische Vorgaben:
+  - Nutze die Projekt-Design-Tokens (`src/styles/design-tokens.css`) für Abstände, Typografie und Breakpoints.
+  - Implementiere eine kompakte Ansicht (z.B. `compactView?: boolean` prop) oder passende Modulklassen, so dass Komponenten auf schmalen Bildschirmen als stacked/cards gerendert werden können.
+  - Schreibe kleine responsive Unit-/Integrationstests (Vitest + Testing Library) die das kompakte Verhalten oder die CSS-Klassen auf engen Viewports überprüfen (oder die Komponente über Prop-Injektion testen).
+  - Dokumentiere neue Komponenten kurz in `docs/*` mit Hinweisen auf das responsive Verhalten und welche Token verwendet wurden.
+  - Diese Richtlinie sorgt dafür, dass neue UI-Elemente sofort mobil-tauglich sind und die Codebasis konsistent bleibt.
+
 ## TypeScript-Interface-Importe
 - Interfaces (z.B. Repository-Interfaces) immer als TypeScript-Typ exportieren:
   ```ts

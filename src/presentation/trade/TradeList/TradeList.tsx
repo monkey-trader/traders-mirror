@@ -12,14 +12,42 @@ export type TradeListItem = {
 }
 
 import styles from './TradeList.module.css'
+import { PositionCard } from '@/presentation/trade/components/PositionCard/PositionCard'
 
 export type TradeListProps = {
   trades: TradeListItem[]
   selectedId?: string | null
   onSelect: (id: string) => void
+  compactView?: boolean
 }
 
-export function TradeList({ trades, selectedId, onSelect }: TradeListProps) {
+export function TradeList({ trades, selectedId, onSelect, compactView = false }: TradeListProps) {
+  if (compactView) {
+    return (
+      <div className={styles.list} role="list">
+        {trades.map((t) => {
+          const sideKey =
+            (t.side || '').toString().trim().toUpperCase() === 'LONG' ||
+            (t.side || '').toString().trim().toLowerCase() === 'buy'
+              ? 'LONG'
+              : 'SHORT'
+          return (
+            <PositionCard
+              key={t.id}
+              id={t.id}
+              symbol={t.symbol}
+              side={sideKey as 'LONG' | 'SHORT'}
+              size={t.size}
+              entry={t.entryDate}
+              pnl={0}
+              onExpand={(id) => onSelect(id)}
+            />
+          )
+        })}
+      </div>
+    )
+  }
+
   return (
     <div className={styles.list} role="list">
       {trades.map((t) => {

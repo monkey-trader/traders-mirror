@@ -609,6 +609,7 @@ export function TradeJournal({ repo }: TradeJournalProps) {
                            }))}
                            selectedId={selectedId}
                            onSelect={(id) => setSelectedId(id)}
+                          compactView={compactGrid}
                          />
                        </div>
 
