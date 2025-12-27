@@ -30,4 +30,65 @@
   --shadow-1: 0 6px 18px rgba(3,6,10,0.6);
 }
 
+/* Responsive design tokens (breakpoints, fluid type, spacing, container padding)
+   These keep the rest of the codebase unchanged but provide variables that
+   components and modules can consume to become mobile friendly. */
+:root {
+  /* Breakpoints */
+  --bp-xs: 360px;
+  --bp-sm: 480px;
+  --bp-md: 768px;
+  --bp-lg: 1024px;
+  --bp-xl: 1280px;
+
+  /* Fluid typography (clamp(min, preferred, max)) */
+  --fs-xxs: clamp(12px, 1vw, 14px);
+  --fs-xs: clamp(13px, 1.2vw, 15px);
+  --fs-sm: clamp(14px, 1.5vw, 16px);
+  --fs-md: clamp(16px, 2vw, 18px);
+  --fs-lg: clamp(20px, 2.5vw, 22px);
+  --fs-xl: clamp(24px, 3vw, 28px);
+
+  /* Spacing scale (responsive clamped values) */
+  --space-1: clamp(4px, 0.5vw, 6px);
+  --space-2: clamp(8px, 1vw, 12px);
+  --space-3: clamp(12px, 1.5vw, 16px);
+  --space-4: clamp(16px, 2vw, 20px);
+  --space-5: clamp(24px, 3vw, 32px);
+  --space-6: clamp(32px, 4vw, 40px);
+
+  /* Container padding tuned for small screens */
+  --container-padding: clamp(12px, 4vw, 24px);
+
+  /* Card adjustments that are friendly for mobile UIs */
+  --card-radius: 10px;
+  --card-padding: var(--space-3);
+}
+
+/* Small-screen overrides for very small devices */
+@media (max-width: 480px) {
+  :root {
+    --card-radius: 8px;
+    --card-padding: 12px;
+    --shadow-1: 0 4px 12px rgba(3,6,10,0.5);
+    --accent-strong: rgba(88,214,141,0.14);
+  }
+}
+
+/* A tiny set of helper utilities that components can use for consistent mobile layout
+   These are optional convenience classes; project styles can import and use the tokens above
+   directly if preferred. */
+.card {
+  background: var(--surface);
+  color: var(--color-text);
+  border-radius: var(--card-radius);
+  padding: var(--card-padding);
+  box-shadow: var(--shadow-1);
+}
+
+.container-responsive {
+  padding-left: var(--container-padding);
+  padding-right: var(--container-padding);
+}
+
 /* end */
