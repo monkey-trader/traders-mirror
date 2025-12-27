@@ -634,6 +634,21 @@
   grid-template-columns: 1fr !important;
 }
 
+/* When the grid is compact, stack left pane content and hide the right pane for mobile */
+.grid.gridCompact .rightPane {
+  display: none;
+}
+
+.grid.gridCompact .leftPane {
+  width: 100%;
+  min-width: 0;
+}
+
+/* ensure listAndDetailWrap behaves when compact: left pane should be full width */
+.grid.gridCompact .listAndDetailWrap {
+  display: block;
+}
+
 .slBeBtn {
   background: linear-gradient(90deg, #fef9c3 60%, #fef08a 100%);
   color: #665c00;
