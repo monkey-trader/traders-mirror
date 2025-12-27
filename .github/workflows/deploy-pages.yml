@@ -64,7 +64,7 @@ jobs:
 
       - name: Prepare deploy directory
         run: |
-          set -e
+          set -euo pipefail
           export GIT_EMAIL="41898282+github-actions[bot]@users.noreply.github.com"
           export GIT_NAME="github-actions[bot]"
           git config --global user.email "$GIT_EMAIL"
@@ -103,8 +103,22 @@ jobs:
             exit 0
           fi
 
+          # Commit changes (if any)
           git commit -m "chore(pages): deploy ${{ github.event.inputs.source_branch || github.ref }} (${{ github.sha }})" || echo "Nothing to commit"
-          git push origin gh-pages --force
+
+          # Try a normal push first; only force if user explicitly requested it
+          if [ "${{ github.event.inputs.force }}" = 'true' ]; then
+            echo "Force push requested — pushing with --force"
+            git push origin gh-pages --force
+          else
+            echo "Attempting non-forced push to gh-pages"
+            if git push origin gh-pages; then
+              echo "Successfully pushed gh-pages"
+            else
+              echo "Push rejected (non-fast-forward). To override and force a deploy, re-run this workflow with the 'force' input set to true."
+              exit 1
+            fi
+          fi
 
       - name: Finish
         run: echo "Deployment finished"
