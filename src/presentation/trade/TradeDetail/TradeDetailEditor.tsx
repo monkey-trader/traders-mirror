@@ -12,9 +12,10 @@ export type TradeDetailEditorProps = {
   onChange?: (t: TradeInput) => void
   onSave?: (t: TradeInput) => Promise<void>
   onDelete?: (id: string) => Promise<void>
+  compactView?: boolean
 }
 
-export function TradeDetailEditor({ trade, onChange, onSave, onDelete }: TradeDetailEditorProps) {
+export function TradeDetailEditor({ trade, onChange, onSave, onDelete, compactView = false }: TradeDetailEditorProps) {
   const [local, setLocal] = useState<TradeInput | null>(trade)
   const [errors, setErrors] = useState<Record<string, string | undefined>>({})
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'failed'>('idle')
@@ -110,7 +111,7 @@ export function TradeDetailEditor({ trade, onChange, onSave, onDelete }: TradeDe
   const saveDisabled = status === 'saving' || !isDirty || hasValidationErrors || !onSave
 
   return (
-    <div className={styles.editor} aria-live="polite">
+    <div className={`${styles.editor} ${compactView ? styles.compact : ''}`} aria-live="polite">
       <div className={styles.header}>
         <div className={styles.title}>{local.symbol} <span className={styles.sub}>#{local.id}</span></div>
         <div className={styles.saveStatus} aria-hidden={status === 'idle'}>
@@ -183,7 +184,7 @@ export function TradeDetailEditor({ trade, onChange, onSave, onDelete }: TradeDe
             disabled={saveDisabled}
             aria-disabled={saveDisabled}
             aria-busy={status === 'saving'}
-            className={status === 'saving' ? styles.savingPulse : ''}
+            className={`${styles.saveBtn} ${status === 'saving' ? styles.savingPulse : ''}`.trim()}
           >
             {status === 'saving' ? 'Saving…' : status === 'saved' ? 'Saved' : 'Save now'}
           </Button>

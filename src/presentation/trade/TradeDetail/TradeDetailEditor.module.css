@@ -176,3 +176,12 @@
   outline: 3px solid rgba(124,92,255,0.15);
   outline-offset: 2px;
 }
+
+/* Compact modifier applied by TradeDetailEditor when compactView=true */
+.compact {
+  padding: var(--space-3, 10px);
+}
+
+.compact .form { grid-template-columns: 1fr; }
+.compact .saveBtn { width: 100%; justify-self: stretch; }
+.compact .inlineDelete { margin-left: 0; margin-top: 8px; }
