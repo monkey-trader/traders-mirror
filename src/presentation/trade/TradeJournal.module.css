@@ -950,3 +950,55 @@
 .leftPane > * {
   transition: max-height 220ms ease, opacity 180ms ease;
 }
+
+/* Advanced section (collapsed by default) */
+.advanced {
+  display: none;
+  overflow: hidden;
+  transition: max-height 220ms ease, opacity 180ms ease;
+  max-height: 0;
+  opacity: 0;
+}
+.advancedOpen {
+  display: block;
+  max-height: 800px; /* large enough to show children */
+  opacity: 1;
+}
+
+.advancedToggle {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.04);
+  color: var(--muted);
+  padding: 6px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+/* Mobile-specific compact layout for New Trade form */
+@media (max-width: 480px) {
+  .newTradeWrapper {
+    padding: 8px 6px;
+    gap: 8px;
+  }
+
+  .newTradeHeader { padding: 6px 0; }
+
+  .newTradeGrid { grid-template-columns: 1fr; gap: 8px; }
+  .newTradeField { gap: 6px; }
+
+  /* Make the New Trade card a scrollable panel so the rest of the page doesn't need long scrolling */
+  .newTradeWrapper {
+    max-height: calc(100vh - 120px); /* leave space for header and some margin */
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Make inputs and selects larger for touch */
+  input, select, textarea, .input { padding: 10px 12px; font-size: 15px; }
+
+  /* Compact actions layout */
+  .newTradeWrapper .actions { gap: 8px; justify-content: space-between; }
+  .newTradeWrapper .actions button { flex: 1 1 auto; }
+}
+

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Card } from '@/presentation/shared/components/Card/Card'
 import { Button } from '@/presentation/shared/components/Button/Button'
 import { Input } from '@/presentation/shared/components/Input/Input'
@@ -53,11 +53,23 @@ export function NewTradeForm({
   onReset,
   setMarketFilter
 }: NewTradeFormProps) {
+  const [showAdvanced, setShowAdvanced] = useState(false)
+
   return (
     <Card>
       <div className={styles.newTradeWrapper}>
         <div className={styles.newTradeHeader}>
-          <span style={{ fontWeight: 700, color: 'var(--text)' }}>New Trade</span>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+            <span style={{ fontWeight: 700, color: 'var(--text)' }}>New Trade</span>
+            <button
+              type="button"
+              className={styles.advancedToggle}
+              aria-expanded={showAdvanced}
+              onClick={() => setShowAdvanced(s => !s)}
+            >
+              {showAdvanced ? 'Hide advanced' : 'Show advanced'}
+            </button>
+          </div>
         </div>
 
         {debugUiEnabled && (lastStatus || Object.keys(formErrors).length > 0) && (
@@ -200,104 +212,100 @@ export function NewTradeForm({
                 aria-describedby={formErrors.sl && (touched.sl || formSubmitted) ? 'sl-error' : undefined}
               />
               {(formErrors.sl && (touched.sl || formSubmitted)) && (
-                <div id="sl-error" className={styles.fieldError}>
-                  {formErrors.sl}
-                </div>
+                <div id="sl-error" className={styles.fieldError}>{formErrors.sl}</div>
               )}
             </div>
 
-            <div className={styles.newTradeField}>
-              <Input
-                id="tp1"
-                label="TP1"
-                type="number"
-                value={typeof form.tp1 === 'number' ? String(form.tp1) : ''}
-                onChange={(e) => onChangeForm({ tp1: e.target.value === '' ? undefined : Number(e.target.value) })}
-                onBlur={() => onBlurField('tp1')}
-                hasError={Boolean(formErrors.tp1 && (touched.tp1 || formSubmitted))}
-                aria-describedby={formErrors.tp1 && (touched.tp1 || formSubmitted) ? 'tp1-error' : undefined}
-              />
-              {(formErrors.tp1 && (touched.tp1 || formSubmitted)) && (
-                <div id="tp1-error" className={styles.fieldError}>
-                  {formErrors.tp1}
-                </div>
-              )}
+            {/* Advanced section: collapsed by default on mobile to save vertical space */}
+            <div className={`${styles.advanced} ${showAdvanced ? styles.advancedOpen : ''}`} aria-hidden={!showAdvanced}>
+              <div className={styles.newTradeField}>
+                <Input
+                  id="tp1"
+                  label="TP1"
+                  type="number"
+                  value={typeof form.tp1 === 'number' ? String(form.tp1) : ''}
+                  onChange={(e) => onChangeForm({ tp1: e.target.value === '' ? undefined : Number(e.target.value) })}
+                  onBlur={() => onBlurField('tp1')}
+                  hasError={Boolean(formErrors.tp1 && (touched.tp1 || formSubmitted))}
+                  aria-describedby={formErrors.tp1 && (touched.tp1 || formSubmitted) ? 'tp1-error' : undefined}
+                />
+                {(formErrors.tp1 && (touched.tp1 || formSubmitted)) && (
+                  <div id="tp1-error" className={styles.fieldError}>{formErrors.tp1}</div>
+                )}
+              </div>
+
+              <div className={styles.newTradeField}>
+                <Input
+                  id="tp2"
+                  label="TP2"
+                  type="number"
+                  value={typeof form.tp2 === 'number' ? String(form.tp2) : ''}
+                  onChange={(e) => onChangeForm({ tp2: e.target.value === '' ? undefined : Number(e.target.value) })}
+                  onBlur={() => onBlurField('tp2')}
+                  hasError={Boolean(formErrors.tp2 && (touched.tp2 || formSubmitted))}
+                  aria-describedby={formErrors.tp2 && (touched.tp2 || formSubmitted) ? 'tp2-error' : undefined}
+                />
+                {(formErrors.tp2 && (touched.tp2 || formSubmitted)) && (
+                  <div id="tp2-error" className={styles.fieldError}>{formErrors.tp2}</div>
+                )}
+              </div>
+
+              <div className={styles.newTradeField}>
+                <Input
+                  id="tp3"
+                  label="TP3"
+                  type="number"
+                  value={typeof form.tp3 === 'number' ? String(form.tp3) : ''}
+                  onChange={(e) => onChangeForm({ tp3: e.target.value === '' ? undefined : Number(e.target.value) })}
+                  onBlur={() => onBlurField('tp3')}
+                  hasError={Boolean(formErrors.tp3 && (touched.tp3 || formSubmitted))}
+                  aria-describedby={formErrors.tp3 && (touched.tp3 || formSubmitted) ? 'tp3-error' : undefined}
+                />
+                {(formErrors.tp3 && (touched.tp3 || formSubmitted)) && (
+                  <div id="tp3-error" className={styles.fieldError}>{formErrors.tp3}</div>
+                )}
+              </div>
+
+              <div className={`${styles.newTradeField} ${styles.full}`}>
+                <Input
+                  label="Notes"
+                  value={form.notes}
+                  onChange={(e) => onChangeForm({ notes: e.target.value })}
+                />
+              </div>
+
+              <div className={styles.newTradeField}>
+                <StatusSelect
+                  label="Status"
+                  value={form.status}
+                  onChange={(v) => { onChangeForm({ status: v }); onBlurField('status') }}
+                  onBlur={() => onBlurField('status')}
+                  hasError={Boolean(formErrors.status && (touched.status || formSubmitted))}
+                  ariaDescribedBy={formErrors.status && (touched.status || formSubmitted) ? 'status-error' : undefined}
+                />
+                {(formErrors.status && (touched.status || formSubmitted)) && (
+                  <div id="status-error" className={styles.fieldError}>{formErrors.status}</div>
+                )}
+              </div>
+
+              <div className={styles.newTradeField}>
+                <SideSelect
+                  label="Side"
+                  value={form.side}
+                  onChange={(v) => onChangeForm({ side: v })}
+                  ariaLabel="New trade side"
+                  showBadge={false}
+                  colored
+                  onBlur={() => onBlurField('side')}
+                  hasError={Boolean(formErrors.side && (touched.side || formSubmitted))}
+                  ariaDescribedBy={formErrors.side && (touched.side || formSubmitted) ? 'side-error' : undefined}
+                />
+                {(formErrors.side && (touched.side || formSubmitted)) && (
+                  <div id="side-error" className={styles.fieldError}>{formErrors.side}</div>
+                )}
+              </div>
             </div>
 
-            <div className={styles.newTradeField}>
-              <Input
-                id="tp2"
-                label="TP2"
-                type="number"
-                value={typeof form.tp2 === 'number' ? String(form.tp2) : ''}
-                onChange={(e) => onChangeForm({ tp2: e.target.value === '' ? undefined : Number(e.target.value) })}
-                onBlur={() => onBlurField('tp2')}
-                hasError={Boolean(formErrors.tp2 && (touched.tp2 || formSubmitted))}
-                aria-describedby={formErrors.tp2 && (touched.tp2 || formSubmitted) ? 'tp2-error' : undefined}
-              />
-              {(formErrors.tp2 && (touched.tp2 || formSubmitted)) && (
-                <div id="tp2-error" className={styles.fieldError}>
-                  {formErrors.tp2}
-                </div>
-              )}
-            </div>
-
-            <div className={styles.newTradeField}>
-              <Input
-                id="tp3"
-                label="TP3"
-                type="number"
-                value={typeof form.tp3 === 'number' ? String(form.tp3) : ''}
-                onChange={(e) => onChangeForm({ tp3: e.target.value === '' ? undefined : Number(e.target.value) })}
-                onBlur={() => onBlurField('tp3')}
-                hasError={Boolean(formErrors.tp3 && (touched.tp3 || formSubmitted))}
-                aria-describedby={formErrors.tp3 && (touched.tp3 || formSubmitted) ? 'tp3-error' : undefined}
-              />
-              {(formErrors.tp3 && (touched.tp3 || formSubmitted)) && (
-                <div id="tp3-error" className={styles.fieldError}>
-                  {formErrors.tp3}
-                </div>
-              )}
-            </div>
-
-            <div className={`${styles.newTradeField} ${styles.full}`}>
-              <Input
-                label="Notes"
-                value={form.notes}
-                onChange={(e) => onChangeForm({ notes: e.target.value })}
-              />
-            </div>
-
-            <div className={styles.newTradeField}>
-              <StatusSelect
-                label="Status"
-                value={form.status}
-                onChange={(v) => { onChangeForm({ status: v }); onBlurField('status') }}
-                onBlur={() => onBlurField('status')}
-                hasError={Boolean(formErrors.status && (touched.status || formSubmitted))}
-                ariaDescribedBy={formErrors.status && (touched.status || formSubmitted) ? 'status-error' : undefined}
-              />
-              {(formErrors.status && (touched.status || formSubmitted)) && (
-                <div id="status-error" className={styles.fieldError}>{formErrors.status}</div>
-              )}
-            </div>
-
-            <div className={styles.newTradeField}>
-              <SideSelect
-                label="Side"
-                value={form.side}
-                onChange={(v) => onChangeForm({ side: v })}
-                ariaLabel="New trade side"
-                showBadge={false}
-                colored
-                onBlur={() => onBlurField('side')}
-                hasError={Boolean(formErrors.side && (touched.side || formSubmitted))}
-                ariaDescribedBy={formErrors.side && (touched.side || formSubmitted) ? 'side-error' : undefined}
-              />
-              {(formErrors.side && (touched.side || formSubmitted)) && (
-                <div id="side-error" className={styles.fieldError}>{formErrors.side}</div>
-              )}
-            </div>
           </div>
 
           <div className={styles.actions} style={{ marginTop: 12 }}>
