@@ -92,6 +92,8 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
 
   // selected trade id for left-right layout
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  // compact editor open state (mobile UX): default closed, open on selection
+  const [compactEditorOpen, setCompactEditorOpen] = useState<boolean>(false)
 
   // active tab for the Trades card (list | analysis)
   const [tradesCardTab, setTradesCardTab] = useState<'list' | 'analysis'>('list')
@@ -601,88 +603,89 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
                      </div>
 
                      <div className={styles.listAndDetailWrap}>
--                       <div className={styles.leftPane}>
--                         <TradeList
--                           trades={trades.map((t) => ({
--                             id: t.id,
--                             symbol: t.symbol,
--                             entryDate: t.entryDate,
--                             size: t.size,
--                             price: t.price,
--                             side: t.side,
--                             status: t.status,
--                             notes: t.notes,
--                           }))}
--                           selectedId={selectedId}
--                           onSelect={(id) => setSelectedId(id)}
--                          compactView={compactGrid}
--                         />
--                       </div>
--
--                       <div className={styles.rightPane}>
--                         <TradeDetailEditor
--                           trade={selectedTrade}
--                           onChange={handleEditorChange}
--                           onSave={handleEditorSave}
--                           onDelete={(id) => handleDeleteFromEditor(id)}
--                         />
--                       </div>
-+                       {compactGrid ? (
-+                         <div className={styles.leftPane}>
-+                           <TradeList
-+                             trades={trades.map((t) => ({
-+                               id: t.id,
-+                               symbol: t.symbol,
-+                               entryDate: t.entryDate,
-+                               size: t.size,
-+                               price: t.price,
-+                               side: t.side,
-+                               status: t.status,
-+                               notes: t.notes,
-+                             }))}
-+                             selectedId={selectedId}
-+                             onSelect={(id) => setSelectedId(id)}
-+                             compactView={compactGrid}
-+                           />
-+                           <div style={{ height: 12 }} />
-+                           <TradeDetailEditor
-+                             trade={selectedTrade}
-+                             onChange={handleEditorChange}
-+                             onSave={handleEditorSave}
-+                             onDelete={(id) => handleDeleteFromEditor(id)}
-+                             compactView={compactGrid}
-+                           />
-+                         </div>
-+                       ) : (
-+                         <>
-+                           <div className={styles.leftPane}>
-+                             <TradeList
-+                               trades={trades.map((t) => ({
-+                                 id: t.id,
-+                                 symbol: t.symbol,
-+                                 entryDate: t.entryDate,
-+                                 size: t.size,
-+                                 price: t.price,
-+                                 side: t.side,
-+                                 status: t.status,
-+                                 notes: t.notes,
-+                               }))}
-+                               selectedId={selectedId}
-+                               onSelect={(id) => setSelectedId(id)}
-+                               compactView={compactGrid}
-+                             />
-+                           </div>
-+
-+                           <div className={styles.rightPane}>
-+                             <TradeDetailEditor
-+                               trade={selectedTrade}
-+                               onChange={handleEditorChange}
-+                               onSave={handleEditorSave}
-+                               onDelete={(id) => handleDeleteFromEditor(id)}
-+                             />
-+                           </div>
-+                         </>
-+                       )}
+                       {/* Correct conditional rendering: when compactGrid is true stack list and editor in leftPane; otherwise keep leftPane + rightPane */}
+                       {compactGrid ? (
+                         <div className={styles.leftPane}>
+                           <TradeList
+                             trades={trades.map((t) => ({
+                               id: t.id,
+                               symbol: t.symbol,
+                               entryDate: t.entryDate,
+                               size: t.size,
+                               price: t.price,
+                               side: t.side,
+                               status: t.status,
+                               notes: t.notes,
+                             }))}
+                             selectedId={selectedId}
+                             onSelect={(id) => setSelectedId(id)}
+                             compactView={compactGrid}
+                           />
+                           <div style={{ height: 12 }} />
+                           {selectedTrade ? (
+                             compactEditorOpen ? (
+                               <div>
+                                 <div className={styles.compactControls}>
+                                   <Button variant="ghost" onClick={() => setCompactEditorOpen(false)}>Hide details</Button>
+                                 </div>
+                                 <TradeDetailEditor
+                                   trade={selectedTrade}
+                                   onChange={handleEditorChange}
+                                   onSave={handleEditorSave}
+                                   onDelete={(id) => handleDeleteFromEditor(id)}
+                                   compactView={compactGrid}
+                                 />
+                               </div>
+                             ) : (
+                               <div className={styles.compactSummary} role="region" aria-live="polite">
+                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                   <div>
+                                     <div style={{ fontWeight: 700 }}>{selectedTrade.symbol}</div>
+                                     <div style={{ color: 'var(--muted)', fontSize: 13 }}>{new Date(selectedTrade.entryDate).toLocaleString()}</div>
+                                   </div>
+                                   <div>
+                                     <Button variant="primary" onClick={() => setCompactEditorOpen(true)}>Show details</Button>
+                                   </div>
+                                 </div>
+                               </div>
+                             )
+                           ) : (
+                             <div className={styles.compactPlaceholder} role="region" aria-live="polite">
+                               <div style={{ fontWeight: 700, marginBottom: 6 }}>Keine Auswahl</div>
+                               <div style={{ color: 'var(--muted)' }}>Wähle einen Trade in der Liste, um die Details zu bearbeiten.</div>
+                             </div>
+                           )}
+                         </div>
+                       ) : (
+                         <>
+                           <div className={styles.leftPane}>
+                             <TradeList
+                               trades={trades.map((t) => ({
+                                 id: t.id,
+                                 symbol: t.symbol,
+                                 entryDate: t.entryDate,
+                                 size: t.size,
+                                 price: t.price,
+                                 side: t.side,
+                                 status: t.status,
+                                 notes: t.notes,
+                               }))}
+                               selectedId={selectedId}
+                               onSelect={(id) => setSelectedId(id)}
+                               compactView={compactGrid}
+                             />
+                           </div>
+
+                           <div className={styles.rightPane}>
+                             <TradeDetailEditor
+                               trade={selectedTrade}
+                               onChange={handleEditorChange}
+                               onSave={handleEditorSave}
+                               onDelete={(id) => handleDeleteFromEditor(id)}
+                             />
+                           </div>
+                         </>
+                       )}
                      </div>
                    </>
                  ),

@@ -924,3 +924,29 @@
   box-shadow: 0 6px 20px rgba(34,193,195,0.06);
   transform: translateY(-1px);
 }
+
+/* Compact-mode helpers for stacked list+detail */
+.compactSummary {
+  background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
+  border-radius: 8px;
+  padding: 10px;
+  box-shadow: 0 6px 18px rgba(2,8,23,0.35);
+}
+
+.compactControls {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
+
+.compactPlaceholder {
+  padding: 12px;
+  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
+  color: var(--muted);
+}
+
+/* subtle transition for editor area when toggling */
+.leftPane > * {
+  transition: max-height 220ms ease, opacity 180ms ease;
+}
