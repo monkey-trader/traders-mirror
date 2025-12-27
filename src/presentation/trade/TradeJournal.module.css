@@ -81,6 +81,66 @@
   .rightPane { order: 2 }
 }
 
+/* Small and extra-small screens tweaks */
+@media (max-width: 768px) {
+  .listAndDetailWrap {
+    gap: var(--space-3, 12px);
+  }
+
+  .grid {
+    grid-template-columns: 1fr; /* stack columns for medium/small screens */
+  }
+
+  .left, .right, .leftPane, .rightPane {
+    padding: var(--space-3, 12px);
+    border-radius: calc(var(--card-radius, 10px));
+  }
+
+  /* Make the table area scroll horizontally instead of forcing wide min-width */
+  .table {
+    min-width: 0; /* allow table to shrink inside a scroll container */
+  }
+  .tableWrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Make controls and buttons more touch-friendly */
+  .controls, .filterPills, .actions {
+    gap: var(--space-2, 8px);
+  }
+
+  .title { font-size: var(--fs-md, 16px); }
+  .table th, .table td { font-size: var(--fs-sm, 14px); }
+}
+
+/* Very small screens (phones) - convert the list rows into stacked cards for better readability */
+@media (max-width: 420px) {
+  .positionsList {
+    max-height: 50vh;
+  }
+
+  /* Hide table header and render rows as card-like blocks via CSS only fallback when possible */
+  .table thead { display: none; }
+  .table, .table tbody, .table tr, .table td { display: block; width: 100%; }
+
+  .table tr { margin: 0 0 var(--space-3,12px); border-radius: var(--card-radius, 8px); background: var(--card-bg, rgba(15,23,32,0.6)); box-shadow: var(--shadow-1, 0 6px 18px rgba(3,6,10,0.6)); padding: var(--space-3, 12px); }
+
+  .table td { padding: 6px 0; border: none; display: flex; justify-content: space-between; align-items: center; }
+
+  .symbolCell { gap: 10px; }
+  .symbol { padding: 6px 8px; font-size: var(--fs-xs, 13px); }
+
+  .secondaryDetailsRow { display: block; }
+
+  /* Action button full width in card mode */
+  .actions { justify-content: stretch; }
+  .actions button { width: 100%; }
+
+  /* Ensure the detail pane follows the list (stacked) */
+  .leftPane, .rightPane { min-height: auto; }
+}
+
 .grid {
   display: grid;
   /* left column flexible but constrained, right column uses remaining space */
@@ -574,6 +634,21 @@
   grid-template-columns: 1fr !important;
 }
 
+/* When the grid is compact, stack left pane content and hide the right pane for mobile */
+.grid.gridCompact .rightPane {
+  display: none;
+}
+
+.grid.gridCompact .leftPane {
+  width: 100%;
+  min-width: 0;
+}
+
+/* ensure listAndDetailWrap behaves when compact: left pane should be full width */
+.grid.gridCompact .listAndDetailWrap {
+  display: block;
+}
+
 .slBeBtn {
   background: linear-gradient(90deg, #fef9c3 60%, #fef08a 100%);
   color: #665c00;
@@ -848,4 +923,30 @@
   color: var(--text);
   box-shadow: 0 6px 20px rgba(34,193,195,0.06);
   transform: translateY(-1px);
+}
+
+/* Compact-mode helpers for stacked list+detail */
+.compactSummary {
+  background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
+  border-radius: 8px;
+  padding: 10px;
+  box-shadow: 0 6px 18px rgba(2,8,23,0.35);
+}
+
+.compactControls {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
+
+.compactPlaceholder {
+  padding: 12px;
+  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
+  color: var(--muted);
+}
+
+/* subtle transition for editor area when toggling */
+.leftPane > * {
+  transition: max-height 220ms ease, opacity 180ms ease;
 }

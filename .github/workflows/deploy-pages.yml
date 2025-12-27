@@ -1,0 +1,145 @@
+name: Deploy Pages (manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      source:
+        description: 'Source artifact to deploy (artifact name or "pages")'
+        required: false
+        default: 'pages'
+      source_branch:
+        description: 'Repository branch to deploy (used when building from source)'
+        required: false
+        default: 'main'
+      use_artifact:
+        description: 'Use previously uploaded artifact if available (true|false)'
+        required: false
+        default: 'true'
+      force:
+        description: 'Force deploy even if no changes (true|false)'
+        required: false
+        default: 'false'
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  deploy:
+    name: Deploy to GitHub Pages (manual approval)
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Ensure source branch is available
+        run: |
+          set -e
+          SOURCE_BRANCH="${{ github.event.inputs.source_branch || 'main' }}"
+          echo "Requested source branch: $SOURCE_BRANCH"
+          # fetch remote branch and checkout it so we build from the selected branch if needed
+          git fetch origin "$SOURCE_BRANCH" || true
+          if git rev-parse --verify origin/$SOURCE_BRANCH >/dev/null 2>&1; then
+            git checkout -B deploy-source origin/$SOURCE_BRANCH
+          else
+            echo "Branch $SOURCE_BRANCH not found remotely — staying on current ref"
+          fi
+
+      - name: Download pages artifact (optional)
+        if: ${{ github.event.inputs.use_artifact == 'true' }}
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ github.event.inputs.source }}
+          path: ./artifact_build
+        continue-on-error: true
+
+      - name: Prepare deploy directory
+        run: |
+          set -euo pipefail
+          export GIT_EMAIL="41898282+github-actions[bot]@users.noreply.github.com"
+          export GIT_NAME="github-actions[bot]"
+          git config --global user.email "$GIT_EMAIL"
+          git config --global user.name "$GIT_NAME"
+
+          TMPDIR=$(mktemp -d)
+          REPO_URL="https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
+
+          echo "Cloning gh-pages branch into $TMPDIR"
+          git clone --branch gh-pages --single-branch "$REPO_URL" "$TMPDIR" || (
+            git clone "$REPO_URL" "$TMPDIR"
+            cd "$TMPDIR"
+            git checkout --orphan gh-pages
+          )
+
+          # clear old content
+          rm -rf "$TMPDIR"/*
+
+          # prefer artifact contents if present
+          if [ -d ./artifact_build ] && [ "$(ls -A ./artifact_build)" ]; then
+            echo "Using downloaded artifact contents for deployment"
+            cp -r ./artifact_build/* "$TMPDIR"/
+          else
+            echo "No suitable artifact found or artifact disabled — building from source branch"
+            # At this point the repository is checked out to the requested branch (deploy-source) if it existed
+            npm ci || npm install
+            npm run build
+            cp -r ./build/* "$TMPDIR"/
+          fi
+
+          cd "$TMPDIR"
+          git add --all
+
+          if [ "${{ github.event.inputs.force }}" != 'true' ] && git diff --staged --quiet; then
+            echo "No changes to deploy"
+            # compute a likely preview URL and show it to the operator
+            OWNER="${GITHUB_REPOSITORY%%/*}"
+            REPO_NAME="${GITHUB_REPOSITORY##*/}"
+            PREVIEW_URL="https://${OWNER}.github.io/${REPO_NAME}/"
+            echo "Preview URL: ${PREVIEW_URL}"
+            echo "If you still want to force a deploy, re-run this workflow with 'force=true' or use the gh CLI example below."
+            echo "gh workflow run deploy-pages.yml -f source=${{ github.event.inputs.source }} -f source_branch=${{ github.event.inputs.source_branch }} -f use_artifact=${{ github.event.inputs.use_artifact }} -f force=true"
+            exit 0
+          fi
+
+          # Commit changes (if any)
+          git commit -m "chore(pages): deploy ${{ github.event.inputs.source_branch || github.ref }} (${{ github.sha }})" || echo "Nothing to commit"
+
+          # Try a normal push first; only force if user explicitly requested it
+          if [ "${{ github.event.inputs.force }}" = 'true' ]; then
+            echo "Force push requested — pushing with --force"
+            git push origin gh-pages --force
+            # echo preview URL after force push as well
+            OWNER="${GITHUB_REPOSITORY%%/*}"
+            REPO_NAME="${GITHUB_REPOSITORY##*/}"
+            PREVIEW_URL="https://${OWNER}.github.io/${REPO_NAME}/"
+            echo "Deployed (force) — Preview URL: ${PREVIEW_URL}"
+          else
+            echo "Attempting non-forced push to gh-pages"
+            if git push origin gh-pages; then
+              echo "Successfully pushed gh-pages"
+              # show preview url and guidance to operator
+              OWNER="${GITHUB_REPOSITORY%%/*}"
+              REPO_NAME="${GITHUB_REPOSITORY##*/}"
+              PREVIEW_URL="https://${OWNER}.github.io/${REPO_NAME}/"
+              echo "Preview URL: ${PREVIEW_URL}"
+              echo "If this deploy should override history, re-run with:"
+              echo "gh workflow run deploy-pages.yml -f source=${{ github.event.inputs.source }} -f source_branch=${{ github.event.inputs.source_branch }} -f use_artifact=${{ github.event.inputs.use_artifact }} -f force=true"
+            else
+              echo "Push rejected (non-fast-forward). To override and force a deploy, re-run this workflow with the 'force' input set to true."
+              echo "You can re-run via the UI or with gh CLI, e.g.:"
+              echo "gh workflow run deploy-pages.yml -f source=${{ github.event.inputs.source }} -f source_branch=${{ github.event.inputs.source_branch }} -f use_artifact=${{ github.event.inputs.use_artifact }} -f force=true"
+              exit 1
+            fi
+          fi
+
+      - name: Finish
+        run: echo "Deployment finished"

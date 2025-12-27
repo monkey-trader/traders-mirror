@@ -49,3 +49,13 @@
   transform: translateY(-2px) scale(1.01);
   box-shadow: 0 14px 36px rgba(196,29,29,0.45);
 }
+
+.fullWidth {
+  width: 100%;
+  display: inline-flex;
+}
+
+@media (max-width: 480px) {
+  .button { padding: 12px 14px; font-size: var(--fs-sm, 15px); }
+  .button, .primary, .secondary, .danger, .ghost { width: 100%; }
+}

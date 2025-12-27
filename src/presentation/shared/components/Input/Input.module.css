@@ -40,3 +40,11 @@
 input[type="number"] {
   min-width: 0;
 }
+
+@media (max-width: 480px) {
+  .input { padding: 12px; font-size: var(--fs-sm, 15px); }
+  .label { font-size: var(--fs-xs, 13px); }
+}
+
+/* compact input variant for tight lists */
+.inputCompact { padding: 8px; font-size: var(--fs-xs, 13px); }

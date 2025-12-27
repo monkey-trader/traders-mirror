@@ -106,3 +106,18 @@
   color: var(--muted);
   margin-top: 4px;
 }
+
+@media (max-width: 480px) {
+  .card { flex-direction: column; align-items: stretch; padding: 10px; }
+  .left { width: 100%; display: flex; justify-content: space-between; align-items: center; }
+  .right { width: 100%; display: flex; justify-content: space-between; margin-top: 8px; }
+  .actions { width: 100%; gap: 8px; }
+  .actionBtn, .closeBtn { flex: 1 1 0; width: 100%; }
+  .symbol { padding: 6px 8px; font-size: var(--fs-sm, 14px); }
+  .meta { font-size: var(--fs-xs, 13px); }
+}
+
+/* compact variant */
+.compact { padding: 6px; }
+
+/* end additions */

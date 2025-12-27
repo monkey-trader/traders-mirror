@@ -27,5 +27,12 @@ describe('TradeList', () => {
     expect(longBadge?.className).toMatch(/sideLong/)
     expect(shortBadge?.className).toMatch(/sideShort/)
   })
-})
 
+  it('renders PositionCard components in compactView', () => {
+    render(<TradeList trades={trades} onSelect={() => {}} compactView />)
+
+    // PositionCard renders symbol text
+    expect(screen.getByText('BTCUSD')).toBeDefined()
+    expect(screen.getByText('ETHUSD')).toBeDefined()
+  })
+})

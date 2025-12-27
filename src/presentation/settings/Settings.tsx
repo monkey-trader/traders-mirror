@@ -161,9 +161,9 @@ function StorageControls() {
   )
 }
 
-export function Settings() {
+export function Settings({ compactView }: { compactView?: boolean }) {
   return (
-    <div className={styles.container}>
+    <div className={compactView ? `${styles.container} ${styles.compact}` : styles.container} data-compact={compactView}>
       <h2>Settings</h2>
 
       <section className={styles.section}>

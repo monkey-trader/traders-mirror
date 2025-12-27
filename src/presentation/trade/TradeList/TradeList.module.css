@@ -154,3 +154,22 @@
   color: #60a5fa;
   border: 1px solid rgba(96,165,250,0.08);
 }
+
+@media (max-width: 720px) {
+  .list { padding: var(--space-2, 8px); max-height: 50vh; }
+  .item { padding: 8px; gap: 8px; }
+  .rowRight { gap: 6px; }
+  .symbol { font-size: var(--fs-sm, 14px); }
+  .meta { font-size: var(--fs-xs, 13px); }
+}
+
+@media (max-width: 420px) {
+  .item { flex-direction: column; align-items: flex-start; padding: 10px; }
+  .rowRight { width: 100%; display: flex; justify-content: space-between; }
+  .side, .status { width: auto; height: auto; padding: 6px 8px; }
+  .symbol { font-size: var(--fs-sm, 14px); }
+  .meta { font-size: var(--fs-xs, 13px); }
+}
+
+/* compact list modifier that pages can add when they want tighter spacing */
+.compact .item { padding: 6px; }
