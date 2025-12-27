@@ -882,36 +882,3 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
     </>
      );
     }
-
-    // Mobile modal for New Trade
-    useEffect(() => {
-      // lock body scroll when mobile modal is open on mobile
-      if (typeof window === 'undefined') return
-      const prev = document.body.style.overflow
-      const handleKey = (ev: KeyboardEvent) => {
-        if (ev.key === 'Escape') setNewTradeModalOpen(false)
-      }
-
-      // when sheet opens: lock scroll, focus first input (symbol), and listen for Escape
-      if (isMobile && newTradeModalOpen) {
-        document.body.style.overflow = 'hidden'
-        document.addEventListener('keydown', handleKey)
-        const timer = window.setTimeout(() => {
-          try {
-            const el = document.getElementById('symbol') as HTMLElement | null
-            el?.focus()
-          } catch (_e) {
-            // ignore in test env
-          }
-        }, 60)
-        return () => {
-          document.body.style.overflow = prev || ''
-          document.removeEventListener('keydown', handleKey)
-          window.clearTimeout(timer)
-        }
-      }
-
-      // otherwise restore
-      document.body.style.overflow = prev || ''
-      return () => { document.body.style.overflow = prev || '' }
-    }, [isMobile, newTradeModalOpen])
