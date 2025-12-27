@@ -100,6 +100,13 @@ jobs:
 
           if [ "${{ github.event.inputs.force }}" != 'true' ] && git diff --staged --quiet; then
             echo "No changes to deploy"
+            # compute a likely preview URL and show it to the operator
+            OWNER="${GITHUB_REPOSITORY%%/*}"
+            REPO_NAME="${GITHUB_REPOSITORY##*/}"
+            PREVIEW_URL="https://${OWNER}.github.io/${REPO_NAME}/"
+            echo "Preview URL: ${PREVIEW_URL}"
+            echo "If you still want to force a deploy, re-run this workflow with 'force=true' or use the gh CLI example below."
+            echo "gh workflow run deploy-pages.yml -f source=${{ github.event.inputs.source }} -f source_branch=${{ github.event.inputs.source_branch }} -f use_artifact=${{ github.event.inputs.use_artifact }} -f force=true"
             exit 0
           fi
 
@@ -110,16 +117,29 @@ jobs:
           if [ "${{ github.event.inputs.force }}" = 'true' ]; then
             echo "Force push requested — pushing with --force"
             git push origin gh-pages --force
+            # echo preview URL after force push as well
+            OWNER="${GITHUB_REPOSITORY%%/*}"
+            REPO_NAME="${GITHUB_REPOSITORY##*/}"
+            PREVIEW_URL="https://${OWNER}.github.io/${REPO_NAME}/"
+            echo "Deployed (force) — Preview URL: ${PREVIEW_URL}"
           else
             echo "Attempting non-forced push to gh-pages"
             if git push origin gh-pages; then
               echo "Successfully pushed gh-pages"
+              # show preview url and guidance to operator
+              OWNER="${GITHUB_REPOSITORY%%/*}"
+              REPO_NAME="${GITHUB_REPOSITORY##*/}"
+              PREVIEW_URL="https://${OWNER}.github.io/${REPO_NAME}/"
+              echo "Preview URL: ${PREVIEW_URL}"
+              echo "If this deploy should override history, re-run with:"
+              echo "gh workflow run deploy-pages.yml -f source=${{ github.event.inputs.source }} -f source_branch=${{ github.event.inputs.source_branch }} -f use_artifact=${{ github.event.inputs.use_artifact }} -f force=true"
             else
               echo "Push rejected (non-fast-forward). To override and force a deploy, re-run this workflow with the 'force' input set to true."
+              echo "You can re-run via the UI or with gh CLI, e.g.:"
+              echo "gh workflow run deploy-pages.yml -f source=${{ github.event.inputs.source }} -f source_branch=${{ github.event.inputs.source_branch }} -f use_artifact=${{ github.event.inputs.use_artifact }} -f force=true"
               exit 1
             fi
           fi
 
       - name: Finish
         run: echo "Deployment finished"
-
