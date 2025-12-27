@@ -1,5 +1,14 @@
 # Responsiveness Guidelines
 
+## Update 27.12.2025
+- Die Felder **Margin** und **Leverage** sind in allen responsiven Komponenten (z.B. TradeDetailEditor) editierbar und werden im Compact-View korrekt angezeigt.
+- Design-Tokens für Abstände und Layout werden weiterhin verwendet.
+- Tests für Compact-View und mobile Darstellung sind vorhanden.
+
+---
+
+(Weitere Details siehe Hauptdokumentation und Komponenten-Diagramme)
+
 This document summarizes the project's mobile-first and responsive conventions. It's a short reference for component authors and reviewers.
 
 Principles
@@ -33,5 +42,3 @@ Docs
 
 Maintenance
 - Keep this document updated as new tokens or breakpoints are introduced.
-
-

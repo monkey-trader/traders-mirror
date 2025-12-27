@@ -49,3 +49,29 @@ If your CI produces the images into `docs/build/assets/diagrams`, ensure your wo
 ---
 
 If you'd like this page expanded with descriptions for each diagram or embedded SVGs instead of PNGs, tell me how you prefer the layout and I'll update it.
+
+# Traders Mirror – Komponenten und Felder
+
+## Neue/aktualisierte Felder
+- **Margin**: In allen Repositories, Mockdaten und UI-Komponenten integriert. In der Detailansicht editierbar und ladbar.
+- **Leverage**: Analog zu Margin, in allen Repositories, Mockdaten und UI-Komponenten integriert. In der Detailansicht editierbar und ladbar.
+
+## Architektur & Komponenten
+- Die Komponenten-Diagramme und Architektur-Grafiken wurden aktualisiert und neu generiert (siehe `docs/diagrams/*`).
+- Die Value Objects und die Factory validieren und normalisieren Margin und Leverage.
+- Die Präsentations-Komponenten (z.B. TradeDetailEditor) bieten editierbare Felder für Margin und Leverage.
+
+## Responsive Verhalten
+- Die neuen Felder sind auch im Compact-View und auf mobilen Geräten editierbar.
+- Design-Tokens für Abstände und Layout werden weiterhin verwendet.
+
+## Diagramme
+- Alle PlantUML-Diagramme (`components.puml`, `architecture.puml`, `sequence.puml`, `usecases.puml`) wurden neu generiert und spiegeln die aktuellen Felder wider.
+- Die PNGs sind in `docs/diagrams/` verfügbar und werden in der Dokumentation angezeigt.
+
+## Pflege
+- Bei weiteren neuen Feldern bitte immer die Diagramme und diese Dokumentation aktualisieren.
+
+---
+
+Letztes Update: 27.12.2025
