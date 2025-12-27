@@ -8,21 +8,22 @@ import { Market } from '../valueObjects/Market'
 import { Leverage } from '../valueObjects/Leverage'
 
 export type TradeInput = {
-  id: string
-  symbol: string
-  entryDate?: string
-  size: number
-  price: number
-  side: string
-  status?: 'OPEN' | 'CLOSED' | 'FILLED'
-  notes?: string
-  market?: string
-  sl?: number
-  tp1?: number
-  tp2?: number
-  tp3?: number
-  leverage?: number
-}
+  id: string;
+  symbol: string;
+  entryDate?: string;
+  size: number;
+  price: number;
+  side: string;
+  status?: 'OPEN' | 'CLOSED' | 'FILLED';
+  notes?: string;
+  market?: string;
+  sl?: number;
+  tp1?: number;
+  tp2?: number;
+  tp3?: number;
+  tp4?: number;
+  leverage?: number;
+};
 
 export class TradeFactory {
   static create(input: TradeInput): Trade {
@@ -42,8 +43,9 @@ export class TradeFactory {
       typeof input.tp1 === 'number' ? new Price(input.tp1) : undefined,
       typeof input.tp2 === 'number' ? new Price(input.tp2) : undefined,
       typeof input.tp3 === 'number' ? new Price(input.tp3) : undefined,
+      typeof input.tp4 === 'number' ? new Price(input.tp4) : undefined,
       typeof input.leverage === 'number' ? new Leverage(input.leverage) : undefined
-    )
+    );
   }
 
   static toDTO(trade: Trade): TradeInput {
@@ -63,6 +65,7 @@ export class TradeFactory {
       tp1: trade.tp1?.value,
       tp2: trade.tp2?.value,
       tp3: trade.tp3?.value,
+      tp4: trade.tp4?.value,
       leverage: trade.leverage?.value
     }
   }

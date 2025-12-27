@@ -38,6 +38,7 @@ type TradeRow = {
   tp1?: number
   tp2?: number
   tp3?: number
+  tp4?: number
   margin?: number
   leverage?: number
 }
@@ -240,7 +241,7 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
     side: 'LONG',
     status: 'OPEN',
     market: 'Crypto', // default to Crypto to avoid validation blocking when user doesn't explicitly select
-    notes: ''
+    notes: '',
   })
 
   const [formErrors, setFormErrors] = useState<Record<string, string>>({})
@@ -299,12 +300,13 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
       size: Number(form.size),
       price: Number(form.price),
       side: form.side as 'LONG' | 'SHORT',
-      notes: form.notes,
+      notes: form.notes || undefined,
       market: (form.market as Exclude<MarketValue, ''>) || 'Crypto',
       sl: form.sl,
       tp1: form.tp1,
       tp2: form.tp2,
       tp3: form.tp3,
+      tp4: form.tp4,
       margin: form.margin,
       leverage: form.leverage,
       status: form.status,
@@ -546,6 +548,7 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
       tp1: undefined,
       tp2: undefined,
       tp3: undefined,
+      tp4: undefined,
       leverage: undefined,
       margin: undefined,
     })

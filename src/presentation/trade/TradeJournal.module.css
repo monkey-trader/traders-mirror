@@ -542,6 +542,30 @@
   align-items: end;
 }
 
+.tpAdvancedGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 24px;
+  align-items: start;
+  margin-bottom: 8px;
+}
+.tpColLeft, .tpColRight {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+@media (max-width: 700px) {
+  .tpAdvancedGrid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .tpColLeft, .tpColRight {
+    flex-direction: row;
+    gap: 12px;
+  }
+}
+
 .input, .tpInput {
   background: transparent;
   border: 1.5px solid transparent;
@@ -1097,4 +1121,52 @@
   .mobileModalContent .actions { display: none !important; }
 }
 
-/* ...existing code... */
+/* TP row inside NewTradeForm — distribute TP1..TP4 evenly and collapse to 2 columns on small screens */
+.tpRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+@media (max-width: 520px) {
+  .tpRow {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Two-column TP layout used by NewTradeForm advanced section
+   - Left column: TP1 & TP2 (side-by-side)
+   - Right column: TP3 & TP4 (stacked under SL, i.e. under the right column)
+   Notes field uses .full (grid-column: 1 / -1) and will appear below these columns. */
+.tpGridTwoCol {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  align-items: start;
+}
+
+.tpLeftRow {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.tpRightCol {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: stretch;
+}
+
+/* On narrow screens stack the two columns and keep TP1/TP2 side-by-side (2 cols) while TP3/TP4 remain stacked under it */
+@media (max-width: 720px) {
+  .tpGridTwoCol {
+    grid-template-columns: 1fr; /* stack left + right vertically */
+  }
+  .tpLeftRow {
+    grid-template-columns: repeat(2, 1fr); /* keep TP1/TP2 side-by-side when stacked */
+  }
+}
+
