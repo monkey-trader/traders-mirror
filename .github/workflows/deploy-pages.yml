@@ -4,11 +4,19 @@ on:
   workflow_dispatch:
     inputs:
       source:
-        description: 'Source artifact to deploy (artifact name or "latest")'
+        description: 'Source artifact to deploy (artifact name or "pages")'
         required: false
         default: 'pages'
+      source_branch:
+        description: 'Repository branch to deploy (used when building from source)'
+        required: false
+        default: 'main'
+      use_artifact:
+        description: 'Use previously uploaded artifact if available (true|false)'
+        required: false
+        default: 'true'
       force:
-        description: 'Force deploy even if no changes'
+        description: 'Force deploy even if no changes (true|false)'
         required: false
         default: 'false'
 
@@ -23,7 +31,6 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: production
-      # optional reviewers can be set on the repo environment to require approval
     steps:
       - uses: actions/checkout@v4
         with:
@@ -34,12 +41,26 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Download pages artifact (if available)
-        if: ${{ github.event.inputs.source != '' }}
+      - name: Ensure source branch is available
+        run: |
+          set -e
+          SOURCE_BRANCH="${{ github.event.inputs.source_branch || 'main' }}"
+          echo "Requested source branch: $SOURCE_BRANCH"
+          # fetch remote branch and checkout it so we build from the selected branch if needed
+          git fetch origin "$SOURCE_BRANCH" || true
+          if git rev-parse --verify origin/$SOURCE_BRANCH >/dev/null 2>&1; then
+            git checkout -B deploy-source origin/$SOURCE_BRANCH
+          else
+            echo "Branch $SOURCE_BRANCH not found remotely — staying on current ref"
+          fi
+
+      - name: Download pages artifact (optional)
+        if: ${{ github.event.inputs.use_artifact == 'true' }}
         uses: actions/download-artifact@v4
         with:
           name: ${{ github.event.inputs.source }}
           path: ./artifact_build
+        continue-on-error: true
 
       - name: Prepare deploy directory
         run: |
@@ -67,7 +88,8 @@ jobs:
             echo "Using downloaded artifact contents for deployment"
             cp -r ./artifact_build/* "$TMPDIR"/
           else
-            echo "No artifact found — attempt to build from repository"
+            echo "No suitable artifact found or artifact disabled — building from source branch"
+            # At this point the repository is checked out to the requested branch (deploy-source) if it existed
             npm ci || npm install
             npm run build
             cp -r ./build/* "$TMPDIR"/
@@ -81,7 +103,7 @@ jobs:
             exit 0
           fi
 
-          git commit -m "chore(pages): deploy ${{ github.sha }}" || echo "Nothing to commit"
+          git commit -m "chore(pages): deploy ${{ github.event.inputs.source_branch || github.ref }} (${{ github.sha }})" || echo "Nothing to commit"
           git push origin gh-pages --force
 
       - name: Finish
