@@ -186,6 +186,10 @@ export function TradeDetailEditor({ trade, onChange, onSave, onDelete, compactVi
         <input aria-label="Margin" className={styles.input} type="number" value={local.margin ?? ''} onChange={e => fieldChange('margin', e.target.value === '' ? undefined : Number(e.target.value))} onBlur={handleBlurOrSave} />
         {errors.margin && <div className={styles.fieldError}>{errors.margin}</div>}
 
+        <label className={styles.label}>Leverage</label>
+        <input aria-label="Leverage" className={styles.input} type="number" value={local.leverage ?? ''} onChange={e => fieldChange('leverage', e.target.value === '' ? undefined : Number(e.target.value))} onBlur={handleBlurOrSave} />
+        {errors.leverage && <div className={styles.fieldError}>{errors.leverage}</div>}
+
         <div style={{ marginTop: 12 }}>
           <Button
             type="button"
