@@ -843,66 +843,75 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
        )}
       {/* Mobile modal for New Trade */}
       {isMobile && newTradeModalOpen && (
-        <div className={styles.mobileModalBackdrop} role="dialog" aria-modal="true" tabIndex={-1}
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0,0,0,0.45)',
-            zIndex: 1000,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}
-          onClick={() => setNewTradeModalOpen(false)}
-        >
-          <div
-            className={styles.mobileModalContent}
-            style={{
-              background: 'var(--card-bg, #fff)',
-              borderRadius: 12,
-              maxWidth: 400,
-              width: '90vw',
-              padding: 24,
-              boxShadow: '0 4px 32px rgba(0,0,0,0.18)',
-              position: 'relative'
-            }}
-            onClick={e => e.stopPropagation()}
-            tabIndex={0}
-          >
-            <button
-              type="button"
-              aria-label="Close"
-              onClick={() => setNewTradeModalOpen(false)}
-              style={{
-                position: 'absolute',
-                top: 8,
-                right: 8,
-                background: 'none',
-                border: 'none',
-                fontSize: 22,
-                cursor: 'pointer'
-              }}
-            >
-              ×
-            </button>
-            <div style={{ marginBottom: 12, fontWeight: 700, fontSize: 18 }}>New Trade</div>
-            <NewTradeForm
-              form={form}
-              formErrors={formErrors}
-              touched={touched}
-              formSubmitted={formSubmitted}
-              formKey={formKey}
-              debugUiEnabled={debugUiEnabled}
-              lastStatus={lastStatus}
-              onChangeForm={(patch) => setForm((prev) => ({ ...prev, ...patch }))}
-              onBlurField={(f) => setTouched((prev) => ({ ...prev, [f]: true }))}
-              onSubmit={(e?: React.FormEvent) => { setFormSubmitted(true); setTouched(prev => ({ ...prev, price: true })); handleAdd(e) }}
-              onReset={resetNewTradeForm}
-              setMarketFilter={(m) => setMarketFilter(m === '' ? 'All' : (m as 'All' | 'Crypto' | 'Forex'))}
-            />
-          </div>
-        </div>
-      )}
+        <div className={styles.mobileModalBackdrop} role="dialog" aria-modal="true" tabIndex={-1} onClick={() => setNewTradeModalOpen(false)}>
+          <div className={styles.mobileModalContent} onClick={e => e.stopPropagation()} tabIndex={0}>
+             <button
+               type="button"
+               aria-label="Close"
+               onClick={() => setNewTradeModalOpen(false)}
+               style={{
+                 position: 'absolute',
+                 top: 8,
+                 right: 8,
+                 background: 'none',
+                 border: 'none',
+                 fontSize: 22,
+                 cursor: 'pointer'
+               }}
+             >
+               ×
+             </button>
+             <div style={{ marginBottom: 12, fontWeight: 700, fontSize: 18 }}>New Trade</div>
+             <NewTradeForm
+               form={form}
+               formErrors={formErrors}
+               touched={touched}
+               formSubmitted={formSubmitted}
+               formKey={formKey}
+               debugUiEnabled={debugUiEnabled}
+               lastStatus={lastStatus}
+               onChangeForm={(patch) => setForm((prev) => ({ ...prev, ...patch }))}
+               onBlurField={(f) => setTouched((prev) => ({ ...prev, [f]: true }))}
+               onSubmit={(e?: React.FormEvent) => { setFormSubmitted(true); setTouched(prev => ({ ...prev, price: true })); handleAdd(e) }}
+               onReset={resetNewTradeForm}
+               setMarketFilter={(m) => setMarketFilter(m === '' ? 'All' : (m as 'All' | 'Crypto' | 'Forex'))}
+             />
+           </div>
+         </div>
+       )}
     </>
      );
     }
+
+    // Mobile modal for New Trade
+    useEffect(() => {
+      // lock body scroll when mobile modal is open on mobile
+      if (typeof window === 'undefined') return
+      const prev = document.body.style.overflow
+      const handleKey = (ev: KeyboardEvent) => {
+        if (ev.key === 'Escape') setNewTradeModalOpen(false)
+      }
+
+      // when sheet opens: lock scroll, focus first input (symbol), and listen for Escape
+      if (isMobile && newTradeModalOpen) {
+        document.body.style.overflow = 'hidden'
+        document.addEventListener('keydown', handleKey)
+        const timer = window.setTimeout(() => {
+          try {
+            const el = document.getElementById('symbol') as HTMLElement | null
+            el?.focus()
+          } catch (_e) {
+            // ignore in test env
+          }
+        }, 60)
+        return () => {
+          document.body.style.overflow = prev || ''
+          document.removeEventListener('keydown', handleKey)
+          window.clearTimeout(timer)
+        }
+      }
+
+      // otherwise restore
+      document.body.style.overflow = prev || ''
+      return () => { document.body.style.overflow = prev || '' }
+    }, [isMobile, newTradeModalOpen])
