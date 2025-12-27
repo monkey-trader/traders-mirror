@@ -13,9 +13,10 @@ export type AnalysisSuggestion = {
 
 export type AnalysisProps = {
   onCreateTradeSuggestion?: (s: AnalysisSuggestion) => Promise<void> | void
+  compactView?: boolean
 }
 
-export function Analysis({ onCreateTradeSuggestion }: AnalysisProps) {
+export function Analysis({ onCreateTradeSuggestion, compactView = false }: AnalysisProps) {
   const [activeCardTab, setActiveCardTab] = useState('overview')
 
   const handleCreateExample = async () => {
@@ -24,7 +25,7 @@ export function Analysis({ onCreateTradeSuggestion }: AnalysisProps) {
   }
 
   return (
-    <div className={styles.container}>
+    <div className={compactView ? `${styles.container} ${styles.compact}` : styles.container} data-compact={compactView}>
       <h2 className={styles.title}>Marktanalyse</h2>
 
       <div className={styles.grid}>

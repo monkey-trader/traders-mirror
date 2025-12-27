@@ -175,6 +175,17 @@
   align-self: start;
 }
 
+.compact {
+  padding: 8px !important;
+}
+
+/* make buttons full width in compact mode for touch friendliness */
+.compact .storageButtons button,
+.compact .themeRow > * {
+  width: 100%;
+  display: block;
+}
+
 @media (max-width: 720px) {
   .debugRow { grid-template-columns: 1fr; gap: 10px; }
   .debugRow .help { grid-column: 1 / -1; }

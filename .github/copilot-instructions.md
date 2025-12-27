@@ -72,6 +72,7 @@
   - Schreibe kleine responsive Unit-/Integrationstests (Vitest + Testing Library) die das kompakte Verhalten oder die CSS-Klassen auf engen Viewports überprüfen (oder die Komponente über Prop-Injektion testen).
   - Dokumentiere neue Komponenten kurz in `docs/*` mit Hinweisen auf das responsive Verhalten und welche Token verwendet wurden.
   - Diese Richtlinie sorgt dafür, dass neue UI-Elemente sofort mobil-tauglich sind und die Codebasis konsistent bleibt.
+  - NEU: Bei jedem neuen Präsentations-Component füge eine kurze Notiz in `docs/responsiveness.md` oder `docs/<component>.md` hinzu, die angibt, welche Tokens verwendet wurden und welche `compactView`-Konventionen gelten.
 
 ## TypeScript-Interface-Importe
 - Interfaces (z.B. Repository-Interfaces) immer als TypeScript-Typ exportieren:
