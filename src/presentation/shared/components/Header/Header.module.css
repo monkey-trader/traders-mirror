@@ -56,15 +56,53 @@
 .mobileNav {
   display: none;
 }
-.mobileNav.open {
+.mobileOpen {
   display: block;
   position: absolute;
   top: 56px;
   right: 12px;
-  background: var(--card-bg, rgba(15,23,32,0.9));
+  /* Use a solid background to avoid transparency issues on dark headers */
+  background: var(--card-bg-solid, rgba(10,12,15,1));
   border-radius: 8px;
   padding: 8px;
-  box-shadow: var(--shadow-1, 0 6px 18px rgba(3,6,10,0.6));
+  box-shadow: var(--shadow-1, 0 10px 30px rgba(0,0,0,0.6));
   z-index: 3000;
 }
 .mobileNav a { display: block; padding: 8px 12px; color: var(--text); text-decoration: none; }
+
+/* ensure focus styles inside mobile nav */
+.mobileNav a:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(88,214,141,0.12);
+}
+
+/* ensure hamburger button is always above nav for click handling */
+.hamburger { z-index: 3100; }
+
+/* backdrop behind mobile nav */
+.backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 2500;
+  opacity: 0;
+  transition: opacity 220ms ease;
+}
+.backdropVisible {
+  display: block;
+  opacity: 1;
+}
+
+/* slide-in mobile nav */
+.mobileNav {
+  display: none;
+  transform: translateY(-8px) translateX(8px) scale(0.98);
+  opacity: 0;
+  transition: transform 220ms ease, opacity 180ms ease;
+}
+.mobileOpen {
+  display: block;
+  transform: translateY(0) translateX(0) scale(1);
+  opacity: 1;
+}
