@@ -116,7 +116,16 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
   }, [])
 
   // Mobile modal state for New Trade (used on small screens)
-  const [isMobile, setIsMobile] = useState<boolean>(() => typeof window !== 'undefined' ? window.matchMedia('(max-width:480px)').matches : false)
+  const [isMobile, setIsMobile] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false
+    // jsdom in test environment may not implement matchMedia; guard it
+    if (typeof window.matchMedia !== 'function') return false
+    try {
+      return window.matchMedia('(max-width:480px)').matches
+    } catch (_e) {
+      return false
+    }
+  })
   const [newTradeModalOpen, setNewTradeModalOpen] = useState(false)
 
   // listen for viewport changes to toggle mobile mode
