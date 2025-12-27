@@ -6,6 +6,7 @@ import { TradeSymbol } from '../valueObjects/TradeSymbol'
 import { Side } from '../valueObjects/Side'
 import { Market } from '../valueObjects/Market'
 import { Leverage } from '../valueObjects/Leverage'
+import { Margin } from '../valueObjects/Margin'
 
 export type TradeInput = {
   id: string;
@@ -17,6 +18,7 @@ export type TradeInput = {
   status?: 'OPEN' | 'CLOSED' | 'FILLED';
   notes?: string;
   market?: string;
+  margin?: number;
   sl?: number;
   tp1?: number;
   tp2?: number;
@@ -44,7 +46,8 @@ export class TradeFactory {
       typeof input.tp2 === 'number' ? new Price(input.tp2) : undefined,
       typeof input.tp3 === 'number' ? new Price(input.tp3) : undefined,
       typeof input.tp4 === 'number' ? new Price(input.tp4) : undefined,
-      typeof input.leverage === 'number' ? new Leverage(input.leverage) : undefined
+      typeof input.leverage === 'number' ? new Leverage(input.leverage) : undefined,
+      typeof input.margin === 'number' ? new Margin(input.margin) : undefined
     );
   }
 
@@ -66,7 +69,8 @@ export class TradeFactory {
       tp2: trade.tp2?.value,
       tp3: trade.tp3?.value,
       tp4: trade.tp4?.value,
-      leverage: trade.leverage?.value
+      leverage: trade.leverage?.value,
+      margin: trade.margin?.value
     }
   }
 }

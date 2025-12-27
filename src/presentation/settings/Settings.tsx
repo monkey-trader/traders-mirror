@@ -139,26 +139,38 @@ function StorageControls() {
     <div className={styles.debugRow} style={{ alignItems: 'center' }}>
       <label className={styles.fieldLabel}>Storage</label>
       <div className={styles.storageButtons}>
-        <Button variant="danger" onClick={clearStoredTrades}>Clear stored trades</Button>
-        <Button variant="primary" onClick={restoreDemoData}>Restore demo data</Button>
+        <Button variant="danger" onClick={clearStoredTrades}>
+          Delete demo data
+        </Button>
+        <Button variant="primary" onClick={restoreDemoData}>
+          Add demo data
+        </Button>
       </div>
       <ConfirmDialog
         open={confirmOpen}
-        title={confirmAction === 'clear' ? 'Clear stored trades' : 'Restore demo data'}
-        message={confirmAction === 'clear' ? 'Alle gespeicherten Trades entfernen? Diese Aktion kann nicht rückgängig gemacht werden.' : 'Demo-Daten wiederherstellen? Existierende Daten werden überschrieben.'}
+        title={confirmAction === 'clear' ? 'Delete demo data' : 'Add demo data'}
+        message={
+          confirmAction === 'clear'
+            ? 'Alle gespeicherten Trades entfernen? Diese Aktion kann nicht rückgängig gemacht werden.'
+            : 'Demo-Daten wiederherstellen? Existierende Daten werden überschrieben.'
+        }
         confirmLabel={confirmAction === 'clear' ? 'Löschen' : 'Wiederherstellen'}
         cancelLabel="Abbrechen"
         onConfirm={onConfirm}
         onCancel={onCancel}
         confirmVariant={confirmAction === 'clear' ? 'danger' : 'primary'}
       />
-      <p className={styles.help}>Remove or restore the demo trades stored in your browser localStorage (key: mt_trades_v1).</p>
+      <p className={styles.help}>
+        Remove or restore the demo trades stored in your browser localStorage (key: mt_trades_v1).
+      </p>
       {/* transitory info banner (placed below the description as requested) */}
       {infoMessage && (
-        <div role="status" aria-live="polite" className={styles.infoBanner}>{infoMessage}</div>
+        <div role="status" aria-live="polite" className={styles.infoBanner}>
+          {infoMessage}
+        </div>
       )}
     </div>
-  )
+  );
 }
 
 export function Settings({ compactView }: { compactView?: boolean }) {

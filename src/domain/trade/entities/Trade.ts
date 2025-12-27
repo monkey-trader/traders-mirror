@@ -5,6 +5,7 @@ import { Price } from '../valueObjects/Price'
 import { Side } from '../valueObjects/Side'
 import { Market } from '../valueObjects/Market'
 import { Leverage } from '../valueObjects/Leverage'
+import { Margin } from '../valueObjects/Margin'
 
 export class Trade {
   public readonly id: string;
@@ -22,6 +23,7 @@ export class Trade {
   public readonly tp3?: Price;
   public readonly tp4?: Price;
   public readonly leverage?: Leverage;
+  public readonly margin?: Margin;
 
   constructor(
     id: string,
@@ -38,7 +40,8 @@ export class Trade {
     tp2?: Price,
     tp3?: Price,
     tp4?: Price,
-    leverage?: Leverage
+    leverage?: Leverage,
+    margin?: Margin,
   ) {
     this.id = id;
     this.symbol = symbol;
@@ -55,5 +58,6 @@ export class Trade {
     this.tp3 = tp3;
     this.tp4 = tp4;
     this.leverage = leverage;
+    this.margin = margin;
   }
 }

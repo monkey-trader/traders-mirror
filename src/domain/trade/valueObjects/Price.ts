@@ -1,7 +1,7 @@
 export class Price {
   public readonly value: number
   constructor(price: number) {
-    if (typeof price !== 'number' || price <= 0) throw new PriceMustBePositiveError(price)
+    if (price <= 0) throw new PriceMustBePositiveError(price)
     this.value = price
   }
 }

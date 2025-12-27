@@ -21,7 +21,7 @@ describe('TradeService', () => {
   })
 
   it('should add and list trades', async () => {
-    const input: TradeInput = { id: '1', symbol: 'AAPL', entryDate: '2023-01-01T00:00:00Z', size: 1, price: 100, side: 'LONG' }
+    const input: TradeInput = { id: '1', symbol: 'AAPL', entryDate: '2023-01-01T00:00:00Z', size: 1, price: 100, side: 'LONG', margin: 50 }
     await service.addTrade(input)
     const trades = await service.listTrades()
     expect(trades.length).toBe(1)
@@ -29,7 +29,7 @@ describe('TradeService', () => {
   })
 
   it('should update a trade', async () => {
-    const input: TradeInput = { id: '1', symbol: 'AAPL', entryDate: '2023-01-01T00:00:00Z', size: 1, price: 100, side: 'LONG' }
+    const input: TradeInput = { id: '1', symbol: 'AAPL', entryDate: '2023-01-01T00:00:00Z', size: 1, price: 100, side: 'LONG', margin: 50 }
     await service.addTrade(input)
     await service.updateTrade({ ...input, price: 200 })
     const trades = await service.listTrades()

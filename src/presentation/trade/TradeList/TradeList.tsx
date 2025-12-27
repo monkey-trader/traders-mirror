@@ -9,6 +9,10 @@ export type TradeListItem = {
   side: string
   status?: string
   notes?: string
+  tp1?: number
+  tp2?: number
+  tp3?: number
+  tp4?: number
 }
 
 import styles from './TradeList.module.css'
@@ -32,16 +36,23 @@ export function TradeList({ trades, selectedId, onSelect, compactView = false }:
               ? 'LONG'
               : 'SHORT'
           return (
-            <PositionCard
-              key={t.id}
-              id={t.id}
-              symbol={t.symbol}
-              side={sideKey as 'LONG' | 'SHORT'}
-              size={t.size}
-              entry={t.entryDate}
-              pnl={0}
-              onExpand={(id) => onSelect(id)}
-            />
+            <div key={t.id} className={styles.compactItem}>
+              <PositionCard
+                id={t.id}
+                symbol={t.symbol}
+                side={sideKey as 'LONG' | 'SHORT'}
+                size={t.size}
+                entry={t.entryDate}
+                pnl={0}
+                onExpand={(id) => onSelect(id)}
+              />
+              <div className={styles.tpLevelsCompact}>
+                <span>TP1: {t.tp1 ?? '-'}</span>{' '}
+                <span>TP2: {t.tp2 ?? '-'}</span>{' '}
+                <span>TP3: {t.tp3 ?? '-'}</span>{' '}
+                <span>TP4: {t.tp4 ?? '-'}</span>
+              </div>
+            </div>
           )
         })}
       </div>
@@ -78,6 +89,7 @@ export function TradeList({ trades, selectedId, onSelect, compactView = false }:
             <div className={styles.rowLeft}>
               <div className={styles.symbol}>{t.symbol}</div>
               <div className={styles.meta}>{new Date(t.entryDate).toLocaleDateString()}</div>
+              {/* TP1–TP4 werden hier NICHT mehr angezeigt */}
             </div>
             <div className={styles.rowRight}>
               <div className={[styles.side, sideClass].join(' ')} aria-label={`Side: ${sideKey}`} title={sideKey}>

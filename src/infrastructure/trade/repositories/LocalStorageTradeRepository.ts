@@ -21,6 +21,7 @@ export type RepoTrade = {
   tp1?: number
   tp2?: number
   tp3?: number
+  tp4?: number
   margin?: number
   leverage?: number
 }
@@ -29,7 +30,7 @@ const STORAGE_KEY = 'mt_trades_v1'
 
 const DEFAULT_MOCK_TRADES: RepoTrade[] = [
   // keep a small default set similar to InMemory for first-run UX
-  { id: 't1', market: 'Crypto', symbol: 'ETHUSD', entryDate: '2025-12-21T10:12:00Z', size: 0.51, price: 1800.5, side: 'SHORT', status: 'OPEN', pnl: 0, notes: 'Scalp-Short nach Fehlausbruch.', entry: '1802.0', sl: 1815.0, tp1: 1790.0, tp2: 1775.0, tp3: 1750.0, margin: 120, leverage: 10 }
+  { id: 't1', market: 'Crypto', symbol: 'ETHUSD', entryDate: '2025-12-21T10:12:00Z', size: 0.51, price: 1800.5, side: 'SHORT', status: 'OPEN', pnl: 0, notes: 'Scalp-Short nach Fehlausbruch.', entry: '1802.0', sl: 1815.0, tp1: 1790.0, tp2: 1775.0, tp3: 1750.0, tp4: 1730.0, margin: 120, leverage: 10 }
 ]
 
 // Implement the domain TradeRepository interface: accept/return domain Trade entities
@@ -113,6 +114,7 @@ export class LocalStorageTradeRepository implements TradeRepository {
         tp1: typeof o.tp1 === 'number' ? o.tp1 as number : undefined,
         tp2: typeof o.tp2 === 'number' ? o.tp2 as number : undefined,
         tp3: typeof o.tp3 === 'number' ? o.tp3 as number : undefined,
+        tp4: typeof o.tp4 === 'number' ? o.tp4 as number : undefined,
         margin: typeof o.margin === 'number' ? o.margin as number : undefined,
         leverage: typeof o.leverage === 'number' ? o.leverage as number : undefined
       }
@@ -136,6 +138,7 @@ export class LocalStorageTradeRepository implements TradeRepository {
         tp1: typeof o.tp1 === 'number' ? o.tp1 as number : undefined,
         tp2: typeof o.tp2 === 'number' ? o.tp2 as number : undefined,
         tp3: typeof o.tp3 === 'number' ? o.tp3 as number : undefined,
+        tp4: typeof o.tp4 === 'number' ? o.tp4 as number : undefined,
         margin: typeof o.margin === 'number' ? o.margin as number : undefined,
         leverage: typeof o.leverage === 'number' ? o.leverage as number : undefined
       }
@@ -181,7 +184,9 @@ export class LocalStorageTradeRepository implements TradeRepository {
         tp1: rt.tp1,
         tp2: rt.tp2,
         tp3: rt.tp3,
-        leverage: rt.leverage
+        tp4: rt.tp4,
+        leverage: rt.leverage,
+        margin: rt.margin
       }
       try {
         return TradeFactory.create(input)

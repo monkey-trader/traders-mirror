@@ -10,6 +10,7 @@ const mockTrade = {
   size: 1,
   price: 10000,
   side: 'LONG',
+  margin: 100,
 }
 
 describe('TradeDetailEditor compact', () => {
@@ -26,4 +27,3 @@ describe('TradeDetailEditor compact', () => {
     expect(save.className).toMatch(/saveBtn/)
   })
 })
-

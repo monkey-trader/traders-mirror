@@ -18,6 +18,7 @@ export type RepoTrade = {
   tp1?: number
   tp2?: number
   tp3?: number
+  tp4?: number
   margin?: number
   leverage?: number
 }
@@ -87,6 +88,11 @@ const DEFAULT_MOCK_TRADES: RepoTrade[] = [
     id: 't13', market: 'Forex', symbol: 'USDCAD', entryDate: '2025-12-22T04:30:00Z', size: 4000, price: 1.2700,
     side: 'SHORT', status: 'OPEN', pnl: -4.0, notes: 'Korrektur-Short, TP1 offen.', entry: '1.2710', sl: 1.2730,
     tp1: 1.2680, tp2: 1.2650, tp3: 1.2600, margin: 70, leverage: 9
+  },
+  {
+    id: 't14', market: 'Crypto', symbol: 'BTCUSD', entryDate: '2025-12-27T21:51:00Z', size: 1, price: 80000,
+    side: 'LONG', status: 'OPEN', pnl: 0, notes: 'Test Entry', entry: '79900', sl: 78000,
+    tp1: 81000, tp2: 82000, tp3: 83000, tp4: 84000, margin: 1000, leverage: 20
   }
 ]
 
@@ -135,6 +141,7 @@ export class InMemoryTradeRepository {
         tp1: typeof o.tp1 === 'number' ? o.tp1 as number : undefined,
         tp2: typeof o.tp2 === 'number' ? o.tp2 as number : undefined,
         tp3: typeof o.tp3 === 'number' ? o.tp3 as number : undefined,
+        tp4: typeof o.tp4 === 'number' ? o.tp4 as number : undefined,
         margin: typeof o.margin === 'number' ? o.margin as number : undefined,
         leverage: typeof o.leverage === 'number' ? o.leverage as number : undefined
       }
@@ -159,6 +166,7 @@ export class InMemoryTradeRepository {
         tp1: typeof o.tp1 === 'number' ? o.tp1 as number : undefined,
         tp2: typeof o.tp2 === 'number' ? o.tp2 as number : undefined,
         tp3: typeof o.tp3 === 'number' ? o.tp3 as number : undefined,
+        tp4: typeof o.tp4 === 'number' ? o.tp4 as number : undefined,
         margin: typeof o.margin === 'number' ? o.margin as number : undefined,
         leverage: typeof o.leverage === 'number' ? o.leverage as number : undefined
       }
@@ -202,6 +210,7 @@ export class InMemoryTradeRepository {
         tp1: rt.tp1,
         tp2: rt.tp2,
         tp3: rt.tp3,
+        tp4: rt.tp4,
         leverage: rt.leverage
       }
       try {

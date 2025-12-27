@@ -166,6 +166,26 @@ export function TradeDetailEditor({ trade, onChange, onSave, onDelete, compactVi
         <label className={styles.label}>Notes</label>
         <textarea aria-label="Notes" className={styles.textarea} value={local.notes ?? ''} onChange={(e) => fieldChange('notes', e.target.value)} onBlur={handleBlurOrSave} />
 
+        <label className={styles.label}>TP1</label>
+        <input aria-label="TP1" className={styles.input} type="number" value={local.tp1 ?? ''} onChange={e => fieldChange('tp1', e.target.value === '' ? undefined : Number(e.target.value))} onBlur={handleBlurOrSave} />
+        {errors.tp1 && <div className={styles.fieldError}>{errors.tp1}</div>}
+
+        <label className={styles.label}>TP2</label>
+        <input aria-label="TP2" className={styles.input} type="number" value={local.tp2 ?? ''} onChange={e => fieldChange('tp2', e.target.value === '' ? undefined : Number(e.target.value))} onBlur={handleBlurOrSave} />
+        {errors.tp2 && <div className={styles.fieldError}>{errors.tp2}</div>}
+
+        <label className={styles.label}>TP3</label>
+        <input aria-label="TP3" className={styles.input} type="number" value={local.tp3 ?? ''} onChange={e => fieldChange('tp3', e.target.value === '' ? undefined : Number(e.target.value))} onBlur={handleBlurOrSave} />
+        {errors.tp3 && <div className={styles.fieldError}>{errors.tp3}</div>}
+
+        <label className={styles.label}>TP4</label>
+        <input aria-label="TP4" className={styles.input} type="number" value={local.tp4 ?? ''} onChange={e => fieldChange('tp4', e.target.value === '' ? undefined : Number(e.target.value))} onBlur={handleBlurOrSave} />
+        {errors.tp4 && <div className={styles.fieldError}>{errors.tp4}</div>}
+
+        <label className={styles.label}>Margin</label>
+        <input aria-label="Margin" className={styles.input} type="number" value={local.margin ?? ''} onChange={e => fieldChange('margin', e.target.value === '' ? undefined : Number(e.target.value))} onBlur={handleBlurOrSave} />
+        {errors.margin && <div className={styles.fieldError}>{errors.margin}</div>}
+
         <div style={{ marginTop: 12 }}>
           <Button
             type="button"
