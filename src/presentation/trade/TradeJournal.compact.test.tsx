@@ -14,8 +14,13 @@ describe('TradeJournal compact editor toggle', () => {
     const symbols = await screen.findAllByText(/USD$/, {}, { timeout: 1000 })
     expect(symbols.length).toBeGreaterThan(0)
 
-    // Click the first symbol element to select that trade (PositionCard renders symbol text)
-    fireEvent.click(symbols[0])
+    // Click the first PositionCard's expand button to select that trade (PositionCard exposes expand button)
+    const expandBtns = await screen.findAllByLabelText(/Toggle details for/i)
+    expect(expandBtns.length).toBeGreaterThan(0)
+    fireEvent.click(expandBtns[0])
+
+    // Wait a tick to allow selection effect
+    await new Promise((r) => setTimeout(r, 10))
 
     // Now the compact summary should show a Show details button
     const show = await screen.findByRole('button', { name: /show details/i })
