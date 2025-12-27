@@ -174,3 +174,15 @@
   grid-column: 2 / 3;
   align-self: start;
 }
+
+@media (max-width: 720px) {
+  .debugRow { grid-template-columns: 1fr; gap: 10px; }
+  .debugRow .help { grid-column: 1 / -1; }
+  .storageButtons { flex-direction: column; align-items: stretch; }
+  .previewCard { width: 100%; }
+}
+
+@media (max-width: 420px) {
+  .container { padding: var(--space-3, 12px); }
+  .previewHeader { font-size: var(--fs-sm, 14px); }
+}

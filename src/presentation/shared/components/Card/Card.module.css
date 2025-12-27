@@ -62,3 +62,22 @@
     will-change: auto !important;
   }
 }
+
+@media (max-width: 720px) {
+  .card {
+    padding: var(--space-3, 12px);
+    border-radius: calc(var(--card-radius, 10px));
+  }
+  .title { font-size: var(--fs-sm, 14px); padding: 6px 8px; margin-bottom: 8px; }
+}
+
+/* Compact card modifier for tight lists */
+.cardCompact {
+  padding: var(--space-2, 8px);
+  border-radius: calc(var(--card-radius, 8px));
+}
+
+/* ensure card content stacks nicely on tiny devices */
+@media (max-width: 420px) {
+  .content { font-size: var(--fs-xs, 13px); }
+}

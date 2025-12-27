@@ -162,6 +162,15 @@
   .saveBtn { width: 100%; justify-self: stretch }
 }
 
+@media (max-width: 480px) {
+  .editor { padding: 10px; }
+  .title { font-size: var(--fs-md, 16px); }
+  .sub { font-size: var(--fs-xs, 13px); }
+  .input { padding: 12px; }
+  .textarea { padding: 10px; min-height: 80px; }
+  .saveBtn { width: 100%; justify-self: stretch; }
+}
+
 /* accessibility: ensure focus outlines remain visible in high-contrast situations */
 .input:focus-visible, .textarea:focus-visible, .saveBtn:focus-visible {
   outline: 3px solid rgba(124,92,255,0.15);

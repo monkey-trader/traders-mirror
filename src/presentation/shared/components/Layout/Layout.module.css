@@ -8,6 +8,13 @@
   margin-top: 18px;
   display: grid;
   gap: 18px;
+  padding-left: var(--container-padding, 24px);
+  padding-right: var(--container-padding, 24px);
+  box-sizing: border-box;
+}
+
+@media (max-width: 720px) {
+  .main { padding-left: var(--space-3, 12px); padding-right: var(--space-3, 12px); gap: var(--space-3, 12px); }
 }
 
 /* Page can opt into using the full browser width by passing fullWidth to the Layout. */
@@ -18,4 +25,9 @@
   padding-left: 12px !important; /* small internal padding */
   padding-right: 12px !important;
   box-sizing: border-box !important;
+}
+
+.containerResponsive {
+  padding-left: var(--container-padding, 24px);
+  padding-right: var(--container-padding, 24px);
 }

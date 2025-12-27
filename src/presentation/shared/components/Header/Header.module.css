@@ -6,6 +6,7 @@
   padding: 14px 18px;
   background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
   border-radius: 10px;
+  position: relative;
 }
 
 .brand {
@@ -35,3 +36,35 @@
   align-items: center;
   gap: 8px;
 }
+
+.hamburger {
+  display: none;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+@media (max-width: 720px) {
+  .nav { display: none; }
+  .hamburger { display: inline-flex; align-items: center; justify-content: center; }
+}
+
+/* When mobile nav is opened (JS toggles .open) show as vertical list */
+.mobileNav {
+  display: none;
+}
+.mobileNav.open {
+  display: block;
+  position: absolute;
+  top: 56px;
+  right: 12px;
+  background: var(--card-bg, rgba(15,23,32,0.9));
+  border-radius: 8px;
+  padding: 8px;
+  box-shadow: var(--shadow-1, 0 6px 18px rgba(3,6,10,0.6));
+  z-index: 3000;
+}
+.mobileNav a { display: block; padding: 8px 12px; color: var(--text); text-decoration: none; }
