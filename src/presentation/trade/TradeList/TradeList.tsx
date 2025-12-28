@@ -83,6 +83,7 @@ export function TradeList({ trades, selectedId, onSelect, compactView = false }:
             key={t.id}
             className={[styles.item, isSelected ? styles.selected : ''].filter(Boolean).join(' ')}
             onClick={() => onSelect(t.id)}
+            aria-label={`Select ${t.symbol}`}
             role="listitem"
             aria-pressed={isSelected}
           >

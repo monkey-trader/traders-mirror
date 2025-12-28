@@ -29,6 +29,7 @@ Thumbs.db
 
 # coverage
 coverage/
+.coverage/
 
 # misc
 *.log

@@ -2,43 +2,73 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, master ]
   pull_request:
-    branches: [ main ]
-
-permissions:
-  contents: write
-  pages: write
-  id-token: write
+    branches: [ main, master ]
 
 jobs:
-  build:
-    name: Build
+  test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.x]
     steps:
-      - uses: actions/checkout@v4
-      - name: Use Node.js
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: ${{ matrix.node-version }}
           cache: 'npm'
+
       - name: Install dependencies
-        # konservativer Fallback: versuche `npm ci`, falls das fehlschlägt greife auf `npm install` zurück
-        # Das ist nur ein temporärer Workaround, bitte Lockfile langfristig reparieren
-        run: npm ci || npm install
-      - name: Lint
-        run: npm run lint
-      - name: Run unit tests (Vitest)
-        run: npm run test:unit
-      - name: Build
-        run: npm run build
-      - name: Upload artifact (pages)
+        run: npm ci
+
+      - name: Run tests (Vitest) + coverage
+        run: npx vitest run --coverage -c vitest.config.ts --reporter=dot
+
+      - name: Upload JUnit report
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: pages
-          path: ./build
-      # NOTE: Deployment to GitHub Pages is handled by the dedicated manual
-      # workflow `.github/workflows/deploy-pages.yml`. This CI run only builds
-      # and publishes an artifact; an operator can trigger the deploy workflow
-      # manually (or via protected environment approval) to perform the gh-pages
-      # push with user interaction.
+          name: vitest-junit
+          path: ./vitest-report.xml
+
+      - name: Upload coverage (lcov)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-lcov
+          path: ./.coverage/lcov.info
+
+      - name: Codecov
+        if: success() || failure()
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./.coverage/lcov.info
+          fail_ci_if_error: false
+
+  sonar:
+    needs: test
+    runs-on: ubuntu-latest
+    if: secrets.SONAR_TOKEN
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18.x
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run SonarCloud Scan
+        uses: sonarsource/sonarcloud-github-action@v2
+        with:
+          projectKey: ${{ secrets.SONAR_PROJECT_KEY }}
+          organization: ${{ secrets.SONAR_ORGANIZATION }}
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
