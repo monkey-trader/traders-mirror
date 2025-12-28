@@ -19,8 +19,8 @@ export default defineConfig({
       provider: 'v8',
       enabled: true,
       reporter: ['text', 'lcov', 'lcovonly'],
-      // write coverage artifacts into a hidden folder ./.coverage per request
-      directory: './.coverage',
+      // write coverage artifacts into the standard coverage/ folder
+      directory: './coverage',
       include: ['src/**/*.{ts,tsx}'],
       exclude: ['**/*.test.{ts,tsx}', '**/test/**', '**/tests/**', '**/mocks/**', '**/*.d.ts']
     }

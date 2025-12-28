@@ -19,10 +19,9 @@ module.exports = {
       provider: 'v8',
       enabled: true,
       reporter: ['text', 'lcov', 'lcovonly'],
-      directory: './.coverage',
+      directory: './coverage',
       include: ['src/**/*.{ts,tsx}'],
       exclude: ['**/*.test.{ts,tsx}', '**/test/**', '**/tests/**', '**/mocks/**', '**/*.d.ts']
     }
   }
 }
-

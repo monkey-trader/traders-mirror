@@ -55,37 +55,17 @@ jobs:
           echo "PWD: $(pwd)"
           echo "Listing repo root:"
           ls -la
-          echo "Looking for .coverage and coverage folders"
-          if [ -d .coverage ]; then
-            echo "Found .coverage:"; ls -la .coverage
-          else
-            echo ".coverage not found"
-          fi
+          echo "Looking for coverage folder"
           if [ -d coverage ]; then
             echo "Found coverage:"; ls -la coverage
           else
             echo "coverage not found"
           fi
           echo "Show head of lcov if present";
-          if [ -f ./.coverage/lcov.info ]; then
-            head -n 40 ./.coverage/lcov.info
-          elif [ -f ./coverage/lcov.info ]; then
+          if [ -f ./coverage/lcov.info ]; then
             head -n 40 ./coverage/lcov.info
           else
             echo "no lcov.info found"
-          fi
-
-      - name: Ensure .coverage artifact
-        if: always()
-        run: |
-          mkdir -p .coverage
-          if [ -f coverage/lcov.info ]; then
-            echo "Copying coverage/lcov.info -> ./.coverage/lcov.info"
-            cp coverage/lcov.info ./.coverage/lcov.info
-          elif [ -f ./.coverage/lcov.info ]; then
-            echo ".coverage/lcov.info already exists"
-          else
-            echo "WARNING: no lcov.info found in coverage/ or .coverage/; Sonar/Codecov may not receive coverage"
           fi
 
       - name: Upload JUnit report
@@ -100,23 +80,22 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-lcov
-          path: ./.coverage/lcov.info
+          path: ./coverage/lcov.info
 
       - name: Codecov
         if: success() || failure()
         uses: codecov/codecov-action@v4
         with:
-          files: ./.coverage/lcov.info
+          files: ./coverage/lcov.info
           fail_ci_if_error: false
 
       - name: SonarCloud Scan
         if: ${{ env.SONAR_TOKEN != '' }}
         uses: sonarsource/sonarcloud-github-action@v2
-        with:
-          projectKey: ${{ env.SONAR_PROJECT_KEY }}
-          organization: ${{ env.SONAR_ORGANIZATION }}
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
+          SONAR_ORGANIZATION: ${{ secrets.SONAR_ORGANIZATION }}
 
       - name: Wait for SonarCloud Quality Gate
         if: ${{ env.SONAR_TOKEN != '' && env.SONAR_PROJECT_KEY != '' }}
