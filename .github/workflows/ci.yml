@@ -82,6 +82,13 @@ jobs:
           name: coverage-lcov
           path: ./coverage/lcov.info
 
+      - name: Upload coverage HTML
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-html
+          path: ./coverage/lcov-report
+
       - name: Codecov
         if: success() || failure()
         uses: codecov/codecov-action@v4
