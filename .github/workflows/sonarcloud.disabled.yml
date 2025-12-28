@@ -1,0 +1,5 @@
+# SonarCloud CI workflow disabled. This file contains the previous workflow implementation
+# and was renamed to avoid duplicate Sonar runs while the CI pipeline was streamlined.
+# To re-enable: rename this file to sonarcloud.yml and ensure repository secrets are set.
+
+# Previous workflow removed for brevity. See docs/sonar.md for instructions to enable Sonar in CI.

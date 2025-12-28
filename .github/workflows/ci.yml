@@ -1,10 +1,9 @@
 name: CI
 
+# Run CI on all pushes and pull requests (keeps tests/coverage for all branches)
 on:
-  push:
-    branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
+  push: {}
+  pull_request: {}
 
 jobs:
   test:
