@@ -11,12 +11,6 @@ jobs:
     strategy:
       matrix:
         node-version: [20.x]
-    # Map secrets to env so `if` expressions can safely reference them
-    env:
-      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
-      SONAR_ORGANIZATION: ${{ secrets.SONAR_ORGANIZATION }}
-      ENABLE_SONAR_CI: ${{ secrets.ENABLE_SONAR_CI }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -95,55 +89,4 @@ jobs:
         with:
           files: ./coverage/lcov.info
           fail_ci_if_error: false
-
-      - name: SonarCloud Scan
-        # Only run Sonar when enabled via secret to avoid conflict with Automatic Analysis
-        if: ${{ env.SONAR_TOKEN != '' && env.ENABLE_SONAR_CI == 'true' }}
-        uses: sonarsource/sonarcloud-github-action@v2
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
-          SONAR_ORGANIZATION: ${{ secrets.SONAR_ORGANIZATION }}
-
-      - name: Wait for SonarCloud Quality Gate
-        if: ${{ env.SONAR_TOKEN != '' && env.SONAR_PROJECT_KEY != '' && env.ENABLE_SONAR_CI == 'true' }}
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
-        run: |
-          if ! command -v jq &> /dev/null; then
-            sudo apt-get update -y && sudo apt-get install -y jq
-          fi
-
-          echo "Polling SonarCloud for Quality Gate (project: ${SONAR_PROJECT_KEY})..."
-          ATTEMPTS=30
-          SLEEP_SECONDS=10
-          for i in $(seq 1 $ATTEMPTS); do
-            echo "Attempt $i/$ATTEMPTS..."
-            resp=$(curl -s -u "${SONAR_TOKEN}:" "https://sonarcloud.io/api/qualitygates/project_status?projectKey=${SONAR_PROJECT_KEY}")
-            if [ -z "$resp" ]; then
-              echo "No response from SonarCloud API, retrying..."
-              sleep $SLEEP_SECONDS
-              continue
-            fi
-            status=$(echo "$resp" | jq -r '.projectStatus.status // "UNKNOWN"')
-            echo "Quality Gate status: $status"
-            if [ "$status" = "IN_PROGRESS" ]; then
-              echo "Quality Gate still in progress, sleeping $SLEEP_SECONDS s..."
-              sleep $SLEEP_SECONDS
-              continue
-            fi
-            if [ "$status" = "OK" ]; then
-              echo "Quality Gate PASSED"
-              exit 0
-            else
-              echo "Quality Gate FAILED with status: $status"
-              echo "Full response:"
-              echo "$resp"
-              exit 1
-            fi
-          done
-
-          echo "Timed out waiting for SonarCloud Quality Gate after $ATTEMPTS attempts."
-          exit 1
 
