@@ -5,8 +5,7 @@ on:
     branches:
       - main
       - master
-      - develop
-      - feature/**
+      - 'feature/**'
   pull_request:
     types: [opened, synchronize, reopened]
 
@@ -15,20 +14,60 @@ jobs:
     name: Build and analyze
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Use Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Install dependencies
-        run: npm ci
+          cache: 'npm'
+
+      - name: Install dependencies (robust)
+        run: |
+          echo "Trying npm ci..."
+          if npm ci --no-audit --no-fund; then
+            echo "npm ci succeeded"
+          else
+            echo "npm ci failed, falling back to npm install"
+            npm install --no-audit --no-fund
+          fi
+
       - name: Run Vitest (JUnit + Coverage)
         run: |
           npx vitest run --reporter=default --reporter=junit --outputFile=vitest-report.xml --coverage
+
+      - name: Ensure .coverage exists
+        run: |
+          mkdir -p .coverage
+          if [ -f ./coverage/lcov.info ]; then
+            cp ./coverage/lcov.info ./.coverage/lcov.info
+          fi
+
+      - name: List artifacts for debug
+        if: always()
+        run: |
+          echo "PWD: $(pwd)"
+          ls -la
+          if [ -f ./vitest-report.xml ]; then
+            echo "vitest-report.xml exists";
+            head -n 20 ./vitest-report.xml || true
+          else
+            echo "vitest-report.xml missing"
+          fi
+          if [ -f ./.coverage/lcov.info ]; then
+            echo ".coverage/lcov.info exists";
+            head -n 20 ./.coverage/lcov.info || true
+          else
+            echo ".coverage/lcov.info missing"
+          fi
+
       - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@v2
+        if: ${{ secrets.SONAR_TOKEN != '' }}
+        uses: sonarsource/sonarcloud-github-action@v2
         with:
-          projectBaseDir: .
+          projectKey: ${{ secrets.SONAR_PROJECT_KEY }}
+          organization: ${{ secrets.SONAR_ORGANIZATION }}
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
