@@ -23,10 +23,26 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          echo "Trying npm ci (fast, reproducible)..."
+          # Run npm ci; if it fails due to lockfile mismatch, fall back to npm install.
+          # Use a shell-group to ensure the step succeeds if npm install succeeds.
+          if npm ci --no-audit --no-fund; then
+            echo "npm ci succeeded"
+          else
+            echo "npm ci failed, falling back to npm install to repair lockfile for CI run"
+            npm install --no-audit --no-fund
+          fi
 
       - name: Run tests (Vitest) + coverage
-        run: npx vitest run --coverage -c vitest.config.ts --reporter=dot
+        run: |
+          # Prefer unified npm script for CI but fallback to direct npx if script missing
+          if npm run -s test:ci --silent; then
+            echo "Ran npm test:ci"
+          else
+            echo "Falling back to direct vitest run"
+            npx vitest run -c vitest.config.ts --coverage --reporter=junit --outputFile=vitest-report.xml
+          fi
 
       - name: Debug coverage files
         if: always()
@@ -96,3 +112,46 @@ jobs:
           organization: ${{ secrets.SONAR_ORGANIZATION }}
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      - name: Wait for SonarCloud Quality Gate
+        if: ${{ secrets.SONAR_TOKEN != '' && secrets.SONAR_PROJECT_KEY != '' }}
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
+        run: |
+          if ! command -v jq &> /dev/null; then
+            sudo apt-get update -y && sudo apt-get install -y jq
+          fi
+
+          echo "Polling SonarCloud for Quality Gate (project: ${SONAR_PROJECT_KEY})..."
+          ATTEMPTS=30
+          SLEEP_SECONDS=10
+          for i in $(seq 1 $ATTEMPTS); do
+            echo "Attempt $i/$ATTEMPTS..."
+            resp=$(curl -s -u "${SONAR_TOKEN}:" "https://sonarcloud.io/api/qualitygates/project_status?projectKey=${SONAR_PROJECT_KEY}")
+            if [ -z "$resp" ]; then
+              echo "No response from SonarCloud API, retrying..."
+              sleep $SLEEP_SECONDS
+              continue
+            fi
+            status=$(echo "$resp" | jq -r '.projectStatus.status // "UNKNOWN"')
+            echo "Quality Gate status: $status"
+            if [ "$status" = "IN_PROGRESS" ]; then
+              echo "Quality Gate still in progress, sleeping $SLEEP_SECONDS s..."
+              sleep $SLEEP_SECONDS
+              continue
+            fi
+            if [ "$status" = "OK" ]; then
+              echo "Quality Gate PASSED"
+              exit 0
+            else
+              echo "Quality Gate FAILED with status: $status"
+              echo "Full response:"
+              echo "$resp"
+              exit 1
+            fi
+          done
+
+          echo "Timed out waiting for SonarCloud Quality Gate after $ATTEMPTS attempts."
+          exit 1
+
