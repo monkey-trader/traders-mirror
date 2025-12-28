@@ -9,6 +9,7 @@
     "build": "craco build",
     "test": "craco test",
     "test:unit": "vitest",
+    "test:ci": "vitest run -c vitest.config.ts --coverage --reporter=dot --reporter=junit --outputFile=vitest-report.xml",
     "lint": "eslint 'src/**/*.{ts,tsx,js,jsx}' --max-warnings=0 || true",
     "lint:full": "eslint 'src/**/*.{ts,tsx,js,jsx}' --rulesdir tools/eslint-rules --rule 'no-short-vo-names:warn' || true",
     "format": "prettier --write 'src/**/*.{ts,tsx,js,jsx,json,css,md}'",
