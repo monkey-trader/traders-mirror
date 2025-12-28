@@ -48,4 +48,40 @@ describe('LocalStorageTradeRepository', () => {
     expect(found).toBeDefined()
     expect(found?.size.value).toBe(3)
   })
+
+  it('constructor loads from existing localStorage data', async () => {
+    // prepare raw storage with one repo trade
+    const raw = JSON.stringify([{ id: 'x1', symbol: 'LOADUSD', entryDate: new Date().toISOString(), size: 1, price: 1, side: 'LONG', market: 'All', status: 'OPEN', pnl: 0 }])
+    window.localStorage.setItem(TEST_KEY, raw)
+    const repo = new LocalStorageTradeRepository(TEST_KEY)
+    const all = await repo.getAll()
+    expect(all.find(a => a.id === 'x1')).toBeDefined()
+  })
+
+  it('seedDefaults=false starts empty and seed() persists', async () => {
+    const repo = new LocalStorageTradeRepository(TEST_KEY, { seedDefaults: false })
+    let all = await repo.getAll()
+    expect(all.length).toBe(0)
+    repo.seed([{ id: 's1', symbol: 'SUSD', entryDate: new Date().toISOString(), size: 1, price: 1, side: 'LONG', market: 'All', status: 'OPEN', pnl: 0 }])
+    all = await repo.getAll()
+    expect(all.find(a => a.id === 's1')).toBeDefined()
+  })
+
+  it('update falls back to save when id not found', async () => {
+    const repo = new LocalStorageTradeRepository(TEST_KEY, { seedDefaults: false })
+    const t = TradeFactory.create({ id: 'new-missing', symbol: 'NEWUSD', entryDate: new Date().toISOString(), size: 1, price: 1, side: 'LONG' })
+    // update should perform save when not existing
+    await repo.update(t)
+    const all = await repo.getAll()
+    expect(all.find(a => a.id === 'new-missing')).toBeDefined()
+  })
+
+  it('delete removes existing trade', async () => {
+    const repo = new LocalStorageTradeRepository(TEST_KEY)
+    const t = TradeFactory.create({ id: 'd1', symbol: 'DELUSD', entryDate: new Date().toISOString(), size: 1, price: 1, side: 'LONG' })
+    await repo.save(t)
+    await repo.delete('d1')
+    const all = await repo.getAll()
+    expect(all.find(a => a.id === 'd1')).toBeUndefined()
+  })
 })
