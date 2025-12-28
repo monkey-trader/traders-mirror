@@ -25,9 +25,14 @@ jobs:
       - name: Install dependencies
         run: |
           echo "Trying npm ci (fast, reproducible)..."
-          npm ci --no-audit --no-fund || (
-            echo "npm ci failed, falling back to npm install to repair lockfile for CI run" && npm install --no-audit --no-fund
-          )
+          # Run npm ci; if it fails due to lockfile mismatch, fall back to npm install.
+          # Use a shell-group to ensure the step succeeds if npm install succeeds.
+          if npm ci --no-audit --no-fund; then
+            echo "npm ci succeeded"
+          else
+            echo "npm ci failed, falling back to npm install to repair lockfile for CI run"
+            npm install --no-audit --no-fund
+          fi
 
       - name: Run tests (Vitest) + coverage
         run: npx vitest run --coverage -c vitest.config.ts --reporter=dot
