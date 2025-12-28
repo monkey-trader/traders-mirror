@@ -1003,7 +1003,7 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
           <div className={styles.undoContent}>
             <div>Aktion durchgeführt — Rückgängig möglich</div>
             <Button variant="ghost" onClick={handleUndo}>
-              Rückgängig
+              Undo
             </Button>
           </div>
         </div>

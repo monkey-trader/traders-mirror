@@ -30,7 +30,7 @@ async function findPumlFiles(dir) {
 async function main() {
   const repoRoot = process.cwd()
   const diagramsDir = path.join(repoRoot, 'docs', 'diagrams')
-  const outDirBuild = path.join(repoRoot, 'docs', 'build', 'assets', 'diagrams')
+  const outDirBuild = path.join(repoRoot, 'docs', 'build', 'assets', 'diagrams') // TODO: change build output dir to root build dir
   const outDirDiagrams = diagramsDir // write PNGs next to .puml files
 
   console.log('plantuml-build: repoRoot=', repoRoot)

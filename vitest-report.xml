@@ -1,0 +1,2048 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites name="vitest tests" tests="45" failures="3" errors="0" time="5.990007334">
+    <testsuite name="src/presentation/settings/Settings.test.tsx" timestamp="2025-12-28T05:46:43.646Z" hostname="Mac.localdomain" tests="1" failures="0" errors="0" skipped="0" time="0.193186417">
+        <testcase classname="src/presentation/settings/Settings.test.tsx" name="Settings Switch and TradeJournal debug banner &gt; toggles debug UI in localStorage and TradeJournal shows debug banner" time="0.1920805">
+            <system-out>
+[LocalStorageRepo] flushed [33m1[39m trades to localStorage
+[LocalStorageRepo] initialized with defaults
+
+            </system-out>
+        </testcase>
+    </testsuite>
+    <testsuite name="src/presentation/analysis/Analysis.integration.test.tsx" timestamp="2025-12-28T05:46:43.647Z" hostname="Mac.localdomain" tests="1" failures="0" errors="0" skipped="0" time="0.266611666">
+        <testcase classname="src/presentation/analysis/Analysis.integration.test.tsx" name="Analysis -&gt; prefill new trade &gt; prefills the New Trade form when creating from analysis" time="0.264620208">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/presentation/analysis/errorMapper.test.ts" timestamp="2025-12-28T05:46:43.647Z" hostname="Mac.localdomain" tests="2" failures="0" errors="0" skipped="0" time="0.001585167">
+        <testcase classname="src/presentation/analysis/errorMapper.test.ts" name="analysis errorMapper &gt; maps validation-like error" time="0.000703666">
+        </testcase>
+        <testcase classname="src/presentation/analysis/errorMapper.test.ts" name="analysis errorMapper &gt; maps unknown error to generic message" time="0.00008875">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/presentation/analysis/validation.test.ts" timestamp="2025-12-28T05:46:43.647Z" hostname="Mac.localdomain" tests="3" failures="0" errors="0" skipped="0" time="0.001730875">
+        <testcase classname="src/presentation/analysis/validation.test.ts" name="analysis validation &gt; returns error for missing symbol" time="0.000745833">
+        </testcase>
+        <testcase classname="src/presentation/analysis/validation.test.ts" name="analysis validation &gt; returns error for invalid price" time="0.000083792">
+        </testcase>
+        <testcase classname="src/presentation/analysis/validation.test.ts" name="analysis validation &gt; passes for valid suggestion" time="0.000102083">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/presentation/trade/TradeJournal.compact.test.tsx" timestamp="2025-12-28T05:46:43.648Z" hostname="Mac.localdomain" tests="1" failures="0" errors="0" skipped="0" time="1.345854333">
+        <testcase classname="src/presentation/trade/TradeJournal.compact.test.tsx" name="TradeJournal compact editor toggle &gt; shows compact summary and toggles editor when Show details clicked" time="1.343416458">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/presentation/trade/TradeJournal.entryDate.test.tsx" timestamp="2025-12-28T05:46:43.648Z" hostname="Mac.localdomain" tests="1" failures="0" errors="0" skipped="0" time="0.106089042">
+        <testcase classname="src/presentation/trade/TradeJournal.entryDate.test.tsx" name="TradeJournal entryDate &gt; prefills entryDate with current datetime (within 2 minutes)" time="0.104176">
+            <system-err>
+Warning: An update to TradeJournal inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() =&gt; {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you&apos;re testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at TradeJournal (/Users/morpheus/git/github/monkey-trader/traders-mirror/src/presentation/trade/TradeJournal.tsx:34:25)
+
+            </system-err>
+        </testcase>
+    </testsuite>
+    <testsuite name="src/presentation/trade/TradeJournal.integration.test.tsx" timestamp="2025-12-28T05:46:43.648Z" hostname="Mac.localdomain" tests="6" failures="3" errors="0" skipped="0" time="3.757231625">
+        <testcase classname="src/presentation/trade/TradeJournal.integration.test.tsx" name="TradeJournal Integration &gt; allows creating, editing, filtering, and deleting trades (desktop)" time="0.56067675">
+            <system-out>
+[TradeJournal] handleAdd start {
+  form: {
+    symbol: [32m&apos;EURUSD&apos;[39m,
+    entryDate: [32m&apos;2025-12-28T06:46&apos;[39m,
+    size: [33m12000[39m,
+    price: [33m1.118[39m,
+    side: [32m&apos;LONG&apos;[39m,
+    status: [32m&apos;OPEN&apos;[39m,
+    market: [32m&apos;Crypto&apos;[39m,
+    notes: [32m&apos;Breakdown&apos;[39m,
+    margin: [33m110[39m,
+    leverage: [33m20[39m,
+    sl: [33m1.112[39m,
+    tp1: [33m1.112[39m,
+    tp2: [33m1.108[39m,
+    tp3: [33m1.102[39m,
+    tp4: [33m1.098[39m
+  }
+}
+[TradeJournal] persisting trade to repo c8975ec4-3200-4e74-b944-ff73131b6a6f
+
+[TradeJournal] persisted trade to repo c8975ec4-3200-4e74-b944-ff73131b6a6f
+
+[TradeJournal] reloaded positions from repo [33m15[39m
+
+            </system-out>
+            <failure message="Found multiple elements with the text: EURUSD
+
+Here are the matching elements:
+
+Ignored nodes: comments, script, style
+[36m&lt;div[39m
+  [33mclass[39m=[32m&quot;_symbol_f51c54&quot;[39m
+  [33mid[39m=[32m&quot;pos-t3-symbol&quot;[39m
+[36m&gt;[39m
+  [0mEURUSD[0m
+[36m&lt;/div&gt;[39m
+
+Ignored nodes: comments, script, style
+[36m&lt;div[39m
+  [33mclass[39m=[32m&quot;_symbol_f51c54&quot;[39m
+  [33mid[39m=[32m&quot;pos-c8975ec4-3200-4e74-b944-ff73131b6a6f-symbol&quot;[39m
+[36m&gt;[39m
+  [0mEURUSD[0m
+[36m&lt;/div&gt;[39m
+
+(If this is intentional, then use the `*AllBy*` variant of the query (like `queryAllByText`, `getAllByText`, or `findAllByText`)).
+
+Ignored nodes: comments, script, style
+[36m&lt;body&gt;[39m
+  [36m&lt;div&gt;[39m
+    [36m&lt;div[39m
+      [33mclass[39m=[32m&quot;_headerRow_1a9f4a&quot;[39m
+    [36m&gt;[39m
+      [36m&lt;h2[39m
+        [33mclass[39m=[32m&quot;_title_1a9f4a&quot;[39m
+      [36m&gt;[39m
+        [0mTrading Journal[0m
+      [36m&lt;/h2&gt;[39m
+      [36m&lt;div[39m
+        [33mclass[39m=[32m&quot;_controls_1a9f4a&quot;[39m
+      [36m&gt;[39m
+        [36m&lt;button[39m
+          [33mclass[39m=[32m&quot;_button_e93d98 _secondary_e93d98&quot;[39m
+        [36m&gt;[39m
+          [0mLoad mock data[0m
+        [36m&lt;/button&gt;[39m
+      [36m&lt;/div&gt;[39m
+    [36m&lt;/div&gt;[39m
+    [36m&lt;div[39m
+      [33mclass[39m=[32m&quot;_mobileNewTradeBtnWrap_1a9f4a&quot;[39m
+    [36m/&gt;[39m
+    [36m&lt;div[39m
+      [33mclass[39m=[32m&quot;_grid_1a9f4a _gridCompact_1a9f4a _fullScreen_1a9f4a&quot;[39m
+    [36m&gt;[39m
+      [36m&lt;div[39m
+        [33mclass[39m=[32m&quot;_left_1a9f4a&quot;[39m
+      [36m&gt;[39m
+        [36m&lt;div[39m
+          [33mclass[39m=[32m&quot;_card_0a3619&quot;[39m
+        [36m&gt;[39m
+          [36m&lt;div[39m
+            [33mclass[39m=[32m&quot;_content_0a3619&quot;[39m
+          [36m&gt;[39m
+            [36m&lt;div[39m
+              [33mclass[39m=[32m&quot;_newTradeWrapper_b72150&quot;[39m
+            [36m&gt;[39m
+              [36m&lt;div[39m
+                [33mclass[39m=[32m&quot;_newTradeHeader_b72150&quot;[39m
+              [36m&gt;[39m
+                [36m&lt;div[39m
+                  [33mstyle[39m=[32m&quot;display: flex; align-items: center; justify-content: space-between; width: 100%;&quot;[39m
+                [36m&gt;[39m
+                  [36m&lt;span[39m
+                    [33mstyle[39m=[32m&quot;font-weight: 700;&quot;[39m
+                  [36m&gt;[39m
+                    [0mNew Trade[0m
+                  [36m&lt;/span&gt;[39m
+                [36m&lt;/div&gt;[39m
+              [36m&lt;/div&gt;[39m
+              [36m&lt;form[39m
+                [33mclass[39m=[32m&quot;_form_b72150&quot;[39m
+              [36m&gt;[39m
+                [36m&lt;input[39m
+                  [33mid[39m=[32m&quot;entryDate&quot;[39m
+                  [33mtype[39m=[32m&quot;hidden&quot;[39m
+                  [33mvalue[39m=[32m&quot;2025-12-28T06:46&quot;[39m
+                [36m/&gt;[39m
+                [36m&lt;div[39m
+                  [33mclass[39m=[32m&quot;_newTradeGrid_b72150&quot;[39m
+                [36m&gt;[39m
+                  [36m&lt;div[39m
+                    [33mclass[39m=[32m&quot;_newTradeField_b72150&quot;[39m
+                  [36m&gt;[39m
+                    [36m&lt;label[39m
+                      [33mclass[39m=[32m&quot;_wrapper_37bd84&quot;[39m
+                    [36m&gt;[39m
+                      [36m&lt;span[39m
+                        [33mclass[39m=[32m&quot;_label_37bd84&quot;[39m
+                      [36m&gt;[39m
+                        [0mMarket[0m
+                      [36m&lt;/span&gt;[39m
+                      [36m&lt;div[39m
+                        [33maria-label[39m=[32m&quot;Market select&quot;[39m
+                        [33mclass[39m=[32m&quot;_container_c6c780 &quot;[39m
+                        [33mrole[39m=[32m&quot;tablist&quot;[39m
+                      [36m&gt;[39m
+                        [36m&lt;button[39m
+                          [33maria-selected[39m=[32m&quot;false&quot;[39m
+                          [33mclass[39m=[32m&quot;_badge_c6c780  _compact_c6c780&quot;[39m
+                          [33mrole[39m=[32m&quot;tab&quot;[39m
+                        [36m&gt;[39m
+                          [0mForex[0m
+                        [36m&lt;/button&gt;[39m
+                        [36m&lt;button[39m
+                          [33maria-selected[39m=[32m&quot;true&quot;[39m
+                          [33mclass[39m=[32m&quot;_badge_c6c780 _active_c6c780 _compact_c6c780&quot;[39m
+                          [33mrole[39m=[32m&quot;tab&quot;[39m
+                        [36m&gt;[39m
+                          [0mCrypto[0m
+                        [36m&lt;/button&gt;[39m
+                      [36m&lt;/div&gt;[39m
+                    [36m&lt;/label&gt;[39m
+                  [36m&lt;/div&gt;[39m
+                  [36m&lt;div[39m
+                    [33mclass[39m=[32m&quot;_newTradeField_b72150&quot;[39m
+                  [36m&gt;[39m
+                    [36m&lt;label[39m
+                      [33mclass[39m=[32m&quot;_wrapper_37bd84&quot;[39m
+                    [36m&gt;[39m
+                      [36m&lt;span[39m
+                        [33mclass[39m=[32m&quot;_label_37bd84&quot;[39m
+                      [36m&gt;[39m
+                        [0mSymbol[0m
+                      [36m&lt;/span&gt;[39m
+                      [36m&lt;input[39m
+                        [33mclass[39m=[32m&quot;_input_37bd84&quot;[39m
+                        [33mid[39m=[32m&quot;symbol&quot;[39m
+                        [33mplaceholder[39m=[32m&quot;e.g. BTC&quot;[39m
+                        [33mvalue[39m=[32m&quot;&quot;[39m
+                      [36m/&gt;[39m
+                    [36m&lt;/label&gt;[39m
+                  [36m&lt;/div&gt;[39m
+                  [36m&lt;div[39m
+                    [33mclass[39m=[32m&quot;_newTradeField_b72150&quot;[39m
+                  [36m&gt;[39m
+                    [36m&lt;label[39m
+                      [33mclass[39m=[32m&quot;_wrapper_37bd84&quot;[39m
+                    [36m&gt;[39m
+                      [36m&lt;span[39m
+                        [33mclass[39m=[32m&quot;_label_37bd84&quot;[39m
+                      [36m&gt;[39m
+                        [0mEntry Price *[0m
+                      [36m&lt;/span&gt;[39m
+                      [36m&lt;input[39m
+                        [33mclass[39m=[32m&quot;_input_37bd84&quot;[39m
+                        [33mid[39m=[32m&quot;price&quot;[39m
+                        [33mtype[39m=[32m&quot;number&quot;[39m
+                        [33mvalue[39m=[32m&quot;&quot;[39m
+                      [36m/&gt;[39m
+                    [36m&lt;/label&gt;[39m
+                  [36m&lt;/div&gt;[39m
+                  [36m&lt;div[39m
+                    [33mclass[39m=[32m&quot;_newTradeField_b72150&quot;[39m
+                  [36m&gt;[39m
+                    [36m&lt;label[39m
+                      [33mclass[39m=[32m&quot;_wrapper_37bd84&quot;[39m
+                    [36m&gt;[39m
+                      [36m&lt;span[39m
+                        [33mclass[39m=[32m&quot;_label_37bd84&quot;[39m
+                      [36m&gt;[39m
+                        [0mMargin *[0m
+                      [36m&lt;/span&gt;[39m
+                      [36m&lt;input[39m
+                        [33mclass[39m=[32m&quot;_input_37bd84&quot;[39m
+                        [33mid[39m=[32m&quot;margin&quot;[39m
+                        [33mtype[39m=[32m&quot;number&quot;[39m
+                        [33mvalue[39m=[32m&quot;&quot;[39m
+                      [36m/&gt;[39m
+                    [36m&lt;/label&gt;[39m
+                  [36m&lt;/div&gt;[39m
+                  [36m&lt;div[39m
+                    [33mclass[39m=[32m&quot;_newTradeField_b72150&quot;[39m
+                  [36m&gt;[39m
+                    [36m&lt;label[39m
+                      [33mclass[39m=[32m&quot;_wrapper_37bd84&quot;[39m
+                    [36m&gt;[39m
+                      [36m&lt;span[39m
+                        [33mclass[39m=[32m&quot;_label_37bd84&quot;[39m
+                      [36m&gt;[39m
+                        [0mLeverage *[0m
+                      [36m&lt;/span&gt;[39m
+                      ..." type="TestingLibraryElementError">
+TestingLibraryElementError: Found multiple elements with the text: EURUSD
+
+Here are the matching elements:
+
+Ignored nodes: comments, script, style
+&lt;div
+  class=&quot;_symbol_f51c54&quot;
+  id=&quot;pos-t3-symbol&quot;
+&gt;
+  EURUSD
+&lt;/div&gt;
+
+Ignored nodes: comments, script, style
+&lt;div
+  class=&quot;_symbol_f51c54&quot;
+  id=&quot;pos-c8975ec4-3200-4e74-b944-ff73131b6a6f-symbol&quot;
+&gt;
+  EURUSD
+&lt;/div&gt;
+
+(If this is intentional, then use the `*AllBy*` variant of the query (like `queryAllByText`, `getAllByText`, or `findAllByText`)).
+
+Ignored nodes: comments, script, style
+&lt;body&gt;
+  &lt;div&gt;
+    &lt;div
+      class=&quot;_headerRow_1a9f4a&quot;
+    &gt;
+      &lt;h2
+        class=&quot;_title_1a9f4a&quot;
+      &gt;
+        Trading Journal
+      &lt;/h2&gt;
+      &lt;div
+        class=&quot;_controls_1a9f4a&quot;
+      &gt;
+        &lt;button
+          class=&quot;_button_e93d98 _secondary_e93d98&quot;
+        &gt;
+          Load mock data
+        &lt;/button&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div
+      class=&quot;_mobileNewTradeBtnWrap_1a9f4a&quot;
+    /&gt;
+    &lt;div
+      class=&quot;_grid_1a9f4a _gridCompact_1a9f4a _fullScreen_1a9f4a&quot;
+    &gt;
+      &lt;div
+        class=&quot;_left_1a9f4a&quot;
+      &gt;
+        &lt;div
+          class=&quot;_card_0a3619&quot;
+        &gt;
+          &lt;div
+            class=&quot;_content_0a3619&quot;
+          &gt;
+            &lt;div
+              class=&quot;_newTradeWrapper_b72150&quot;
+            &gt;
+              &lt;div
+                class=&quot;_newTradeHeader_b72150&quot;
+              &gt;
+                &lt;div
+                  style=&quot;display: flex; align-items: center; justify-content: space-between; width: 100%;&quot;
+                &gt;
+                  &lt;span
+                    style=&quot;font-weight: 700;&quot;
+                  &gt;
+                    New Trade
+                  &lt;/span&gt;
+                &lt;/div&gt;
+              &lt;/div&gt;
+              &lt;form
+                class=&quot;_form_b72150&quot;
+              &gt;
+                &lt;input
+                  id=&quot;entryDate&quot;
+                  type=&quot;hidden&quot;
+                  value=&quot;2025-12-28T06:46&quot;
+                /&gt;
+                &lt;div
+                  class=&quot;_newTradeGrid_b72150&quot;
+                &gt;
+                  &lt;div
+                    class=&quot;_newTradeField_b72150&quot;
+                  &gt;
+                    &lt;label
+                      class=&quot;_wrapper_37bd84&quot;
+                    &gt;
+                      &lt;span
+                        class=&quot;_label_37bd84&quot;
+                      &gt;
+                        Market
+                      &lt;/span&gt;
+                      &lt;div
+                        aria-label=&quot;Market select&quot;
+                        class=&quot;_container_c6c780 &quot;
+                        role=&quot;tablist&quot;
+                      &gt;
+                        &lt;button
+                          aria-selected=&quot;false&quot;
+                          class=&quot;_badge_c6c780  _compact_c6c780&quot;
+                          role=&quot;tab&quot;
+                        &gt;
+                          Forex
+                        &lt;/button&gt;
+                        &lt;button
+                          aria-selected=&quot;true&quot;
+                          class=&quot;_badge_c6c780 _active_c6c780 _compact_c6c780&quot;
+                          role=&quot;tab&quot;
+                        &gt;
+                          Crypto
+                        &lt;/button&gt;
+                      &lt;/div&gt;
+                    &lt;/label&gt;
+                  &lt;/div&gt;
+                  &lt;div
+                    class=&quot;_newTradeField_b72150&quot;
+                  &gt;
+                    &lt;label
+                      class=&quot;_wrapper_37bd84&quot;
+                    &gt;
+                      &lt;span
+                        class=&quot;_label_37bd84&quot;
+                      &gt;
+                        Symbol
+                      &lt;/span&gt;
+                      &lt;input
+                        class=&quot;_input_37bd84&quot;
+                        id=&quot;symbol&quot;
+                        placeholder=&quot;e.g. BTC&quot;
+                        value=&quot;&quot;
+                      /&gt;
+                    &lt;/label&gt;
+                  &lt;/div&gt;
+                  &lt;div
+                    class=&quot;_newTradeField_b72150&quot;
+                  &gt;
+                    &lt;label
+                      class=&quot;_wrapper_37bd84&quot;
+                    &gt;
+                      &lt;span
+                        class=&quot;_label_37bd84&quot;
+                      &gt;
+                        Entry Price *
+                      &lt;/span&gt;
+                      &lt;input
+                        class=&quot;_input_37bd84&quot;
+                        id=&quot;price&quot;
+                        type=&quot;number&quot;
+                        value=&quot;&quot;
+                      /&gt;
+                    &lt;/label&gt;
+                  &lt;/div&gt;
+                  &lt;div
+                    class=&quot;_newTradeField_b72150&quot;
+                  &gt;
+                    &lt;label
+                      class=&quot;_wrapper_37bd84&quot;
+                    &gt;
+                      &lt;span
+                        class=&quot;_label_37bd84&quot;
+                      &gt;
+                        Margin *
+                      &lt;/span&gt;
+                      &lt;input
+                        class=&quot;_input_37bd84&quot;
+                        id=&quot;margin&quot;
+                        type=&quot;number&quot;
+                        value=&quot;&quot;
+                      /&gt;
+                    &lt;/label&gt;
+                  &lt;/div&gt;
+                  &lt;div
+                    class=&quot;_newTradeField_b72150&quot;
+                  &gt;
+                    &lt;label
+                      class=&quot;_wrapper_37bd84&quot;
+                    &gt;
+                      &lt;span
+                        class=&quot;_label_37bd84&quot;
+                      &gt;
+                        Leverage *
+                      &lt;/span&gt;
+                      ...
+ ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ getElementError node_modules/@testing-library/dom/dist/query-helpers.js:20:35
+ ❯ getMultipleElementsFoundError node_modules/@testing-library/dom/dist/query-helpers.js:23:10
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:55:13
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/presentation/trade/TradeJournal.integration.test.tsx:29:19
+            </failure>
+        </testcase>
+        <testcase classname="src/presentation/trade/TradeJournal.integration.test.tsx" name="TradeJournal Integration &gt; renders and interacts correctly in compactView (mobile/forceCompact)" time="0.804314417">
+            <system-out>
+[TradeJournal] handleAdd start {
+  form: {
+    symbol: [32m&apos;GBPUSD&apos;[39m,
+    entryDate: [32m&apos;2025-12-28T06:46&apos;[39m,
+    size: [33m10000[39m,
+    price: [33m1.25[39m,
+    side: [32m&apos;LONG&apos;[39m,
+    status: [32m&apos;OPEN&apos;[39m,
+    market: [32m&apos;Crypto&apos;[39m,
+    notes: [32m&apos;&apos;[39m,
+    margin: [33m100[39m,
+    leverage: [33m10[39m,
+    sl: [33m1.2[39m
+  }
+}
+[TradeJournal] persisting trade to repo e590a7fb-bf07-415f-b872-6903edfa9d7b
+
+[TradeJournal] persisted trade to repo e590a7fb-bf07-415f-b872-6903edfa9d7b
+
+[TradeJournal] reloaded positions from repo [33m15[39m
+
+            </system-out>
+        </testcase>
+        <testcase classname="src/presentation/trade/TradeJournal.integration.test.tsx" name="TradeJournal Integration &gt; shows validation errors for missing required fields" time="1.068134875">
+            <system-out>
+[TradeJournal] handleAdd start {
+  form: {
+    symbol: [32m&apos;&apos;[39m,
+    entryDate: [32m&apos;2025-12-28T06:46&apos;[39m,
+    size: [90mundefined[39m,
+    price: [90mundefined[39m,
+    side: [32m&apos;LONG&apos;[39m,
+    status: [32m&apos;OPEN&apos;[39m,
+    market: [32m&apos;Crypto&apos;[39m,
+    notes: [32m&apos;&apos;[39m
+  }
+}
+[TradeJournal] validation failed {
+  symbol: [32m&apos;Symbol ist erforderlich&apos;[39m,
+  price: [32m&apos;Entry Price ist erforderlich&apos;[39m,
+  size: [32m&apos;Größe muss positiv sein&apos;[39m,
+  sl: [32m&apos;Stop Loss (SL) ist erforderlich&apos;[39m,
+  margin: [32m&apos;Margin ist erforderlich&apos;[39m,
+  leverage: [32m&apos;Leverage ist erforderlich&apos;[39m
+}
+
+            </system-out>
+            <failure message="Found multiple elements with the text: /symbol/i
+
+Here are the matching elements:
+
+Ignored nodes: comments, script, style
+[36m&lt;span[39m
+  [33mclass[39m=[32m&quot;_label_37bd84&quot;[39m
+[36m&gt;[39m
+  [0mSymbol[0m
+[36m&lt;/span&gt;[39m
+
+Ignored nodes: comments, script, style
+[36m&lt;div[39m
+  [33mclass[39m=[32m&quot;_fieldError_b72150&quot;[39m
+  [33mid[39m=[32m&quot;symbol-error&quot;[39m
+[36m&gt;[39m
+  [0mSymbol ist erforderlich[0m
+[36m&lt;/div&gt;[39m
+
+(If this is intentional, then use the `*AllBy*` variant of the query (like `queryAllByText`, `getAllByText`, or `findAllByText`)).
+
+Ignored nodes: comments, script, style
+[36m&lt;body&gt;[39m
+  [36m&lt;div&gt;[39m
+    [36m&lt;div[39m
+      [33mclass[39m=[32m&quot;_headerRow_1a9f4a&quot;[39m
+    [36m&gt;[39m
+      [36m&lt;h2[39m
+        [33mclass[39m=[32m&quot;_title_1a9f4a&quot;[39m
+      [36m&gt;[39m
+        [0mTrading Journal[0m
+      [36m&lt;/h2&gt;[39m
+      [36m&lt;div[39m
+        [33mclass[39m=[32m&quot;_controls_1a9f4a&quot;[39m
+      [36m&gt;[39m
+        [36m&lt;button[39m
+          [33mclass[39m=[32m&quot;_button_e93d98 _secondary_e93d98&quot;[39m
+        [36m&gt;[39m
+          [0mLoad mock data[0m
+        [36m&lt;/button&gt;[39m
+      [36m&lt;/div&gt;[39m
+    [36m&lt;/div&gt;[39m
+    [36m&lt;div[39m
+      [33mclass[39m=[32m&quot;_mobileNewTradeBtnWrap_1a9f4a&quot;[39m
+    [36m/&gt;[39m
+    [36m&lt;div[39m
+      [33mclass[39m=[32m&quot;_grid_1a9f4a _gridCompact_1a9f4a _fullScreen_1a9f4a&quot;[39m
+    [36m&gt;[39m
+      [36m&lt;div[39m
+        [33mclass[39m=[32m&quot;_left_1a9f4a&quot;[39m
+      [36m&gt;[39m
+        [36m&lt;div[39m
+          [33mclass[39m=[32m&quot;_card_0a3619&quot;[39m
+        [36m&gt;[39m
+          [36m&lt;div[39m
+            [33mclass[39m=[32m&quot;_content_0a3619&quot;[39m
+          [36m&gt;[39m
+            [36m&lt;div[39m
+              [33mclass[39m=[32m&quot;_newTradeWrapper_b72150&quot;[39m
+            [36m&gt;[39m
+              [36m&lt;div[39m
+                [33mclass[39m=[32m&quot;_newTradeHeader_b72150&quot;[39m
+              [36m&gt;[39m
+                [36m&lt;div[39m
+                  [33mstyle[39m=[32m&quot;display: flex; align-items: center; justify-content: space-between; width: 100%;&quot;[39m
+                [36m&gt;[39m
+                  [36m&lt;span[39m
+                    [33mstyle[39m=[32m&quot;font-weight: 700;&quot;[39m
+                  [36m&gt;[39m
+                    [0mNew Trade[0m
+                  [36m&lt;/span&gt;[39m
+                [36m&lt;/div&gt;[39m
+              [36m&lt;/div&gt;[39m
+              [36m&lt;form[39m
+                [33mclass[39m=[32m&quot;_form_b72150&quot;[39m
+              [36m&gt;[39m
+                [36m&lt;input[39m
+                  [33mid[39m=[32m&quot;entryDate&quot;[39m
+                  [33mtype[39m=[32m&quot;hidden&quot;[39m
+                  [33mvalue[39m=[32m&quot;2025-12-28T06:46&quot;[39m
+                [36m/&gt;[39m
+                [36m&lt;div[39m
+                  [33mclass[39m=[32m&quot;_newTradeGrid_b72150&quot;[39m
+                [36m&gt;[39m
+                  [36m&lt;div[39m
+                    [33mclass[39m=[32m&quot;_newTradeField_b72150&quot;[39m
+                  [36m&gt;[39m
+                    [36m&lt;label[39m
+                      [33mclass[39m=[32m&quot;_wrapper_37bd84&quot;[39m
+                    [36m&gt;[39m
+                      [36m&lt;span[39m
+                        [33mclass[39m=[32m&quot;_label_37bd84&quot;[39m
+                      [36m&gt;[39m
+                        [0mMarket[0m
+                      [36m&lt;/span&gt;[39m
+                      [36m&lt;div[39m
+                        [33maria-label[39m=[32m&quot;Market select&quot;[39m
+                        [33mclass[39m=[32m&quot;_container_c6c780 &quot;[39m
+                        [33mrole[39m=[32m&quot;tablist&quot;[39m
+                      [36m&gt;[39m
+                        [36m&lt;button[39m
+                          [33maria-selected[39m=[32m&quot;false&quot;[39m
+                          [33mclass[39m=[32m&quot;_badge_c6c780  _compact_c6c780&quot;[39m
+                          [33mrole[39m=[32m&quot;tab&quot;[39m
+                        [36m&gt;[39m
+                          [0mForex[0m
+                        [36m&lt;/button&gt;[39m
+                        [36m&lt;button[39m
+                          [33maria-selected[39m=[32m&quot;true&quot;[39m
+                          [33mclass[39m=[32m&quot;_badge_c6c780 _active_c6c780 _compact_c6c780&quot;[39m
+                          [33mrole[39m=[32m&quot;tab&quot;[39m
+                        [36m&gt;[39m
+                          [0mCrypto[0m
+                        [36m&lt;/button&gt;[39m
+                      [36m&lt;/div&gt;[39m
+                    [36m&lt;/label&gt;[39m
+                  [36m&lt;/div&gt;[39m
+                  [36m&lt;div[39m
+                    [33mclass[39m=[32m&quot;_newTradeField_b72150&quot;[39m
+                  [36m&gt;[39m
+                    [36m&lt;label[39m
+                      [33mclass[39m=[32m&quot;_wrapper_37bd84&quot;[39m
+                    [36m&gt;[39m
+                      [36m&lt;span[39m
+                        [33mclass[39m=[32m&quot;_label_37bd84&quot;[39m
+                      [36m&gt;[39m
+                        [0mSymbol[0m
+                      [36m&lt;/span&gt;[39m
+                      [36m&lt;input[39m
+                        [33maria-describedby[39m=[32m&quot;symbol-error&quot;[39m
+                        [33mclass[39m=[32m&quot;_input_37bd84 _inputError_37bd84&quot;[39m
+                        [33mid[39m=[32m&quot;symbol&quot;[39m
+                        [33mplaceholder[39m=[32m&quot;e.g. BTC&quot;[39m
+                        [33mvalue[39m=[32m&quot;&quot;[39m
+                      [36m/&gt;[39m
+                    [36m&lt;/label&gt;[39m
+                    [36m&lt;div[39m
+                      [33mclass[39m=[32m&quot;_fieldError_b72150&quot;[39m
+                      [33mid[39m=[32m&quot;symbol-error&quot;[39m
+                    [36m&gt;[39m
+                      [0mSymbol ist erforderlich[0m
+                    [36m&lt;/div&gt;[39m
+                  [36m&lt;/div&gt;[39m
+                  [36m&lt;div[39m
+                    [33mclass[39m=[32m&quot;_newTradeField_b72150&quot;[39m
+                  [36m&gt;[39m
+                    [36m&lt;label[39m
+                      [33mclass[39m=[32m&quot;_wrapper_37bd84&quot;[39m
+                    [36m&gt;[39m
+                      [36m&lt;span[39m
+                        [33mclass[39m=[32m&quot;_label_37bd84&quot;[39m
+                      [36m&gt;[39m
+                        [0mEntry Price *[0m
+                      [36m&lt;/span&gt;[39m
+                      [36m&lt;input[39m
+                        [33maria-describedby[39m=[32m&quot;price-error&quot;[39m
+                        [33mclass[39m=[32m&quot;_input_37bd84 _inputError_37bd84&quot;[39m
+                        [33mid[39m=[32m&quot;price&quot;[39m
+                        [33mtype[39m=[32m&quot;number&quot;[39m
+                        [33mvalue[39m=[32m&quot;&quot;[39m
+                      [36m/&gt;[39m
+                    [36m&lt;/label&gt;[39m
+                    [36m&lt;div[39m
+                      [33mclass[39m=[32m&quot;_fieldError_b72150&quot;[39m
+                      [33mid[39m=[32m&quot;price-error&quot;[39m
+                    [36m&gt;[39m
+                      [0mEntry Price ist erforderlich[0m
+                    [36m&lt;/div&gt;[39m
+                  [36m&lt;/div&gt;[39m
+                  [36m&lt;div[39m
+                    [33mclass[39m=[32m&quot;_newTradeField_b72150&quot;[39m
+                  [36m&gt;[39m
+                    [36m&lt;label[39m
+                      [33mclass[39m=[32m&quot;_wrapper_37bd84&quot;[39m
+                    [36m&gt;[39m
+                      [36m&lt;span[39m
+                        [33mclass[39m=[32m&quot;_label_37bd84&quot;[39m
+                      [36m&gt;[39m
+                        [0mMargin *[0m
+                      [36m&lt;/span&gt;[39m
+                      [36m&lt;input[39m
+                        [33maria-describedby[39m=[32m&quot;margin-error&quot;[39m
+          ...
+
+Ignored nodes: comments, script, style
+[36m&lt;body&gt;[39m
+  [36m&lt;div&gt;[39m
+    [36m&lt;div[39m
+      [33mclass[39m=[32m&quot;_headerRow_1a9f4a&quot;[39m
+    [36m&gt;[39m
+      [36m&lt;h2[39m
+        [33mclass[39m=[32m&quot;_title_1a9f4a&quot;[39m
+      [36m&gt;[39m
+        [0mTrading Journal[0m
+      [36m&lt;/h2&gt;[39m
+      [36m&lt;div[39m
+        [33mclass[39m=[32m&quot;_controls_1a9f4a&quot;[39m
+      [36m&gt;[39m
+        [36m&lt;button[39m
+          [33mclass[39m=[32m&quot;_button_e93d98 _secondary_e93d98&quot;[39m
+        [36m&gt;[39m
+          [0mLoad mock data[0m
+        [36m&lt;/button&gt;[39m
+      [36m&lt;/div&gt;[39m
+    [36m&lt;/div&gt;[39m
+    [36m&lt;div[39m
+      [33mclass[39m=[32m&quot;_mobileNewTradeBtnWrap_1a9f4a&quot;[39m
+    [36m/&gt;[39m
+    [36m&lt;div[39m
+      [33mclass[39m=[32m&quot;_grid_1a9f4a _gridCompact_1a9f4a _fullScreen_1a9f4a&quot;[39m
+    [36m&gt;[39m
+      [36m&lt;div[39m
+        [33mclass[39m=[32m&quot;_left_1a9f4a&quot;[39m
+      [36m&gt;[39m
+        [36m&lt;div[39m
+          [33mclass[39m=[32m&quot;_card_0a3619&quot;[39m
+        [36m&gt;[39m
+          [36m&lt;div[39m
+            [33mclass[39m=[32m&quot;_content_0a3619&quot;[39m
+          [36m&gt;[39m
+            [36m&lt;div[39m
+              [33mclass[39m=[32m&quot;_newTradeWrapper_b72150&quot;[39m
+            [36m&gt;[39m
+              [36m&lt;div[39m
+                [33mclass[39m=[32m&quot;_newTradeHeader_b72150&quot;[39m
+              [36m&gt;[39m
+                [36m&lt;div[39m
+                  [33mstyle[39m=[32m&quot;display: flex; align-items: center; justify-content: space-between; width: 100%;&quot;[39m
+                [36m&gt;[39m
+                  [36m&lt;span[39m
+                    [33mstyle[39m=[32m&quot;font-weight: 700;&quot;[39m
+                  [36m&gt;[39m
+                    [0mNew Trade[0m
+                  [36m&lt;/span&gt;[39m
+                [36m&lt;/div&gt;[39m
+              [36m&lt;/div&gt;[39m
+              [36m&lt;form[39m
+                [33mclass[39m=[32m&quot;_form_b72150&quot;[39m
+              [36m&gt;[39m
+                [36m&lt;input[39m
+                  [33mid[39m=[32m&quot;entryDate&quot;[39m
+                  [33mtype[39m=[32m&quot;hidden&quot;[39m
+                  [33mvalue[39m=[32m&quot;2025-12-28T06:46&quot;[39m
+                [36m/&gt;[39m
+                [36m&lt;div[39m
+                  [33mclass[39m=[32m&quot;_newTradeGrid_b72150&quot;[39m
+                [36m&gt;[39m
+                  [36m&lt;div[39m
+                    [33mclass[39m=[32m&quot;_newTradeField_b72150&quot;[39m
+                  [36m&gt;[39m
+                    [36m&lt;label[39m
+                      [33mclass[39m=[32m&quot;_wrapper_37bd84&quot;[39m
+                    [36m&gt;[39m
+                      [36m&lt;span[39m
+                        [33mclass[39m=[32m&quot;_label_37bd84&quot;[39m
+                      [36m&gt;[39m
+                        [0mMarket[0m
+                      [36m&lt;/span&gt;[39m
+                      [36m&lt;div[39m
+                        [33maria-label[39m=[32m&quot;Market select&quot;[39m
+                        [33mclass[39m=[32m&quot;_container_c6c780 &quot;[39m
+                        [33mrole[39m=[32m&quot;tablist&quot;[39m
+                      [36m&gt;[39m
+                        [36m&lt;button[39m
+                          [33maria-selected[39m=[32m&quot;false&quot;[39m
+                          [33mclass[39m=[32m&quot;_badge_c6c780  _compact_c6c780&quot;[39m
+                          [33mrole[39m=[32m&quot;tab&quot;[39m
+                        [36m&gt;[39m
+                          [0mForex[0m
+                        [36m&lt;/button&gt;[39m
+                        [36m&lt;button[39m
+                          [33maria-selected[39m=[32m&quot;true&quot;[39m
+                          [33mclass[39m=[32m&quot;_badge_c6c780 _active_c6c780 _compact_c6c780&quot;[39m
+                          [33mrole[39m=[32m&quot;tab&quot;[39m
+                        [36m&gt;[39m
+                          [0mCrypto[0m
+                        [36m&lt;/button&gt;[39m
+                      [36m&lt;/div&gt;[39m
+                    [36m&lt;/label&gt;[39m
+                  [36m&lt;/div&gt;[39m
+                  [36m&lt;div[39m
+                    [33mclass[39m=[32m&quot;_newTradeField_b72150&quot;[39m
+                  [36m&gt;[39m
+                    [36m&lt;label[39m
+                      [33mclass[39m=[32m&quot;_wrapper_37bd84&quot;[39m
+                    [36m&gt;[39m
+                      [36m&lt;span[39m
+                        [33mclass[39m=[32m&quot;_label_37bd84&quot;[39m
+                      [36m&gt;[39m
+                        [0mSymbol[0m
+                      [36m&lt;/span&gt;[39m
+                      [36m&lt;input[39m
+                        [33maria-describedby[39m=[32m&quot;symbol-error&quot;[39m
+                        [33mclass[39m=[32m&quot;_input_37bd84 _inputError_37bd84&quot;[39m
+                        [33mid[39m=[32m&quot;symbol&quot;[39m
+                        [33mplaceholder[39m=[32m&quot;e.g. BTC&quot;[39m
+                        [33mvalue[39m=[32m&quot;&quot;[39m
+                      [36m/&gt;[39m
+                    [36m&lt;/label&gt;[39m
+                    [36m&lt;div[39m
+                      [33mclass[39m=[32m&quot;_fieldError_b72150&quot;[39m
+                      [33mid[39m=[32m&quot;symbol-error&quot;[39m
+                    [36m&gt;[39m
+                      [0mSymbol ist erforderlich[0m
+                    [36m&lt;/div&gt;[39m
+                  [36m&lt;/div&gt;[39m
+                  [36m&lt;div[39m
+                    [33mclass[39m=[32m&quot;_newTradeField_b72150&quot;[39m
+                  [36m&gt;[39m
+                    [36m&lt;label[39m
+                      [33mclass[39m=[32m&quot;_wrapper_37bd84&quot;[39m
+                    [36m&gt;[39m
+                      [36m&lt;span[39m
+                        [33mclass[39m=[32m&quot;_label_37bd84&quot;[39m
+                      [36m&gt;[39m
+                        [0mEntry Price *[0m
+                      [36m&lt;/span&gt;[39m
+                      [36m&lt;input[39m
+                        [33maria-describedby[39m=[32m&quot;price-error&quot;[39m
+                        [33mclass[39m=[32m&quot;_input_37bd84 _inputError_37bd84&quot;[39m
+                        [33mid[39m=[32m&quot;price&quot;[39m
+                        [33mtype[39m=[32m&quot;number&quot;[39m
+                        [33mvalue[39m=[32m&quot;&quot;[39m
+                      [36m/&gt;[39m
+                    [36m&lt;/label&gt;[39m
+                    [36m&lt;div[39m
+                      [33mclass[39m=[32m&quot;_fieldError_b72150&quot;[39m
+                      [33mid[39m=[32m&quot;price-error&quot;[39m
+                    [36m&gt;[39m
+                      [0mEntry Price ist erforderlich[0m
+                    [36m&lt;/div&gt;[39m
+                  [36m&lt;/div&gt;[39m
+                  [36m&lt;div[39m
+                    [33mclass[39m=[32m&quot;_newTradeField_b72150&quot;[39m
+                  [36m&gt;[39m
+                    [36m&lt;label[39m
+                      [33mclass[39m=[32m&quot;_wrapper_37bd84&quot;[39m
+                    [36m&gt;[39m
+                      [36m&lt;span[39m
+                        [33mclass[39m=[32m&quot;_label_37bd84&quot;[39m
+                      [36m&gt;[39m
+                        [0mMargin *[0m
+                      [36m&lt;/span&gt;[39m
+                      [36m&lt;input[39m
+                        [33maria-describedby[39m=[32m&quot;margin-error&quot;[39m
+          ..." type="TestingLibraryElementError">
+TestingLibraryElementError: Found multiple elements with the text: /symbol/i
+
+Here are the matching elements:
+
+Ignored nodes: comments, script, style
+&lt;span
+  class=&quot;_label_37bd84&quot;
+&gt;
+  Symbol
+&lt;/span&gt;
+
+Ignored nodes: comments, script, style
+&lt;div
+  class=&quot;_fieldError_b72150&quot;
+  id=&quot;symbol-error&quot;
+&gt;
+  Symbol ist erforderlich
+&lt;/div&gt;
+
+(If this is intentional, then use the `*AllBy*` variant of the query (like `queryAllByText`, `getAllByText`, or `findAllByText`)).
+
+Ignored nodes: comments, script, style
+&lt;body&gt;
+  &lt;div&gt;
+    &lt;div
+      class=&quot;_headerRow_1a9f4a&quot;
+    &gt;
+      &lt;h2
+        class=&quot;_title_1a9f4a&quot;
+      &gt;
+        Trading Journal
+      &lt;/h2&gt;
+      &lt;div
+        class=&quot;_controls_1a9f4a&quot;
+      &gt;
+        &lt;button
+          class=&quot;_button_e93d98 _secondary_e93d98&quot;
+        &gt;
+          Load mock data
+        &lt;/button&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div
+      class=&quot;_mobileNewTradeBtnWrap_1a9f4a&quot;
+    /&gt;
+    &lt;div
+      class=&quot;_grid_1a9f4a _gridCompact_1a9f4a _fullScreen_1a9f4a&quot;
+    &gt;
+      &lt;div
+        class=&quot;_left_1a9f4a&quot;
+      &gt;
+        &lt;div
+          class=&quot;_card_0a3619&quot;
+        &gt;
+          &lt;div
+            class=&quot;_content_0a3619&quot;
+          &gt;
+            &lt;div
+              class=&quot;_newTradeWrapper_b72150&quot;
+            &gt;
+              &lt;div
+                class=&quot;_newTradeHeader_b72150&quot;
+              &gt;
+                &lt;div
+                  style=&quot;display: flex; align-items: center; justify-content: space-between; width: 100%;&quot;
+                &gt;
+                  &lt;span
+                    style=&quot;font-weight: 700;&quot;
+                  &gt;
+                    New Trade
+                  &lt;/span&gt;
+                &lt;/div&gt;
+              &lt;/div&gt;
+              &lt;form
+                class=&quot;_form_b72150&quot;
+              &gt;
+                &lt;input
+                  id=&quot;entryDate&quot;
+                  type=&quot;hidden&quot;
+                  value=&quot;2025-12-28T06:46&quot;
+                /&gt;
+                &lt;div
+                  class=&quot;_newTradeGrid_b72150&quot;
+                &gt;
+                  &lt;div
+                    class=&quot;_newTradeField_b72150&quot;
+                  &gt;
+                    &lt;label
+                      class=&quot;_wrapper_37bd84&quot;
+                    &gt;
+                      &lt;span
+                        class=&quot;_label_37bd84&quot;
+                      &gt;
+                        Market
+                      &lt;/span&gt;
+                      &lt;div
+                        aria-label=&quot;Market select&quot;
+                        class=&quot;_container_c6c780 &quot;
+                        role=&quot;tablist&quot;
+                      &gt;
+                        &lt;button
+                          aria-selected=&quot;false&quot;
+                          class=&quot;_badge_c6c780  _compact_c6c780&quot;
+                          role=&quot;tab&quot;
+                        &gt;
+                          Forex
+                        &lt;/button&gt;
+                        &lt;button
+                          aria-selected=&quot;true&quot;
+                          class=&quot;_badge_c6c780 _active_c6c780 _compact_c6c780&quot;
+                          role=&quot;tab&quot;
+                        &gt;
+                          Crypto
+                        &lt;/button&gt;
+                      &lt;/div&gt;
+                    &lt;/label&gt;
+                  &lt;/div&gt;
+                  &lt;div
+                    class=&quot;_newTradeField_b72150&quot;
+                  &gt;
+                    &lt;label
+                      class=&quot;_wrapper_37bd84&quot;
+                    &gt;
+                      &lt;span
+                        class=&quot;_label_37bd84&quot;
+                      &gt;
+                        Symbol
+                      &lt;/span&gt;
+                      &lt;input
+                        aria-describedby=&quot;symbol-error&quot;
+                        class=&quot;_input_37bd84 _inputError_37bd84&quot;
+                        id=&quot;symbol&quot;
+                        placeholder=&quot;e.g. BTC&quot;
+                        value=&quot;&quot;
+                      /&gt;
+                    &lt;/label&gt;
+                    &lt;div
+                      class=&quot;_fieldError_b72150&quot;
+                      id=&quot;symbol-error&quot;
+                    &gt;
+                      Symbol ist erforderlich
+                    &lt;/div&gt;
+                  &lt;/div&gt;
+                  &lt;div
+                    class=&quot;_newTradeField_b72150&quot;
+                  &gt;
+                    &lt;label
+                      class=&quot;_wrapper_37bd84&quot;
+                    &gt;
+                      &lt;span
+                        class=&quot;_label_37bd84&quot;
+                      &gt;
+                        Entry Price *
+                      &lt;/span&gt;
+                      &lt;input
+                        aria-describedby=&quot;price-error&quot;
+                        class=&quot;_input_37bd84 _inputError_37bd84&quot;
+                        id=&quot;price&quot;
+                        type=&quot;number&quot;
+                        value=&quot;&quot;
+                      /&gt;
+                    &lt;/label&gt;
+                    &lt;div
+                      class=&quot;_fieldError_b72150&quot;
+                      id=&quot;price-error&quot;
+                    &gt;
+                      Entry Price ist erforderlich
+                    &lt;/div&gt;
+                  &lt;/div&gt;
+                  &lt;div
+                    class=&quot;_newTradeField_b72150&quot;
+                  &gt;
+                    &lt;label
+                      class=&quot;_wrapper_37bd84&quot;
+                    &gt;
+                      &lt;span
+                        class=&quot;_label_37bd84&quot;
+                      &gt;
+                        Margin *
+                      &lt;/span&gt;
+                      &lt;input
+                        aria-describedby=&quot;margin-error&quot;
+          ...
+
+Ignored nodes: comments, script, style
+&lt;body&gt;
+  &lt;div&gt;
+    &lt;div
+      class=&quot;_headerRow_1a9f4a&quot;
+    &gt;
+      &lt;h2
+        class=&quot;_title_1a9f4a&quot;
+      &gt;
+        Trading Journal
+      &lt;/h2&gt;
+      &lt;div
+        class=&quot;_controls_1a9f4a&quot;
+      &gt;
+        &lt;button
+          class=&quot;_button_e93d98 _secondary_e93d98&quot;
+        &gt;
+          Load mock data
+        &lt;/button&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div
+      class=&quot;_mobileNewTradeBtnWrap_1a9f4a&quot;
+    /&gt;
+    &lt;div
+      class=&quot;_grid_1a9f4a _gridCompact_1a9f4a _fullScreen_1a9f4a&quot;
+    &gt;
+      &lt;div
+        class=&quot;_left_1a9f4a&quot;
+      &gt;
+        &lt;div
+          class=&quot;_card_0a3619&quot;
+        &gt;
+          &lt;div
+            class=&quot;_content_0a3619&quot;
+          &gt;
+            &lt;div
+              class=&quot;_newTradeWrapper_b72150&quot;
+            &gt;
+              &lt;div
+                class=&quot;_newTradeHeader_b72150&quot;
+              &gt;
+                &lt;div
+                  style=&quot;display: flex; align-items: center; justify-content: space-between; width: 100%;&quot;
+                &gt;
+                  &lt;span
+                    style=&quot;font-weight: 700;&quot;
+                  &gt;
+                    New Trade
+                  &lt;/span&gt;
+                &lt;/div&gt;
+              &lt;/div&gt;
+              &lt;form
+                class=&quot;_form_b72150&quot;
+              &gt;
+                &lt;input
+                  id=&quot;entryDate&quot;
+                  type=&quot;hidden&quot;
+                  value=&quot;2025-12-28T06:46&quot;
+                /&gt;
+                &lt;div
+                  class=&quot;_newTradeGrid_b72150&quot;
+                &gt;
+                  &lt;div
+                    class=&quot;_newTradeField_b72150&quot;
+                  &gt;
+                    &lt;label
+                      class=&quot;_wrapper_37bd84&quot;
+                    &gt;
+                      &lt;span
+                        class=&quot;_label_37bd84&quot;
+                      &gt;
+                        Market
+                      &lt;/span&gt;
+                      &lt;div
+                        aria-label=&quot;Market select&quot;
+                        class=&quot;_container_c6c780 &quot;
+                        role=&quot;tablist&quot;
+                      &gt;
+                        &lt;button
+                          aria-selected=&quot;false&quot;
+                          class=&quot;_badge_c6c780  _compact_c6c780&quot;
+                          role=&quot;tab&quot;
+                        &gt;
+                          Forex
+                        &lt;/button&gt;
+                        &lt;button
+                          aria-selected=&quot;true&quot;
+                          class=&quot;_badge_c6c780 _active_c6c780 _compact_c6c780&quot;
+                          role=&quot;tab&quot;
+                        &gt;
+                          Crypto
+                        &lt;/button&gt;
+                      &lt;/div&gt;
+                    &lt;/label&gt;
+                  &lt;/div&gt;
+                  &lt;div
+                    class=&quot;_newTradeField_b72150&quot;
+                  &gt;
+                    &lt;label
+                      class=&quot;_wrapper_37bd84&quot;
+                    &gt;
+                      &lt;span
+                        class=&quot;_label_37bd84&quot;
+                      &gt;
+                        Symbol
+                      &lt;/span&gt;
+                      &lt;input
+                        aria-describedby=&quot;symbol-error&quot;
+                        class=&quot;_input_37bd84 _inputError_37bd84&quot;
+                        id=&quot;symbol&quot;
+                        placeholder=&quot;e.g. BTC&quot;
+                        value=&quot;&quot;
+                      /&gt;
+                    &lt;/label&gt;
+                    &lt;div
+                      class=&quot;_fieldError_b72150&quot;
+                      id=&quot;symbol-error&quot;
+                    &gt;
+                      Symbol ist erforderlich
+                    &lt;/div&gt;
+                  &lt;/div&gt;
+                  &lt;div
+                    class=&quot;_newTradeField_b72150&quot;
+                  &gt;
+                    &lt;label
+                      class=&quot;_wrapper_37bd84&quot;
+                    &gt;
+                      &lt;span
+                        class=&quot;_label_37bd84&quot;
+                      &gt;
+                        Entry Price *
+                      &lt;/span&gt;
+                      &lt;input
+                        aria-describedby=&quot;price-error&quot;
+                        class=&quot;_input_37bd84 _inputError_37bd84&quot;
+                        id=&quot;price&quot;
+                        type=&quot;number&quot;
+                        value=&quot;&quot;
+                      /&gt;
+                    &lt;/label&gt;
+                    &lt;div
+                      class=&quot;_fieldError_b72150&quot;
+                      id=&quot;price-error&quot;
+                    &gt;
+                      Entry Price ist erforderlich
+                    &lt;/div&gt;
+                  &lt;/div&gt;
+                  &lt;div
+                    class=&quot;_newTradeField_b72150&quot;
+                  &gt;
+                    &lt;label
+                      class=&quot;_wrapper_37bd84&quot;
+                    &gt;
+                      &lt;span
+                        class=&quot;_label_37bd84&quot;
+                      &gt;
+                        Margin *
+                      &lt;/span&gt;
+                      &lt;input
+                        aria-describedby=&quot;margin-error&quot;
+          ...
+ ❯ waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/presentation/trade/TradeJournal.integration.test.tsx:80:25
+            </failure>
+        </testcase>
+        <testcase classname="src/presentation/trade/TradeJournal.integration.test.tsx" name="TradeJournal Integration &gt; resets the form when Reset is clicked" time="0.051631833">
+            <system-out>
+[TradeJournal] handleAdd start {
+  form: {
+    symbol: [32m&apos;TEST&apos;[39m,
+    entryDate: [32m&apos;2025-12-28T06:46&apos;[39m,
+    size: [90mundefined[39m,
+    price: [90mundefined[39m,
+    side: [32m&apos;LONG&apos;[39m,
+    status: [32m&apos;OPEN&apos;[39m,
+    market: [32m&apos;Crypto&apos;[39m,
+    notes: [32m&apos;&apos;[39m
+  }
+}
+[TradeJournal] validation failed {
+  price: [32m&apos;Entry Price ist erforderlich&apos;[39m,
+  size: [32m&apos;Größe muss positiv sein&apos;[39m,
+  sl: [32m&apos;Stop Loss (SL) ist erforderlich&apos;[39m,
+  margin: [32m&apos;Margin ist erforderlich&apos;[39m,
+  leverage: [32m&apos;Leverage ist erforderlich&apos;[39m
+}
+
+            </system-out>
+            <system-err>
+Warning: An update to TradeJournal inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() =&gt; {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you&apos;re testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at TradeJournal (/Users/morpheus/git/github/monkey-trader/traders-mirror/src/presentation/trade/TradeJournal.tsx:34:25)
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/presentation/trade/TradeJournal.integration.test.tsx" name="TradeJournal Integration &gt; shows undo after delete and restores the trade" time="1.224528792">
+            <system-out>
+[TradeJournal] handleAdd start {
+  form: {
+    symbol: [32m&apos;UNDOUSD&apos;[39m,
+    entryDate: [32m&apos;2025-12-28T06:46&apos;[39m,
+    size: [33m1000[39m,
+    price: [33m1[39m,
+    side: [32m&apos;LONG&apos;[39m,
+    status: [32m&apos;OPEN&apos;[39m,
+    market: [32m&apos;Crypto&apos;[39m,
+    notes: [32m&apos;&apos;[39m,
+    margin: [33m10[39m,
+    leverage: [33m1[39m,
+    sl: [33m0.9[39m
+  }
+}
+[TradeJournal] persisting trade to repo fb9deaad-6bf7-4204-b276-c444e1646deb
+
+[TradeJournal] persisted trade to repo fb9deaad-6bf7-4204-b276-c444e1646deb
+
+[TradeJournal] reloaded positions from repo [33m15[39m
+
+            </system-out>
+            <failure message="Unable to find role=&quot;button&quot; and name `/rückgängig/i`
+
+Ignored nodes: comments, script, style
+[36m&lt;body&gt;[39m
+  [36m&lt;div&gt;[39m
+    [36m&lt;div[39m
+      [33mclass[39m=[32m&quot;_headerRow_1a9f4a&quot;[39m
+    [36m&gt;[39m
+      [36m&lt;h2[39m
+        [33mclass[39m=[32m&quot;_title_1a9f4a&quot;[39m
+      [36m&gt;[39m
+        [0mTrading Journal[0m
+      [36m&lt;/h2&gt;[39m
+      [36m&lt;div[39m
+        [33mclass[39m=[32m&quot;_controls_1a9f4a&quot;[39m
+      [36m&gt;[39m
+        [36m&lt;button[39m
+          [33mclass[39m=[32m&quot;_button_e93d98 _secondary_e93d98&quot;[39m
+        [36m&gt;[39m
+          [0mLoad mock data[0m
+        [36m&lt;/button&gt;[39m
+      [36m&lt;/div&gt;[39m
+    [36m&lt;/div&gt;[39m
+    [36m&lt;div[39m
+      [33mclass[39m=[32m&quot;_mobileNewTradeBtnWrap_1a9f4a&quot;[39m
+    [36m/&gt;[39m
+    [36m&lt;div[39m
+      [33mclass[39m=[32m&quot;_grid_1a9f4a _gridCompact_1a9f4a _fullScreen_1a9f4a&quot;[39m
+    [36m&gt;[39m
+      [36m&lt;div[39m
+        [33mclass[39m=[32m&quot;_left_1a9f4a&quot;[39m
+      [36m&gt;[39m
+        [36m&lt;div[39m
+          [33mclass[39m=[32m&quot;_card_0a3619&quot;[39m
+        [36m&gt;[39m
+          [36m&lt;div[39m
+            [33mclass[39m=[32m&quot;_content_0a3619&quot;[39m
+          [36m&gt;[39m
+            [36m&lt;div[39m
+              [33mclass[39m=[32m&quot;_newTradeWrapper_b72150&quot;[39m
+            [36m&gt;[39m
+              [36m&lt;div[39m
+                [33mclass[39m=[32m&quot;_newTradeHeader_b72150&quot;[39m
+              [36m&gt;[39m
+                [36m&lt;div[39m
+                  [33mstyle[39m=[32m&quot;display: flex; align-items: center; justify-content: space-between; width: 100%;&quot;[39m
+                [36m&gt;[39m
+                  [36m&lt;span[39m
+                    [33mstyle[39m=[32m&quot;font-weight: 700;&quot;[39m
+                  [36m&gt;[39m
+                    [0mNew Trade[0m
+                  [36m&lt;/span&gt;[39m
+                [36m&lt;/div&gt;[39m
+              [36m&lt;/div&gt;[39m
+              [36m&lt;form[39m
+                [33mclass[39m=[32m&quot;_form_b72150&quot;[39m
+              [36m&gt;[39m
+                [36m&lt;input[39m
+                  [33mid[39m=[32m&quot;entryDate&quot;[39m
+                  [33mtype[39m=[32m&quot;hidden&quot;[39m
+                  [33mvalue[39m=[32m&quot;2025-12-28T06:46&quot;[39m
+                [36m/&gt;[39m
+                [36m&lt;div[39m
+                  [33mclass[39m=[32m&quot;_newTradeGrid_b72150&quot;[39m
+                [36m&gt;[39m
+                  [36m&lt;div[39m
+                    [33mclass[39m=[32m&quot;_newTradeField_b72150&quot;[39m
+                  [36m&gt;[39m
+                    [36m&lt;label[39m
+                      [33mclass[39m=[32m&quot;_wrapper_37bd84&quot;[39m
+                    [36m&gt;[39m
+                      [36m&lt;span[39m
+                        [33mclass[39m=[32m&quot;_label_37bd84&quot;[39m
+                      [36m&gt;[39m
+                        [0mMarket[0m
+                      [36m&lt;/span&gt;[39m
+                      [36m&lt;div[39m
+                        [33maria-label[39m=[32m&quot;Market select&quot;[39m
+                        [33mclass[39m=[32m&quot;_container_c6c780 &quot;[39m
+                        [33mrole[39m=[32m&quot;tablist&quot;[39m
+                      [36m&gt;[39m
+                        [36m&lt;button[39m
+                          [33maria-selected[39m=[32m&quot;false&quot;[39m
+                          [33mclass[39m=[32m&quot;_badge_c6c780  _compact_c6c780&quot;[39m
+                          [33mrole[39m=[32m&quot;tab&quot;[39m
+                        [36m&gt;[39m
+                          [0mForex[0m
+                        [36m&lt;/button&gt;[39m
+                        [36m&lt;button[39m
+                          [33maria-selected[39m=[32m&quot;true&quot;[39m
+                          [33mclass[39m=[32m&quot;_badge_c6c780 _active_c6c780 _compact_c6c780&quot;[39m
+                          [33mrole[39m=[32m&quot;tab&quot;[39m
+                        [36m&gt;[39m
+                          [0mCrypto[0m
+                        [36m&lt;/button&gt;[39m
+                      [36m&lt;/div&gt;[39m
+                    [36m&lt;/label&gt;[39m
+                  [36m&lt;/div&gt;[39m
+                  [36m&lt;div[39m
+                    [33mclass[39m=[32m&quot;_newTradeField_b72150&quot;[39m
+                  [36m&gt;[39m
+                    [36m&lt;label[39m
+                      [33mclass[39m=[32m&quot;_wrapper_37bd84&quot;[39m
+                    [36m&gt;[39m
+                      [36m&lt;span[39m
+                        [33mclass[39m=[32m&quot;_label_37bd84&quot;[39m
+                      [36m&gt;[39m
+                        [0mSymbol[0m
+                      [36m&lt;/span&gt;[39m
+                      [36m&lt;input[39m
+                        [33mclass[39m=[32m&quot;_input_37bd84&quot;[39m
+                        [33mid[39m=[32m&quot;symbol&quot;[39m
+                        [33mplaceholder[39m=[32m&quot;e.g. BTC&quot;[39m
+                        [33mvalue[39m=[32m&quot;&quot;[39m
+                      [36m/&gt;[39m
+                    [36m&lt;/label&gt;[39m
+                  [36m&lt;/div&gt;[39m
+                  [36m&lt;div[39m
+                    [33mclass[39m=[32m&quot;_newTradeField_b72150&quot;[39m
+                  [36m&gt;[39m
+                    [36m&lt;label[39m
+                      [33mclass[39m=[32m&quot;_wrapper_37bd84&quot;[39m
+                    [36m&gt;[39m
+                      [36m&lt;span[39m
+                        [33mclass[39m=[32m&quot;_label_37bd84&quot;[39m
+                      [36m&gt;[39m
+                        [0mEntry Price *[0m
+                      [36m&lt;/span&gt;[39m
+                      [36m&lt;input[39m
+                        [33mclass[39m=[32m&quot;_input_37bd84&quot;[39m
+                        [33mid[39m=[32m&quot;price&quot;[39m
+                        [33mtype[39m=[32m&quot;number&quot;[39m
+                        [33mvalue[39m=[32m&quot;&quot;[39m
+                      [36m/&gt;[39m
+                    [36m&lt;/label&gt;[39m
+                  [36m&lt;/div&gt;[39m
+                  [36m&lt;div[39m
+                    [33mclass[39m=[32m&quot;_newTradeField_b72150&quot;[39m
+                  [36m&gt;[39m
+                    [36m&lt;label[39m
+                      [33mclass[39m=[32m&quot;_wrapper_37bd84&quot;[39m
+                    [36m&gt;[39m
+                      [36m&lt;span[39m
+                        [33mclass[39m=[32m&quot;_label_37bd84&quot;[39m
+                      [36m&gt;[39m
+                        [0mMargin *[0m
+                      [36m&lt;/span&gt;[39m
+                      [36m&lt;input[39m
+                        [33mclass[39m=[32m&quot;_input_37bd84&quot;[39m
+                        [33mid[39m=[32m&quot;margin&quot;[39m
+                        [33mtype[39m=[32m&quot;number&quot;[39m
+                        [33mvalue[39m=[32m&quot;&quot;[39m
+                      [36m/&gt;[39m
+                    [36m&lt;/label&gt;[39m
+                  [36m&lt;/div&gt;[39m
+                  [36m&lt;div[39m
+                    [33mclass[39m=[32m&quot;_newTradeField_b72150&quot;[39m
+                  [36m&gt;[39m
+                    [36m&lt;label[39m
+                      [33mclass[39m=[32m&quot;_wrapper_37bd84&quot;[39m
+                    [36m&gt;[39m
+                      [36m&lt;span[39m
+                        [33mclass[39m=[32m&quot;_label_37bd84&quot;[39m
+                      [36m&gt;[39m
+                        [0mLeverage *[0m
+                      [36m&lt;/span&gt;[39m
+                      ...
+
+Ignored nodes: comments, script, style
+[36m&lt;body&gt;[39m
+  [36m&lt;div&gt;[39m
+    [36m&lt;div[39m
+      [33mclass[39m=[32m&quot;_headerRow_1a9f4a&quot;[39m
+    [36m&gt;[39m
+      [36m&lt;h2[39m
+        [33mclass[39m=[32m&quot;_title_1a9f4a&quot;[39m
+      [36m&gt;[39m
+        [0mTrading Journal[0m
+      [36m&lt;/h2&gt;[39m
+      [36m&lt;div[39m
+        [33mclass[39m=[32m&quot;_controls_1a9f4a&quot;[39m
+      [36m&gt;[39m
+        [36m&lt;button[39m
+          [33mclass[39m=[32m&quot;_button_e93d98 _secondary_e93d98&quot;[39m
+        [36m&gt;[39m
+          [0mLoad mock data[0m
+        [36m&lt;/button&gt;[39m
+      [36m&lt;/div&gt;[39m
+    [36m&lt;/div&gt;[39m
+    [36m&lt;div[39m
+      [33mclass[39m=[32m&quot;_mobileNewTradeBtnWrap_1a9f4a&quot;[39m
+    [36m/&gt;[39m
+    [36m&lt;div[39m
+      [33mclass[39m=[32m&quot;_grid_1a9f4a _gridCompact_1a9f4a _fullScreen_1a9f4a&quot;[39m
+    [36m&gt;[39m
+      [36m&lt;div[39m
+        [33mclass[39m=[32m&quot;_left_1a9f4a&quot;[39m
+      [36m&gt;[39m
+        [36m&lt;div[39m
+          [33mclass[39m=[32m&quot;_card_0a3619&quot;[39m
+        [36m&gt;[39m
+          [36m&lt;div[39m
+            [33mclass[39m=[32m&quot;_content_0a3619&quot;[39m
+          [36m&gt;[39m
+            [36m&lt;div[39m
+              [33mclass[39m=[32m&quot;_newTradeWrapper_b72150&quot;[39m
+            [36m&gt;[39m
+              [36m&lt;div[39m
+                [33mclass[39m=[32m&quot;_newTradeHeader_b72150&quot;[39m
+              [36m&gt;[39m
+                [36m&lt;div[39m
+                  [33mstyle[39m=[32m&quot;display: flex; align-items: center; justify-content: space-between; width: 100%;&quot;[39m
+                [36m&gt;[39m
+                  [36m&lt;span[39m
+                    [33mstyle[39m=[32m&quot;font-weight: 700;&quot;[39m
+                  [36m&gt;[39m
+                    [0mNew Trade[0m
+                  [36m&lt;/span&gt;[39m
+                [36m&lt;/div&gt;[39m
+              [36m&lt;/div&gt;[39m
+              [36m&lt;form[39m
+                [33mclass[39m=[32m&quot;_form_b72150&quot;[39m
+              [36m&gt;[39m
+                [36m&lt;input[39m
+                  [33mid[39m=[32m&quot;entryDate&quot;[39m
+                  [33mtype[39m=[32m&quot;hidden&quot;[39m
+                  [33mvalue[39m=[32m&quot;2025-12-28T06:46&quot;[39m
+                [36m/&gt;[39m
+                [36m&lt;div[39m
+                  [33mclass[39m=[32m&quot;_newTradeGrid_b72150&quot;[39m
+                [36m&gt;[39m
+                  [36m&lt;div[39m
+                    [33mclass[39m=[32m&quot;_newTradeField_b72150&quot;[39m
+                  [36m&gt;[39m
+                    [36m&lt;label[39m
+                      [33mclass[39m=[32m&quot;_wrapper_37bd84&quot;[39m
+                    [36m&gt;[39m
+                      [36m&lt;span[39m
+                        [33mclass[39m=[32m&quot;_label_37bd84&quot;[39m
+                      [36m&gt;[39m
+                        [0mMarket[0m
+                      [36m&lt;/span&gt;[39m
+                      [36m&lt;div[39m
+                        [33maria-label[39m=[32m&quot;Market select&quot;[39m
+                        [33mclass[39m=[32m&quot;_container_c6c780 &quot;[39m
+                        [33mrole[39m=[32m&quot;tablist&quot;[39m
+                      [36m&gt;[39m
+                        [36m&lt;button[39m
+                          [33maria-selected[39m=[32m&quot;false&quot;[39m
+                          [33mclass[39m=[32m&quot;_badge_c6c780  _compact_c6c780&quot;[39m
+                          [33mrole[39m=[32m&quot;tab&quot;[39m
+                        [36m&gt;[39m
+                          [0mForex[0m
+                        [36m&lt;/button&gt;[39m
+                        [36m&lt;button[39m
+                          [33maria-selected[39m=[32m&quot;true&quot;[39m
+                          [33mclass[39m=[32m&quot;_badge_c6c780 _active_c6c780 _compact_c6c780&quot;[39m
+                          [33mrole[39m=[32m&quot;tab&quot;[39m
+                        [36m&gt;[39m
+                          [0mCrypto[0m
+                        [36m&lt;/button&gt;[39m
+                      [36m&lt;/div&gt;[39m
+                    [36m&lt;/label&gt;[39m
+                  [36m&lt;/div&gt;[39m
+                  [36m&lt;div[39m
+                    [33mclass[39m=[32m&quot;_newTradeField_b72150&quot;[39m
+                  [36m&gt;[39m
+                    [36m&lt;label[39m
+                      [33mclass[39m=[32m&quot;_wrapper_37bd84&quot;[39m
+                    [36m&gt;[39m
+                      [36m&lt;span[39m
+                        [33mclass[39m=[32m&quot;_label_37bd84&quot;[39m
+                      [36m&gt;[39m
+                        [0mSymbol[0m
+                      [36m&lt;/span&gt;[39m
+                      [36m&lt;input[39m
+                        [33mclass[39m=[32m&quot;_input_37bd84&quot;[39m
+                        [33mid[39m=[32m&quot;symbol&quot;[39m
+                        [33mplaceholder[39m=[32m&quot;e.g. BTC&quot;[39m
+                        [33mvalue[39m=[32m&quot;&quot;[39m
+                      [36m/&gt;[39m
+                    [36m&lt;/label&gt;[39m
+                  [36m&lt;/div&gt;[39m
+                  [36m&lt;div[39m
+                    [33mclass[39m=[32m&quot;_newTradeField_b72150&quot;[39m
+                  [36m&gt;[39m
+                    [36m&lt;label[39m
+                      [33mclass[39m=[32m&quot;_wrapper_37bd84&quot;[39m
+                    [36m&gt;[39m
+                      [36m&lt;span[39m
+                        [33mclass[39m=[32m&quot;_label_37bd84&quot;[39m
+                      [36m&gt;[39m
+                        [0mEntry Price *[0m
+                      [36m&lt;/span&gt;[39m
+                      [36m&lt;input[39m
+                        [33mclass[39m=[32m&quot;_input_37bd84&quot;[39m
+                        [33mid[39m=[32m&quot;price&quot;[39m
+                        [33mtype[39m=[32m&quot;number&quot;[39m
+                        [33mvalue[39m=[32m&quot;&quot;[39m
+                      [36m/&gt;[39m
+                    [36m&lt;/label&gt;[39m
+                  [36m&lt;/div&gt;[39m
+                  [36m&lt;div[39m
+                    [33mclass[39m=[32m&quot;_newTradeField_b72150&quot;[39m
+                  [36m&gt;[39m
+                    [36m&lt;label[39m
+                      [33mclass[39m=[32m&quot;_wrapper_37bd84&quot;[39m
+                    [36m&gt;[39m
+                      [36m&lt;span[39m
+                        [33mclass[39m=[32m&quot;_label_37bd84&quot;[39m
+                      [36m&gt;[39m
+                        [0mMargin *[0m
+                      [36m&lt;/span&gt;[39m
+                      [36m&lt;input[39m
+                        [33mclass[39m=[32m&quot;_input_37bd84&quot;[39m
+                        [33mid[39m=[32m&quot;margin&quot;[39m
+                        [33mtype[39m=[32m&quot;number&quot;[39m
+                        [33mvalue[39m=[32m&quot;&quot;[39m
+                      [36m/&gt;[39m
+                    [36m&lt;/label&gt;[39m
+                  [36m&lt;/div&gt;[39m
+                  [36m&lt;div[39m
+                    [33mclass[39m=[32m&quot;_newTradeField_b72150&quot;[39m
+                  [36m&gt;[39m
+                    [36m&lt;label[39m
+                      [33mclass[39m=[32m&quot;_wrapper_37bd84&quot;[39m
+                    [36m&gt;[39m
+                      [36m&lt;span[39m
+                        [33mclass[39m=[32m&quot;_label_37bd84&quot;[39m
+                      [36m&gt;[39m
+                        [0mLeverage *[0m
+                      [36m&lt;/span&gt;[39m
+                      ..." type="TestingLibraryElementError">
+TestingLibraryElementError: Unable to find role=&quot;button&quot; and name `/rückgängig/i`
+
+Ignored nodes: comments, script, style
+&lt;body&gt;
+  &lt;div&gt;
+    &lt;div
+      class=&quot;_headerRow_1a9f4a&quot;
+    &gt;
+      &lt;h2
+        class=&quot;_title_1a9f4a&quot;
+      &gt;
+        Trading Journal
+      &lt;/h2&gt;
+      &lt;div
+        class=&quot;_controls_1a9f4a&quot;
+      &gt;
+        &lt;button
+          class=&quot;_button_e93d98 _secondary_e93d98&quot;
+        &gt;
+          Load mock data
+        &lt;/button&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div
+      class=&quot;_mobileNewTradeBtnWrap_1a9f4a&quot;
+    /&gt;
+    &lt;div
+      class=&quot;_grid_1a9f4a _gridCompact_1a9f4a _fullScreen_1a9f4a&quot;
+    &gt;
+      &lt;div
+        class=&quot;_left_1a9f4a&quot;
+      &gt;
+        &lt;div
+          class=&quot;_card_0a3619&quot;
+        &gt;
+          &lt;div
+            class=&quot;_content_0a3619&quot;
+          &gt;
+            &lt;div
+              class=&quot;_newTradeWrapper_b72150&quot;
+            &gt;
+              &lt;div
+                class=&quot;_newTradeHeader_b72150&quot;
+              &gt;
+                &lt;div
+                  style=&quot;display: flex; align-items: center; justify-content: space-between; width: 100%;&quot;
+                &gt;
+                  &lt;span
+                    style=&quot;font-weight: 700;&quot;
+                  &gt;
+                    New Trade
+                  &lt;/span&gt;
+                &lt;/div&gt;
+              &lt;/div&gt;
+              &lt;form
+                class=&quot;_form_b72150&quot;
+              &gt;
+                &lt;input
+                  id=&quot;entryDate&quot;
+                  type=&quot;hidden&quot;
+                  value=&quot;2025-12-28T06:46&quot;
+                /&gt;
+                &lt;div
+                  class=&quot;_newTradeGrid_b72150&quot;
+                &gt;
+                  &lt;div
+                    class=&quot;_newTradeField_b72150&quot;
+                  &gt;
+                    &lt;label
+                      class=&quot;_wrapper_37bd84&quot;
+                    &gt;
+                      &lt;span
+                        class=&quot;_label_37bd84&quot;
+                      &gt;
+                        Market
+                      &lt;/span&gt;
+                      &lt;div
+                        aria-label=&quot;Market select&quot;
+                        class=&quot;_container_c6c780 &quot;
+                        role=&quot;tablist&quot;
+                      &gt;
+                        &lt;button
+                          aria-selected=&quot;false&quot;
+                          class=&quot;_badge_c6c780  _compact_c6c780&quot;
+                          role=&quot;tab&quot;
+                        &gt;
+                          Forex
+                        &lt;/button&gt;
+                        &lt;button
+                          aria-selected=&quot;true&quot;
+                          class=&quot;_badge_c6c780 _active_c6c780 _compact_c6c780&quot;
+                          role=&quot;tab&quot;
+                        &gt;
+                          Crypto
+                        &lt;/button&gt;
+                      &lt;/div&gt;
+                    &lt;/label&gt;
+                  &lt;/div&gt;
+                  &lt;div
+                    class=&quot;_newTradeField_b72150&quot;
+                  &gt;
+                    &lt;label
+                      class=&quot;_wrapper_37bd84&quot;
+                    &gt;
+                      &lt;span
+                        class=&quot;_label_37bd84&quot;
+                      &gt;
+                        Symbol
+                      &lt;/span&gt;
+                      &lt;input
+                        class=&quot;_input_37bd84&quot;
+                        id=&quot;symbol&quot;
+                        placeholder=&quot;e.g. BTC&quot;
+                        value=&quot;&quot;
+                      /&gt;
+                    &lt;/label&gt;
+                  &lt;/div&gt;
+                  &lt;div
+                    class=&quot;_newTradeField_b72150&quot;
+                  &gt;
+                    &lt;label
+                      class=&quot;_wrapper_37bd84&quot;
+                    &gt;
+                      &lt;span
+                        class=&quot;_label_37bd84&quot;
+                      &gt;
+                        Entry Price *
+                      &lt;/span&gt;
+                      &lt;input
+                        class=&quot;_input_37bd84&quot;
+                        id=&quot;price&quot;
+                        type=&quot;number&quot;
+                        value=&quot;&quot;
+                      /&gt;
+                    &lt;/label&gt;
+                  &lt;/div&gt;
+                  &lt;div
+                    class=&quot;_newTradeField_b72150&quot;
+                  &gt;
+                    &lt;label
+                      class=&quot;_wrapper_37bd84&quot;
+                    &gt;
+                      &lt;span
+                        class=&quot;_label_37bd84&quot;
+                      &gt;
+                        Margin *
+                      &lt;/span&gt;
+                      &lt;input
+                        class=&quot;_input_37bd84&quot;
+                        id=&quot;margin&quot;
+                        type=&quot;number&quot;
+                        value=&quot;&quot;
+                      /&gt;
+                    &lt;/label&gt;
+                  &lt;/div&gt;
+                  &lt;div
+                    class=&quot;_newTradeField_b72150&quot;
+                  &gt;
+                    &lt;label
+                      class=&quot;_wrapper_37bd84&quot;
+                    &gt;
+                      &lt;span
+                        class=&quot;_label_37bd84&quot;
+                      &gt;
+                        Leverage *
+                      &lt;/span&gt;
+                      ...
+
+Ignored nodes: comments, script, style
+&lt;body&gt;
+  &lt;div&gt;
+    &lt;div
+      class=&quot;_headerRow_1a9f4a&quot;
+    &gt;
+      &lt;h2
+        class=&quot;_title_1a9f4a&quot;
+      &gt;
+        Trading Journal
+      &lt;/h2&gt;
+      &lt;div
+        class=&quot;_controls_1a9f4a&quot;
+      &gt;
+        &lt;button
+          class=&quot;_button_e93d98 _secondary_e93d98&quot;
+        &gt;
+          Load mock data
+        &lt;/button&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div
+      class=&quot;_mobileNewTradeBtnWrap_1a9f4a&quot;
+    /&gt;
+    &lt;div
+      class=&quot;_grid_1a9f4a _gridCompact_1a9f4a _fullScreen_1a9f4a&quot;
+    &gt;
+      &lt;div
+        class=&quot;_left_1a9f4a&quot;
+      &gt;
+        &lt;div
+          class=&quot;_card_0a3619&quot;
+        &gt;
+          &lt;div
+            class=&quot;_content_0a3619&quot;
+          &gt;
+            &lt;div
+              class=&quot;_newTradeWrapper_b72150&quot;
+            &gt;
+              &lt;div
+                class=&quot;_newTradeHeader_b72150&quot;
+              &gt;
+                &lt;div
+                  style=&quot;display: flex; align-items: center; justify-content: space-between; width: 100%;&quot;
+                &gt;
+                  &lt;span
+                    style=&quot;font-weight: 700;&quot;
+                  &gt;
+                    New Trade
+                  &lt;/span&gt;
+                &lt;/div&gt;
+              &lt;/div&gt;
+              &lt;form
+                class=&quot;_form_b72150&quot;
+              &gt;
+                &lt;input
+                  id=&quot;entryDate&quot;
+                  type=&quot;hidden&quot;
+                  value=&quot;2025-12-28T06:46&quot;
+                /&gt;
+                &lt;div
+                  class=&quot;_newTradeGrid_b72150&quot;
+                &gt;
+                  &lt;div
+                    class=&quot;_newTradeField_b72150&quot;
+                  &gt;
+                    &lt;label
+                      class=&quot;_wrapper_37bd84&quot;
+                    &gt;
+                      &lt;span
+                        class=&quot;_label_37bd84&quot;
+                      &gt;
+                        Market
+                      &lt;/span&gt;
+                      &lt;div
+                        aria-label=&quot;Market select&quot;
+                        class=&quot;_container_c6c780 &quot;
+                        role=&quot;tablist&quot;
+                      &gt;
+                        &lt;button
+                          aria-selected=&quot;false&quot;
+                          class=&quot;_badge_c6c780  _compact_c6c780&quot;
+                          role=&quot;tab&quot;
+                        &gt;
+                          Forex
+                        &lt;/button&gt;
+                        &lt;button
+                          aria-selected=&quot;true&quot;
+                          class=&quot;_badge_c6c780 _active_c6c780 _compact_c6c780&quot;
+                          role=&quot;tab&quot;
+                        &gt;
+                          Crypto
+                        &lt;/button&gt;
+                      &lt;/div&gt;
+                    &lt;/label&gt;
+                  &lt;/div&gt;
+                  &lt;div
+                    class=&quot;_newTradeField_b72150&quot;
+                  &gt;
+                    &lt;label
+                      class=&quot;_wrapper_37bd84&quot;
+                    &gt;
+                      &lt;span
+                        class=&quot;_label_37bd84&quot;
+                      &gt;
+                        Symbol
+                      &lt;/span&gt;
+                      &lt;input
+                        class=&quot;_input_37bd84&quot;
+                        id=&quot;symbol&quot;
+                        placeholder=&quot;e.g. BTC&quot;
+                        value=&quot;&quot;
+                      /&gt;
+                    &lt;/label&gt;
+                  &lt;/div&gt;
+                  &lt;div
+                    class=&quot;_newTradeField_b72150&quot;
+                  &gt;
+                    &lt;label
+                      class=&quot;_wrapper_37bd84&quot;
+                    &gt;
+                      &lt;span
+                        class=&quot;_label_37bd84&quot;
+                      &gt;
+                        Entry Price *
+                      &lt;/span&gt;
+                      &lt;input
+                        class=&quot;_input_37bd84&quot;
+                        id=&quot;price&quot;
+                        type=&quot;number&quot;
+                        value=&quot;&quot;
+                      /&gt;
+                    &lt;/label&gt;
+                  &lt;/div&gt;
+                  &lt;div
+                    class=&quot;_newTradeField_b72150&quot;
+                  &gt;
+                    &lt;label
+                      class=&quot;_wrapper_37bd84&quot;
+                    &gt;
+                      &lt;span
+                        class=&quot;_label_37bd84&quot;
+                      &gt;
+                        Margin *
+                      &lt;/span&gt;
+                      &lt;input
+                        class=&quot;_input_37bd84&quot;
+                        id=&quot;margin&quot;
+                        type=&quot;number&quot;
+                        value=&quot;&quot;
+                      /&gt;
+                    &lt;/label&gt;
+                  &lt;/div&gt;
+                  &lt;div
+                    class=&quot;_newTradeField_b72150&quot;
+                  &gt;
+                    &lt;label
+                      class=&quot;_wrapper_37bd84&quot;
+                    &gt;
+                      &lt;span
+                        class=&quot;_label_37bd84&quot;
+                      &gt;
+                        Leverage *
+                      &lt;/span&gt;
+                      ...
+ ❯ waitForWrapper node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/presentation/trade/TradeJournal.integration.test.tsx:111:34
+            </failure>
+        </testcase>
+        <testcase classname="src/presentation/trade/TradeJournal.integration.test.tsx" name="TradeJournal Integration &gt; prefills new trade form from analysis tab" time="0.045829792">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/presentation/trade/errorMapper.test.ts" timestamp="2025-12-28T05:46:43.652Z" hostname="Mac.localdomain" tests="2" failures="0" errors="0" skipped="0" time="0.0024045">
+        <testcase classname="src/presentation/trade/errorMapper.test.ts" name="mapTradeError &gt; maps field error objects" time="0.00078775">
+        </testcase>
+        <testcase classname="src/presentation/trade/errorMapper.test.ts" name="mapTradeError &gt; returns default message for unknown errors" time="0.000088375">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/presentation/trade/validation.test.ts" timestamp="2025-12-28T05:46:43.652Z" hostname="Mac.localdomain" tests="4" failures="0" errors="0" skipped="0" time="0.002711583">
+        <testcase classname="src/presentation/trade/validation.test.ts" name="validateNewTrade &gt; returns no errors for a valid input" time="0.001277167">
+        </testcase>
+        <testcase classname="src/presentation/trade/validation.test.ts" name="validateNewTrade &gt; returns market error when market empty" time="0.000121833">
+        </testcase>
+        <testcase classname="src/presentation/trade/validation.test.ts" name="validateNewTrade &gt; returns size and price errors for invalid numbers" time="0.000090834">
+        </testcase>
+        <testcase classname="src/presentation/trade/validation.test.ts" name="validateNewTrade &gt; returns errors when sl/margin/leverage missing" time="0.0001085">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/application/trade/services/TradeService.test.ts" timestamp="2025-12-28T05:46:43.653Z" hostname="Mac.localdomain" tests="2" failures="0" errors="0" skipped="0" time="0.005024833">
+        <testcase classname="src/application/trade/services/TradeService.test.ts" name="TradeService &gt; should add and list trades" time="0.003143">
+        </testcase>
+        <testcase classname="src/application/trade/services/TradeService.test.ts" name="TradeService &gt; should update a trade" time="0.000221">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/infrastructure/trade/repositories/LocalStorageTradeRepository.test.ts" timestamp="2025-12-28T05:46:43.653Z" hostname="Mac.localdomain" tests="2" failures="0" errors="0" skipped="0" time="0.006120792">
+        <testcase classname="src/infrastructure/trade/repositories/LocalStorageTradeRepository.test.ts" name="LocalStorageTradeRepository &gt; saves and retrieves trades" time="0.003304916">
+            <system-out>
+[LocalStorageRepo] flushed [33m1[39m trades to localStorage
+[LocalStorageRepo] initialized with defaults
+[LocalStorageRepo] save u1
+[LocalStorageRepo] flushed [33m2[39m trades to localStorage
+
+            </system-out>
+        </testcase>
+        <testcase classname="src/infrastructure/trade/repositories/LocalStorageTradeRepository.test.ts" name="LocalStorageTradeRepository &gt; updates existing trade" time="0.001284166">
+            <system-out>
+[LocalStorageRepo] flushed [33m1[39m trades to localStorage
+[LocalStorageRepo] initialized with defaults
+[LocalStorageRepo] save u2
+[LocalStorageRepo] flushed [33m2[39m trades to localStorage
+
+[LocalStorageRepo] update u2
+[LocalStorageRepo] flushed [33m2[39m trades to localStorage
+
+            </system-out>
+        </testcase>
+    </testsuite>
+    <testsuite name="src/presentation/trade/TradeDetail/TradeDetailEditor.compact.test.tsx" timestamp="2025-12-28T05:46:43.654Z" hostname="Mac.localdomain" tests="1" failures="0" errors="0" skipped="0" time="0.066860208">
+        <testcase classname="src/presentation/trade/TradeDetail/TradeDetailEditor.compact.test.tsx" name="TradeDetailEditor compact &gt; applies compact class and renders save button with saveBtn class" time="0.065782792">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/presentation/trade/TradeDetail/TradeDetailEditor.delete.test.tsx" timestamp="2025-12-28T05:46:43.654Z" hostname="Mac.localdomain" tests="1" failures="0" errors="0" skipped="0" time="0.079798667">
+        <testcase classname="src/presentation/trade/TradeDetail/TradeDetailEditor.delete.test.tsx" name="TradeDetailEditor delete flow &gt; calls onDelete with the trade id when Delete clicked" time="0.077922834">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/presentation/trade/TradeDetail/TradeDetailEditor.test.tsx" timestamp="2025-12-28T05:46:43.654Z" hostname="Mac.localdomain" tests="1" failures="0" errors="0" skipped="0" time="0.077704209">
+        <testcase classname="src/presentation/trade/TradeDetail/TradeDetailEditor.test.tsx" name="TradeDetailEditor &gt; calls onSave with updated trade when Save now clicked" time="0.07634725">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/presentation/trade/TradeList/TradeList.test.tsx" timestamp="2025-12-28T05:46:43.655Z" hostname="Mac.localdomain" tests="2" failures="0" errors="0" skipped="0" time="0.057248458">
+        <testcase classname="src/presentation/trade/TradeList/TradeList.test.tsx" name="TradeList &gt; renders LONG and SHORT badges with normalized labels and classes" time="0.04478425">
+        </testcase>
+        <testcase classname="src/presentation/trade/TradeList/TradeList.test.tsx" name="TradeList &gt; renders PositionCard components in compactView" time="0.009207875">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/domain/trade/entities/Trade.test.ts" timestamp="2025-12-28T05:46:43.655Z" hostname="Mac.localdomain" tests="5" failures="0" errors="0" skipped="0" time="0.00310475">
+        <testcase classname="src/domain/trade/entities/Trade.test.ts" name="TradeFactory &gt; should create a valid Trade" time="0.001386667">
+        </testcase>
+        <testcase classname="src/domain/trade/entities/Trade.test.ts" name="TradeFactory &gt; should throw on invalid symbol" time="0.000197417">
+        </testcase>
+        <testcase classname="src/domain/trade/entities/Trade.test.ts" name="TradeFactory &gt; should throw on invalid entryDate" time="0.000087625">
+        </testcase>
+        <testcase classname="src/domain/trade/entities/Trade.test.ts" name="TradeFactory &gt; should throw on invalid size" time="0.00008925">
+        </testcase>
+        <testcase classname="src/domain/trade/entities/Trade.test.ts" name="TradeFactory &gt; should throw on invalid price" time="0.000076834">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/domain/trade/valueObjects/EntryDate.test.ts" timestamp="2025-12-28T05:46:43.655Z" hostname="Mac.localdomain" tests="3" failures="0" errors="0" skipped="0" time="0.002927209">
+        <testcase classname="src/domain/trade/valueObjects/EntryDate.test.ts" name="EntryDate VO helpers &gt; toInputValue returns a datetime-local string parseable by Date" time="0.001366334">
+        </testcase>
+        <testcase classname="src/domain/trade/valueObjects/EntryDate.test.ts" name="EntryDate VO helpers &gt; toInputValue(iso) and fromInputValue roundtrip" time="0.000286583">
+        </testcase>
+        <testcase classname="src/domain/trade/valueObjects/EntryDate.test.ts" name="EntryDate VO helpers &gt; fromInputValue throws EntryDateInvalidError for invalid input" time="0.000190667">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/domain/trade/valueObjects/Leverage.test.ts" timestamp="2025-12-28T05:46:43.656Z" hostname="Mac.localdomain" tests="2" failures="0" errors="0" skipped="0" time="0.0066555">
+        <testcase classname="src/domain/trade/valueObjects/Leverage.test.ts" name="Leverage VO &gt; accepts undefined and numeric values" time="0.001001875">
+        </testcase>
+        <testcase classname="src/domain/trade/valueObjects/Leverage.test.ts" name="Leverage VO &gt; throws on invalid numbers (&lt;=0 or NaN)" time="0.001699375">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/domain/trade/valueObjects/Margin.test.ts" timestamp="2025-12-28T05:46:43.656Z" hostname="Mac.localdomain" tests="3" failures="0" errors="0" skipped="0" time="0.001871375">
+        <testcase classname="src/domain/trade/valueObjects/Margin.test.ts" name="Margin Value Object &gt; should create a Margin for positive values" time="0.000738959">
+        </testcase>
+        <testcase classname="src/domain/trade/valueObjects/Margin.test.ts" name="Margin Value Object &gt; should throw for zero or negative values" time="0.000209959">
+        </testcase>
+        <testcase classname="src/domain/trade/valueObjects/Margin.test.ts" name="Margin Value Object &gt; should throw for NaN or non-number" time="0.00011625">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/domain/trade/valueObjects/Market.test.ts" timestamp="2025-12-28T05:46:43.656Z" hostname="Mac.localdomain" tests="2" failures="0" errors="0" skipped="0" time="0.005286125">
+        <testcase classname="src/domain/trade/valueObjects/Market.test.ts" name="Market VO &gt; normalizes forex and crypto" time="0.001268375">
+        </testcase>
+        <testcase classname="src/domain/trade/valueObjects/Market.test.ts" name="Market VO &gt; throws on invalid market" time="0.002018542">
+        </testcase>
+    </testsuite>
+</testsuites>
