@@ -18,6 +18,7 @@ jobs:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
       SONAR_ORGANIZATION: ${{ secrets.SONAR_ORGANIZATION }}
+      ENABLE_SONAR_CI: ${{ secrets.ENABLE_SONAR_CI }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -73,14 +74,15 @@ jobs:
           fi
 
       - name: SonarCloud Scan
-        # Don't reference `secrets` directly in `if` expressions; use the mapped env vars instead
-        if: ${{ env.SONAR_TOKEN != '' }}
+        # Run SonarCI only when the repo secret ENABLE_SONAR_CI is set to 'true'.
+        # This avoids running the scanner when SonarCloud Automatic Analysis is enabled.
+        if: ${{ env.SONAR_TOKEN != '' && env.ENABLE_SONAR_CI == 'true' }}
         uses: sonarsource/sonarcloud-github-action@v2
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       - name: Wait for SonarCloud Quality Gate
-        if: ${{ env.SONAR_TOKEN != '' && env.SONAR_PROJECT_KEY != '' }}
+        if: ${{ env.SONAR_TOKEN != '' && env.SONAR_PROJECT_KEY != '' && env.ENABLE_SONAR_CI == 'true' }}
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
