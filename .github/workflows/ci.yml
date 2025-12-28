@@ -12,6 +12,11 @@ jobs:
     strategy:
       matrix:
         node-version: [18.x]
+    # Map secrets to env so `if` expressions can safely reference them
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
+      SONAR_ORGANIZATION: ${{ secrets.SONAR_ORGANIZATION }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -105,16 +110,16 @@ jobs:
           fail_ci_if_error: false
 
       - name: SonarCloud Scan
-        if: ${{ secrets.SONAR_TOKEN != '' }}
+        if: ${{ env.SONAR_TOKEN != '' }}
         uses: sonarsource/sonarcloud-github-action@v2
         with:
-          projectKey: ${{ secrets.SONAR_PROJECT_KEY }}
-          organization: ${{ secrets.SONAR_ORGANIZATION }}
+          projectKey: ${{ env.SONAR_PROJECT_KEY }}
+          organization: ${{ env.SONAR_ORGANIZATION }}
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       - name: Wait for SonarCloud Quality Gate
-        if: ${{ secrets.SONAR_TOKEN != '' && secrets.SONAR_PROJECT_KEY != '' }}
+        if: ${{ env.SONAR_TOKEN != '' && env.SONAR_PROJECT_KEY != '' }}
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}

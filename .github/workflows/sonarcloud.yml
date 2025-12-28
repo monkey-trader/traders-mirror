@@ -13,6 +13,11 @@ jobs:
   build:
     name: Build and analyze
     runs-on: ubuntu-latest
+    # Map secrets to env so we can safely reference them in `if` expressions
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
+      SONAR_ORGANIZATION: ${{ secrets.SONAR_ORGANIZATION }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -68,16 +73,14 @@ jobs:
           fi
 
       - name: SonarCloud Scan
-        if: ${{ secrets.SONAR_TOKEN != '' }}
+        # Don't reference `secrets` directly in `if` expressions; use the mapped env vars instead
+        if: ${{ env.SONAR_TOKEN != '' }}
         uses: sonarsource/sonarcloud-github-action@v2
-        with:
-          projectKey: ${{ secrets.SONAR_PROJECT_KEY }}
-          organization: ${{ secrets.SONAR_ORGANIZATION }}
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
       - name: Wait for SonarCloud Quality Gate
-        if: ${{ secrets.SONAR_TOKEN != '' && secrets.SONAR_PROJECT_KEY != '' }}
+        if: ${{ env.SONAR_TOKEN != '' && env.SONAR_PROJECT_KEY != '' }}
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
