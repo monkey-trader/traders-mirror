@@ -28,6 +28,32 @@ jobs:
       - name: Run tests (Vitest) + coverage
         run: npx vitest run --coverage -c vitest.config.ts --reporter=dot
 
+      - name: Debug coverage files
+        if: always()
+        run: |
+          echo "PWD: $(pwd)"
+          echo "Listing repo root:"
+          ls -la
+          echo "Looking for .coverage and coverage folders"
+          if [ -d .coverage ]; then
+            echo "Found .coverage:"; ls -la .coverage
+          else
+            echo ".coverage not found"
+          fi
+          if [ -d coverage ]; then
+            echo "Found coverage:"; ls -la coverage
+          else
+            echo "coverage not found"
+          fi
+          echo "Show head of lcov if present";
+          if [ -f ./.coverage/lcov.info ]; then
+            head -n 40 ./.coverage/lcov.info
+          elif [ -f ./coverage/lcov.info ]; then
+            head -n 40 ./coverage/lcov.info
+          else
+            echo "no lcov.info found"
+          fi
+
       - name: Upload JUnit report
         if: always()
         uses: actions/upload-artifact@v4
