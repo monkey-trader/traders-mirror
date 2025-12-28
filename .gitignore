@@ -31,6 +31,9 @@ Thumbs.db
 coverage/
 .coverage/
 
+# Vitest CI/JUnit report
+vitest-report.xml
+
 # misc
 *.log
 
