@@ -45,7 +45,7 @@ jobs:
             echo "Ran npm test:ci"
           else
             echo "Falling back to direct vitest run"
-            npx vitest run --reporter=default --reporter=junit --outputFile=vitest-report.xml --coverage
+            npx vitest run -c vitest.config.cjs --reporter=default --reporter=junit --outputFile=vitest-report.xml --coverage
           fi
 
       - name: Ensure .coverage exists
