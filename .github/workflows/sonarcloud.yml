@@ -80,6 +80,8 @@ jobs:
         uses: sonarsource/sonarcloud-github-action@v2
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
+          SONAR_ORGANIZATION: ${{ secrets.SONAR_ORGANIZATION }}
 
       - name: Wait for SonarCloud Quality Gate
         if: ${{ env.SONAR_TOKEN != '' && env.SONAR_PROJECT_KEY != '' && env.ENABLE_SONAR_CI == 'true' }}
