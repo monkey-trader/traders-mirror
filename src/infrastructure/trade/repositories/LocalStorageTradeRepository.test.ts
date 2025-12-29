@@ -102,4 +102,157 @@ describe('LocalStorageTradeRepository.toRepoTrade conversions', () => {
       expect(found.side.value).toBe('LONG');
     }
   });
+
+  it('constructor loads existing raw data from localStorage when present', () => {
+    const raw: RepoTrade[] = [
+      {
+        id: 'loaded-1',
+        market: 'All',
+        symbol: 'LOAD1',
+        entryDate: '2025-12-20T00:00:00Z',
+        size: 2,
+        price: 100,
+        side: 'LONG',
+        status: 'OPEN',
+        pnl: 0,
+      },
+    ];
+    window.localStorage.setItem('mt_test_key', JSON.stringify(raw));
+    const repo2 = new LocalStorageTradeRepository('mt_test_key', { seedDefaults: true });
+    return repo2.getAll().then((all) => {
+      expect(all.length).toBe(1);
+      expect(all[0].id).toBe('loaded-1');
+    });
+  });
+
+  it('constructor handles invalid JSON in localStorage and falls back to defaults or empty based on seedDefaults', async () => {
+    window.localStorage.setItem('mt_test_key', 'not-a-json');
+
+    const repoWithNoSeed = new LocalStorageTradeRepository('mt_test_key', { seedDefaults: false });
+    const none = await repoWithNoSeed.getAll();
+    expect(none.length).toBe(0);
+
+    const repoWithSeed = new LocalStorageTradeRepository('mt_test_key', { seedDefaults: true });
+    const some = await repoWithSeed.getAll();
+    // default mock trades include t1
+    expect(some.length).toBeGreaterThan(0);
+    expect(some[0].id).toBe('t1');
+  });
+
+  it('seed([]) is a no-op and seed(trades) prepends and persists', async () => {
+    const repo2 = new LocalStorageTradeRepository('mt_test_key', { seedDefaults: false });
+    // ensure empty initially
+    expect(await repo2.getAll()).toHaveLength(0);
+
+    // seed empty -> still empty
+    repo2.seed([]);
+    expect(window.localStorage.getItem('mt_test_key')).toBeNull();
+
+    // seed with one trade
+    const r: RepoTrade = {
+      id: 's1',
+      market: 'Crypto',
+      symbol: 'S1',
+      entryDate: '2025-12-01T00:00:00Z',
+      size: 0.1,
+      price: 10,
+      side: 'LONG',
+      status: 'OPEN',
+      pnl: 0,
+    };
+    repo2.seed([r]);
+    const all = await repo2.getAll();
+    expect(all.length).toBe(1);
+    expect(all[0].id).toBe('s1');
+  });
+
+  it('update replaces an existing trade and save path is used when not found', async () => {
+    const repo2 = new LocalStorageTradeRepository('mt_test_key', { seedDefaults: false });
+    // save initial trade
+    const trade = TradeFactory.create({ id: 'u1', symbol: 'UP1', size: 1, price: 100, side: 'LONG' });
+    await repo2.save(trade);
+
+    // modify and update
+    const updated = TradeFactory.create({ id: 'u1', symbol: 'UPD', size: 2, price: 200, side: 'LONG' });
+    await repo2.update(updated);
+    const all = await repo2.getAll();
+    const found = all.find((t) => t.id === 'u1');
+    expect(found).toBeDefined();
+    if (found) {
+      expect(found.symbol.value).toBe('UPD');
+      expect(found.size.value).toBe(2);
+      expect(found.price.value).toBe(200);
+    }
+
+    // update non-existing should save
+    const notFound = TradeFactory.create({ id: 'u2', symbol: 'NF', size: 1, price: 50, side: 'SHORT' });
+    await repo2.update(notFound);
+    const all2 = await repo2.getAll();
+    expect(all2.find((t) => t.id === 'u2')).toBeDefined();
+  });
+
+  it('delete removes a trade by id', async () => {
+    const repo2 = new LocalStorageTradeRepository('mt_test_key', { seedDefaults: false });
+    const trade = TradeFactory.create({ id: 'd1', symbol: 'DEL', size: 1, price: 1, side: 'LONG' });
+    await repo2.save(trade);
+    expect((await repo2.getAll()).find((t) => t.id === 'd1')).toBeDefined();
+    await repo2.delete('d1');
+    expect((await repo2.getAll()).find((t) => t.id === 'd1')).toBeUndefined();
+  });
+
+  it('getAll recovers from TradeFactory.create errors for optional fields (e.g. invalid sl) and returns a Trade', async () => {
+    const repo2 = new LocalStorageTradeRepository('mt_test_key', { seedDefaults: false });
+    const bad: RepoTrade = {
+      id: 'bad1',
+      market: 'Forex',
+      symbol: 'BAD',
+      entryDate: '2025-12-02T00:00:00Z',
+      size: 1,
+      price: 100,
+      side: 'LONG',
+      status: 'OPEN',
+      pnl: 0,
+      sl: -10, // negative stop will cause Price constructor to throw in the full create path
+    };
+    // directly seed backend storage so that the constructor/getAll path processes it
+    repo2.seed([bad]);
+    const all = await repo2.getAll();
+    const found = all.find((t) => t.id === 'bad1');
+    expect(found).toBeDefined();
+    if (found) {
+      expect(found.id).toBe('bad1');
+      // ensure returned Trade has basic fields and valid VOs
+      expect(found.size.value).toBe(1);
+    }
+  });
+
+  it('flush handles localStorage.setItem throwing (no crash on save/seed)', async () => {
+    const repo2 = new LocalStorageTradeRepository('mt_test_key', { seedDefaults: false });
+    const originalSetItem = window.localStorage.setItem;
+    try {
+      window.localStorage.setItem = (() => {
+        throw new Error('quota');
+      }) as typeof window.localStorage.setItem;
+
+      const t = TradeFactory.create({ id: 'q1', symbol: 'Q', size: 1, price: 1, side: 'LONG' });
+      // save should not throw even if setItem throws
+      await expect(repo2.save(t)).resolves.toBeUndefined();
+
+      // seed should not throw
+      const r: RepoTrade = {
+        id: 'q2',
+        market: 'All',
+        symbol: 'Q2',
+        entryDate: '2025-12-01T00:00:00Z',
+        size: 1,
+        price: 1,
+        side: 'LONG',
+        status: 'OPEN',
+        pnl: 0,
+      };
+      expect(() => repo2.seed([r])).not.toThrow();
+    } finally {
+      window.localStorage.setItem = originalSetItem;
+    }
+  });
 });
