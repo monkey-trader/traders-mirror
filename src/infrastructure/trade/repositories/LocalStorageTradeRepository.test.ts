@@ -207,4 +207,35 @@ describe('LocalStorageTradeRepository', () => {
     const raw = window.localStorage.getItem(key);
     expect(raw).toBeNull();
   });
+
+  it('handles localStorage.setItem throwing (flush error) without bubbling', async () => {
+    const key = 'test_flush_error';
+    window.localStorage.removeItem(key);
+    const repo = new LocalStorageTradeRepository(key, { seedDefaults: false });
+
+    // make setItem throw
+    const originalSetItem = window.localStorage.setItem;
+    // monkeypatch setItem to throw
+    window.localStorage.setItem = () => {
+      throw new Error('quota exceeded');
+    };
+
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const trade = TradeFactory.create({
+      id: 'f1',
+      symbol: 'FUSD',
+      size: 1,
+      price: 1,
+      side: 'LONG',
+    });
+    // save should not throw despite setItem throwing internally
+    await expect(repo.save(trade)).resolves.toBeUndefined();
+
+    expect(spy).toHaveBeenCalled();
+
+    // restore
+    spy.mockRestore();
+    window.localStorage.setItem = originalSetItem;
+  });
 });
