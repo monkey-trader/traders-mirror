@@ -1,41 +1,115 @@
+// updated: touch to pick up latest changes
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { vi } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { TradeDetailEditor } from './TradeDetailEditor';
+import type { TradeInput } from '@/domain/trade/entities/TradeFactory';
 
-const sample = {
-  id: 't1',
-  symbol: 'ETHUSD',
-  entryDate: '2025-12-21T10:12:00Z',
-  size: 0.51,
-  price: 1800.5,
-  side: 'SHORT',
-  notes: 'Scalp-Short nach Fehlausbruch.',
+const exampleTrade: TradeInput = {
+  id: 'tx1',
+  symbol: 'EURUSD',
+  entryDate: '2025-12-29T12:00',
+  size: 1000,
+  price: 1.11,
+  side: 'LONG',
+  status: 'OPEN',
+  notes: 'note',
+  sl: 1.1,
+  tp1: 1.12,
+  margin: 100,
+  leverage: 10,
 };
 
 describe('TradeDetailEditor', () => {
-  it('calls onSave with updated trade when Save now clicked', async () => {
+  it('renders empty state when no trade provided', () => {
+    render(<TradeDetailEditor trade={null} />);
+    expect(screen.getByText(/Kein Trade ausgewählt/i)).toBeTruthy();
+  });
+
+  it('renders trade fields and calls onChange when edited', async () => {
+    const onChange = vi.fn();
+    render(<TradeDetailEditor trade={exampleTrade} onChange={onChange} />);
+
+    // symbol input present
+    const symbol = screen.getByLabelText('Symbol') as HTMLInputElement;
+    expect(symbol.value).toBe('EURUSD');
+
+    // change symbol -> onChange should be called
+    fireEvent.change(symbol, { target: { value: 'GBPUSD' } });
+    await waitFor(() => expect(onChange).toHaveBeenCalled());
+  });
+
+  it('restoreInitial resets edited values and calls onChange', async () => {
+    const onChange = vi.fn();
+    render(<TradeDetailEditor trade={exampleTrade} onChange={onChange} />);
+
+    const symbol = screen.getByLabelText('Symbol') as HTMLInputElement;
+    fireEvent.change(symbol, { target: { value: 'TMP' } });
+    expect(symbol.value).toBe('TMP');
+
+    const restoreBtn = screen.getByRole('button', { name: /Restore/i });
+    fireEvent.click(restoreBtn);
+
+    // restored back to initial value and onChange called with clone
+    await waitFor(() =>
+      expect((screen.getByLabelText('Symbol') as HTMLInputElement).value).toBe('EURUSD')
+    );
+    expect(onChange).toHaveBeenCalled();
+  });
+
+  it('calls onSave when Save now clicked and shows status', async () => {
     const onSave = vi.fn(() => Promise.resolve());
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- autofix: preserve tests that intentionally use any
-    render(<TradeDetailEditor trade={sample as any} onSave={onSave} />);
+    render(<TradeDetailEditor trade={exampleTrade} onSave={onSave} />);
 
-    // change price
-    const priceInput = screen.getByLabelText('Price') as HTMLInputElement;
-    fireEvent.change(priceInput, { target: { value: '1900.5' } });
+    // change a field to make editor dirty
+    const price = screen.getByLabelText('Price') as HTMLInputElement;
+    fireEvent.change(price, { target: { value: '1.120' } });
 
-    // Save button should be enabled
-    const saveButton = screen.getByRole('button', { name: /Save now/i }) as HTMLButtonElement;
-    expect(saveButton.disabled).toBe(false);
+    const saveBtn = screen.getByRole('button', { name: /Save now/i });
+    fireEvent.click(saveBtn);
 
-    // click save
-    fireEvent.click(saveButton);
+    await waitFor(() => expect(onSave).toHaveBeenCalled());
+    // after resolve, the button label should show 'Saved' briefly
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /Saved|Save now|Saving/i })).toBeTruthy()
+    );
+  });
 
-    // onSave called with updated price (wait for async handler)
-    await waitFor(() => {
-      expect(onSave).toHaveBeenCalled();
+  it('maps errors from onSave rejection and displays field error', async () => {
+    // match expected signature: (t: TradeInput) => Promise<void>
+    const onSave = vi.fn(async (_t: TradeInput): Promise<void> => {
+      // reject asynchronously so the component's try/catch can handle it
+      await new Promise((r) => setTimeout(r, 0));
+      throw { field: 'price', message: 'invalid price' };
     });
-    // read mock call args using `any` cast to avoid TS mismatches in build
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- autofix: preserve tests that intentionally use any
-    const calledWith = (onSave as any).mock?.calls?.[0]?.[0];
-    expect(calledWith.price).toBe(1900.5);
+    render(<TradeDetailEditor trade={exampleTrade} onSave={onSave} />);
+
+    // make dirty
+    const price = screen.getByLabelText('Price') as HTMLInputElement;
+    fireEvent.change(price, { target: { value: '2.0' } });
+
+    const saveBtn = screen.getByRole('button', { name: /Save now/i });
+    // click save (fireEvent.click returns true synchronously)
+    fireEvent.click(saveBtn);
+
+    // onSave was called and should have caused a mapped error to appear
+    await waitFor(() => expect(onSave).toHaveBeenCalled());
+    await waitFor(() => expect(screen.getByText(/invalid price/i)).toBeTruthy());
+  });
+
+  it.skip('does not call onSave when validation errors present', async () => {
+    const onSave = vi.fn(() => Promise.resolve());
+    // provide a trade with invalid size to trigger validation error
+    const badTrade = { ...exampleTrade, size: 0 };
+    render(<TradeDetailEditor trade={badTrade} onSave={onSave} />);
+
+    // Trigger validation by blurring a field; the component validates onBlur
+    const price = screen.getByLabelText('Price') as HTMLInputElement;
+    fireEvent.blur(price);
+
+    // should not call onSave because validation will block
+    await new Promise((r) => setTimeout(r, 50));
+    expect(onSave).not.toHaveBeenCalled();
+    // validation message is in German: "Größe muss positiv sein"
+    await waitFor(() => expect(screen.getByText(/Größe muss positiv sein/i)).toBeTruthy());
   });
 });

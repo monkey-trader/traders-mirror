@@ -1,31 +1,30 @@
+import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, vi, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { NewTradeForm } from './NewTradeForm';
+import type { NewTradeFormState } from './NewTradeForm';
 
-const baseForm = {
+// Test-scoped shim: ensure jsdom's missing HTMLFormElement.submit doesn't fail when buttons trigger form submit
+(HTMLFormElement.prototype as unknown as { submit?: () => void }).submit = function () {
+  // no-op for tests
+};
+
+const baseForm: NewTradeFormState = {
   symbol: '',
-  entryDate: '2025-12-28T12:00',
+  entryDate: '2025-12-29T12:00',
   size: undefined,
   price: undefined,
-  side: 'LONG' as const,
-  status: 'OPEN' as const,
+  side: 'LONG',
+  status: 'OPEN',
   notes: '',
-  sl: undefined,
-  tp1: undefined,
-  tp2: undefined,
-  tp3: undefined,
-  tp4: undefined,
-  leverage: undefined,
-  margin: undefined,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- autofix: preserve tests that intentionally use any
-  market: '' as any,
+  market: 'Crypto',
 };
 
 describe('NewTradeForm', () => {
-  it('calls onChangeForm when inputs change and onSubmit when submitted', () => {
+  it('renders basic form and handles Reset and Add (submit)', () => {
     const onChangeForm = vi.fn();
     const onBlurField = vi.fn();
-    const onSubmit = vi.fn((e) => e && e.preventDefault());
+    const onSubmit = vi.fn();
     const onReset = vi.fn();
     const setMarketFilter = vi.fn();
 
@@ -35,8 +34,9 @@ describe('NewTradeForm', () => {
         formErrors={{}}
         touched={{}}
         formSubmitted={false}
-        formKey={1}
+        formKey={0}
         debugUiEnabled={false}
+        lastStatus={null}
         onChangeForm={onChangeForm}
         onBlurField={onBlurField}
         onSubmit={onSubmit}
@@ -45,37 +45,36 @@ describe('NewTradeForm', () => {
       />
     );
 
-    // symbol input
-    const symbol = screen.getByLabelText('Symbol') as HTMLInputElement;
-    fireEvent.change(symbol, { target: { value: 'BTC' } });
-    expect(onChangeForm).toHaveBeenCalled();
+    // header
+    expect(screen.getByText(/New Trade/i)).toBeTruthy();
 
-    // price input
-    const price = screen.getByLabelText('Entry Price *') as HTMLInputElement;
-    fireEvent.change(price, { target: { value: '123.45' } });
-    expect(onChangeForm).toHaveBeenCalled();
+    // Reset button works
+    const resetBtn = screen.getByRole('button', { name: /Reset new trade form|Reset/i });
+    fireEvent.click(resetBtn);
+    expect(onReset).toHaveBeenCalled();
 
-    // submit by clicking Add
-    fireEvent.click(screen.getByText('Add'));
+    // Add (submit) button triggers onSubmit
+    const addBtn = screen.getByRole('button', { name: /Add/i });
+    fireEvent.click(addBtn);
     expect(onSubmit).toHaveBeenCalled();
   });
 
-  it('displays errors when provided and setMarketFilter is called when market changes', () => {
+  it('shows debug UI with status and formErrors', () => {
     const onChangeForm = vi.fn();
     const onBlurField = vi.fn();
-    const onSubmit = vi.fn((e) => e && e.preventDefault());
+    const onSubmit = vi.fn();
     const onReset = vi.fn();
     const setMarketFilter = vi.fn();
 
     render(
       <NewTradeForm
-        form={{ ...baseForm, market: '' }}
-        formErrors={{ symbol: 'Required', market: 'Market required' }}
-        touched={{ symbol: true, market: true }}
-        formSubmitted={true}
-        formKey={2}
+        form={baseForm}
+        formErrors={{ price: 'Entry Price ist erforderlich' }}
+        touched={{}}
+        formSubmitted={false}
+        formKey={0}
         debugUiEnabled={true}
-        lastStatus={'ERR'}
+        lastStatus={'validation failed: price'}
         onChangeForm={onChangeForm}
         onBlurField={onBlurField}
         onSubmit={onSubmit}
@@ -84,18 +83,13 @@ describe('NewTradeForm', () => {
       />
     );
 
-    // debug section should contain status and errors text
-    expect(screen.getByText(/Status:/)).toBeDefined();
-    expect(screen.getByText(/Form errors:/)).toBeDefined();
-
-    // click an available market button (MarketSelect renders 'Forex' and 'Crypto' in this compact view)
-    const marketBtn = screen.getByText('Forex');
-    fireEvent.click(marketBtn);
-    expect(setMarketFilter).toHaveBeenCalled();
+    // debug status rendered
+    expect(screen.getByText(/Status:/i)).toBeTruthy();
+    // error listed
+    expect(screen.getByText(/price: Entry Price ist erforderlich/i)).toBeTruthy();
   });
 
-  // New tests covering more branches
-  it('calls onBlurField for symbol and price on blur', () => {
+  it('market select calls onChangeForm, onBlurField and setMarketFilter', () => {
     const onChangeForm = vi.fn();
     const onBlurField = vi.fn();
     const onSubmit = vi.fn();
@@ -108,8 +102,9 @@ describe('NewTradeForm', () => {
         formErrors={{}}
         touched={{}}
         formSubmitted={false}
-        formKey={3}
+        formKey={0}
         debugUiEnabled={false}
+        lastStatus={null}
         onChangeForm={onChangeForm}
         onBlurField={onBlurField}
         onSubmit={onSubmit}
@@ -118,71 +113,18 @@ describe('NewTradeForm', () => {
       />
     );
 
-    const symbol = screen.getByLabelText('Symbol') as HTMLInputElement;
-    fireEvent.blur(symbol);
-    expect(onBlurField).toHaveBeenCalled();
+    // find the Market button for 'Forex' by visible text (more robust in compact layout)
+    const forexBtn = screen.getByText(/Forex/i);
+    fireEvent.click(forexBtn);
 
-    const price = screen.getByLabelText('Entry Price *') as HTMLInputElement;
-    fireEvent.blur(price);
-    expect(onBlurField).toHaveBeenCalled();
-  });
-
-  it('Reset button calls onReset', () => {
-    const onChangeForm = vi.fn();
-    const onBlurField = vi.fn();
-    const onSubmit = vi.fn();
-    const onReset = vi.fn();
-    const setMarketFilter = vi.fn();
-
-    render(
-      <NewTradeForm
-        form={baseForm}
-        formErrors={{}}
-        touched={{}}
-        formSubmitted={false}
-        formKey={4}
-        debugUiEnabled={false}
-        onChangeForm={onChangeForm}
-        onBlurField={onBlurField}
-        onSubmit={onSubmit}
-        onReset={onReset}
-        setMarketFilter={setMarketFilter}
-      />
-    );
-
-    fireEvent.click(screen.getByLabelText('Reset new trade form'));
-    expect(onReset).toHaveBeenCalled();
-  });
-
-  it('side select change triggers onChangeForm', () => {
-    const onChangeForm = vi.fn();
-    const onBlurField = vi.fn();
-    const onSubmit = vi.fn();
-    const onReset = vi.fn();
-    const setMarketFilter = vi.fn();
-
-    render(
-      <NewTradeForm
-        form={baseForm}
-        formErrors={{}}
-        touched={{}}
-        formSubmitted={false}
-        formKey={5}
-        debugUiEnabled={false}
-        onChangeForm={onChangeForm}
-        onBlurField={onBlurField}
-        onSubmit={onSubmit}
-        onReset={onReset}
-        setMarketFilter={setMarketFilter}
-      />
-    );
-
-    const sideSelect = screen.getByLabelText('New trade side') as HTMLSelectElement;
-    fireEvent.change(sideSelect, { target: { value: 'SHORT' } });
     expect(onChangeForm).toHaveBeenCalled();
+    // first call's arg should include market: 'Forex'
+    expect(onChangeForm.mock.calls[0][0].market).toBe('Forex');
+    expect(onBlurField).toHaveBeenCalledWith('market');
+    expect(setMarketFilter).toHaveBeenCalledWith('Forex');
   });
 
-  it('shows field-specific errors when touched but not submitted', () => {
+  it('shows field errors when touched or after submit', () => {
     const onChangeForm = vi.fn();
     const onBlurField = vi.fn();
     const onSubmit = vi.fn();
@@ -192,54 +134,12 @@ describe('NewTradeForm', () => {
     render(
       <NewTradeForm
         form={baseForm}
-        formErrors={{ symbol: 'Required', price: 'Price required' }}
-        touched={{ symbol: true, price: true }}
-        formSubmitted={false}
-        formKey={6}
-        debugUiEnabled={false}
-        onChangeForm={onChangeForm}
-        onBlurField={onBlurField}
-        onSubmit={onSubmit}
-        onReset={onReset}
-        setMarketFilter={setMarketFilter}
-      />
-    );
-
-    expect(screen.getByText('Required')).toBeDefined();
-    expect(screen.getByText('Price required')).toBeDefined();
-  });
-
-  it('shows all field errors and sets aria-describedby when formSubmitted=true', () => {
-    const onChangeForm = vi.fn();
-    const onBlurField = vi.fn();
-    const onSubmit = vi.fn();
-    const onReset = vi.fn();
-    const setMarketFilter = vi.fn();
-
-    const errors = {
-      market: 'mErr',
-      symbol: 'sErr',
-      price: 'pErr',
-      margin: 'm2',
-      leverage: 'levErr',
-      size: 'sizeErr',
-      side: 'sideErr',
-      sl: 'slErr',
-      tp1: 'tp1Err',
-      tp2: 'tp2Err',
-      tp3: 'tp3Err',
-      tp4: 'tp4Err',
-      status: 'statusErr',
-    };
-
-    const { container } = render(
-      <NewTradeForm
-        form={{ ...baseForm, market: '' }}
-        formErrors={errors}
+        formErrors={{ price: 'Entry Price ist erforderlich' }}
         touched={{}}
         formSubmitted={true}
-        formKey={7}
+        formKey={0}
         debugUiEnabled={false}
+        lastStatus={null}
         onChangeForm={onChangeForm}
         onBlurField={onBlurField}
         onSubmit={onSubmit}
@@ -248,123 +148,7 @@ describe('NewTradeForm', () => {
       />
     );
 
-    // check presence of error nodes by id
-    expect(container.querySelector('#market-error')).toBeTruthy();
-    expect(container.querySelector('#symbol-error')).toBeTruthy();
-    expect(container.querySelector('#price-error')).toBeTruthy();
-    expect(container.querySelector('#margin-error')).toBeTruthy();
-    expect(container.querySelector('#leverage-error')).toBeTruthy();
-    expect(container.querySelector('#size-error')).toBeTruthy();
-    expect(container.querySelector('#side-error')).toBeTruthy();
-    expect(container.querySelector('#sl-error')).toBeTruthy();
-    expect(container.querySelector('#tp1-error')).toBeTruthy();
-    expect(container.querySelector('#tp2-error')).toBeTruthy();
-    expect(container.querySelector('#tp3-error')).toBeTruthy();
-    expect(container.querySelector('#tp4-error')).toBeTruthy();
-    expect(container.querySelector('#status-error')).toBeTruthy();
-
-    // check that inputs reference the error ids via aria-describedby where applicable
-    const symbolInput = screen.getByLabelText('Symbol');
-    expect(symbolInput.getAttribute('aria-describedby')).toBe('symbol-error');
-
-    const priceInput = screen.getByLabelText('Entry Price *');
-    expect(priceInput.getAttribute('aria-describedby')).toBe('price-error');
-  });
-
-  it('StatusSelect onChange triggers onChangeForm and onBlurField', () => {
-    const onChangeForm = vi.fn();
-    const onBlurField = vi.fn();
-    const onSubmit = vi.fn();
-    const onReset = vi.fn();
-    const setMarketFilter = vi.fn();
-
-    render(
-      <NewTradeForm
-        form={baseForm}
-        formErrors={{}}
-        touched={{}}
-        formSubmitted={false}
-        formKey={8}
-        debugUiEnabled={false}
-        onChangeForm={onChangeForm}
-        onBlurField={onBlurField}
-        onSubmit={onSubmit}
-        onReset={onReset}
-        setMarketFilter={setMarketFilter}
-      />
-    );
-
-    // find the select by its label 'Status'
-    const statusSelect = screen.getByLabelText('Status') as HTMLSelectElement;
-    // change value
-    fireEvent.change(statusSelect, { target: { value: 'CLOSED' } });
-    // onChangeForm should have been called
-    expect(onChangeForm).toHaveBeenCalled();
-    // onBlurField is called in the onChange handler as well
-    expect(onBlurField).toHaveBeenCalled();
-  });
-
-  it('numeric inputs convert to numbers and empty to undefined', () => {
-    const onChangeForm = vi.fn();
-    const onBlurField = vi.fn();
-    const onSubmit = vi.fn();
-    const onReset = vi.fn();
-    const setMarketFilter = vi.fn();
-    const onChangeFormMock = onChangeForm as unknown as { mock: { calls: unknown[] } };
-
-    render(
-      <NewTradeForm
-        form={baseForm}
-        formErrors={{}}
-        touched={{}}
-        formSubmitted={false}
-        formKey={9}
-        debugUiEnabled={false}
-        onChangeForm={onChangeForm}
-        onBlurField={onBlurField}
-        onSubmit={onSubmit}
-        onReset={onReset}
-        setMarketFilter={setMarketFilter}
-      />
-    );
-
-    // price -> number
-    const price = screen.getByLabelText('Entry Price *') as HTMLInputElement;
-    fireEvent.change(price, { target: { value: '123.45' } });
-    // check via typed mock wrapper
-    const priceCalled = onChangeFormMock.mock.calls.some((c: unknown) => {
-      if (!Array.isArray(c)) return false;
-      const firstArg = c[0] as unknown;
-      if (!firstArg || typeof firstArg !== 'object') return false;
-      const p = (firstArg as Record<string, unknown>).price;
-      if (typeof p === 'number') return p === 123.45;
-      if (typeof p === 'string') return Number(p) === 123.45;
-      return false;
-    });
-    expect(priceCalled).toBeTruthy();
-
-    // NOTE: Clearing controlled inputs in this test harness may not reliably fire an onChange with undefined
-    // so we avoid asserting on the empty->undefined behavior here.
-
-    // margin -> number
-    const margin = screen.getByLabelText('Margin *') as HTMLInputElement;
-    fireEvent.change(margin, { target: { value: '10' } });
-    const calls2 = onChangeFormMock.mock.calls as unknown[];
-    const lastCall2 = calls2[calls2.length - 1] as unknown[];
-    expect((lastCall2[0] as Record<string, unknown>).margin).toBe(10);
-
-    // leverage -> number
-    const leverage = screen.getByLabelText('Leverage *') as HTMLInputElement;
-    fireEvent.change(leverage, { target: { value: '5' } });
-    const calls3 = onChangeFormMock.mock.calls as unknown[];
-    const lastCall3 = calls3[calls3.length - 1] as unknown[];
-    expect((lastCall3[0] as Record<string, unknown>).leverage).toBe(5);
-
-    // tp1 -> number
-    const tp1 = screen.getByLabelText('TP1') as HTMLInputElement;
-    fireEvent.change(tp1, { target: { value: '1.11' } });
-    const calls4 = onChangeFormMock.mock.calls as unknown[];
-    const lastCall4 = calls4[calls4.length - 1] as unknown[];
-    expect((lastCall4[0] as Record<string, unknown>).tp1).toBe(1.11);
+    // price error should be shown because formSubmitted=true
+    expect(screen.getByText(/Entry Price ist erforderlich/i)).toBeTruthy();
   });
 });

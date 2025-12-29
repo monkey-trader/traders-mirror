@@ -37,7 +37,9 @@ describe('Header component', () => {
     const mobileNav = screen.getByRole('menu');
 
     // find the backdrop element (a div with aria-hidden that is not the menu)
-    const backdrop = container.querySelector('div[aria-hidden="false"]:not(#mobile-nav)') as HTMLElement | null;
+    const backdrop = container.querySelector(
+      'div[aria-hidden="false"]:not(#mobile-nav)'
+    ) as HTMLElement | null;
     expect(backdrop).to.exist;
 
     // clicking backdrop should close
@@ -57,7 +59,8 @@ describe('Header component', () => {
     // close
     fireEvent.click(btn);
     // after close, overflow should be restored (empty string by default)
-    expect(document.body.style.overflow === '' || document.body.style.overflow === 'initial').to.be.true;
+    expect(document.body.style.overflow === '' || document.body.style.overflow === 'initial').to.be
+      .true;
   });
 
   it('clicking a mobile nav menu item closes the menu and clicking outside closes as well', () => {

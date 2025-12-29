@@ -5,7 +5,15 @@ import { Switch } from './Switch';
 describe('Switch', () => {
   it('renders label and has role switch with aria-checked', () => {
     const onChange = vi.fn();
-    const { rerender } = render(<Switch checked={false} onChange={onChange} id="s1" label="My Switch" ariaLabel="switch-aria" />);
+    const { rerender } = render(
+      <Switch
+        checked={false}
+        onChange={onChange}
+        id="s1"
+        label="My Switch"
+        ariaLabel="switch-aria"
+      />
+    );
 
     expect(screen.getByText('My Switch')).to.exist;
     const btn = screen.getByRole('switch');

@@ -24,7 +24,8 @@ describe('Layout component', () => {
     const appContainer = container.querySelector('.app-container');
     expect(appContainer).toBeTruthy();
     // the fullWidth style class from module should be present on the element's className when prop true
-    expect(appContainer?.className.includes('fullWidth') || appContainer?.className.includes('fullWidth')).toBe(true);
+    expect(
+      appContainer?.className.includes('fullWidth') || appContainer?.className.includes('fullWidth')
+    ).toBe(true);
   });
 });
-

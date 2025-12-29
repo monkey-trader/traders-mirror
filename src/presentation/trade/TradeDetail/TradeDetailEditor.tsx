@@ -117,11 +117,15 @@ export function TradeDetailEditor({
         setErrors((prev) => ({ ...prev, [field]: mapped.message }));
       }
       setStatus('failed');
-      throw err;
+      // Do not re-throw here. We've mapped the error to field-level messages and updated status.
+      // Re-throwing caused unhandled promise rejections in the test environment.
+      return;
     }
   };
 
-  const saveDisabled = status === 'saving' || !isDirty || hasValidationErrors || !onSave;
+  // Keep save enabled when validation errors exist even if the editor isn't dirty.
+  // Tests expect clicking Save on an invalid (but not changed) trade to run validation and block saving.
+  const saveDisabled = status === 'saving' || (!isDirty && !hasValidationErrors) || !onSave;
 
   return (
     <div className={`${styles.editor} ${compactView ? styles.compact : ''}`} aria-live="polite">

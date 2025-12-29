@@ -21,10 +21,24 @@ export type TradeListProps = {
   trades: TradeListItem[];
   selectedId?: string | null;
   onSelect: (id: string) => void;
+  // optional handlers for compact action buttons
+  onToggleSide?: (id: string) => void;
+  onSetSLtoBE?: (id: string) => void;
+  onSetSLHit?: (id: string) => void;
+  onClose?: (id: string) => void;
   compactView?: boolean;
 };
 
-export function TradeList({ trades, selectedId, onSelect, compactView = false }: TradeListProps) {
+export function TradeList({
+  trades,
+  selectedId,
+  onSelect,
+  compactView = false,
+  onToggleSide,
+  onSetSLtoBE,
+  onSetSLHit,
+  onClose,
+}: TradeListProps) {
   if (compactView) {
     return (
       <div className={styles.list} role="list">
@@ -44,6 +58,10 @@ export function TradeList({ trades, selectedId, onSelect, compactView = false }:
                 entry={t.entryDate}
                 pnl={0}
                 onExpand={(id) => onSelect(id)}
+                onToggleSide={(id) => onToggleSide?.(id)}
+                onSetSLtoBE={(id) => onSetSLtoBE?.(id)}
+                onSetSLHit={(id) => onSetSLHit?.(id)}
+                onClose={(id) => onClose?.(id)}
               />
               <div className={styles.tpLevelsCompact}>
                 <span>TP1: {t.tp1 ?? '-'}</span> <span>TP2: {t.tp2 ?? '-'}</span>{' '}

@@ -28,4 +28,3 @@ describe('StatusBadge', () => {
     expect(handle).toHaveBeenCalledTimes(3);
   });
 });
-

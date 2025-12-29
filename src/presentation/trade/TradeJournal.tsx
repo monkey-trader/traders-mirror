@@ -124,12 +124,20 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
     (async () => {
       try {
         if (!repoRef.current) return;
+        console.info('[TradeJournal] initial load: repo present, calling getAll()');
         const domainTrades = await repoRef.current.getAll();
+        console.info(
+          '[TradeJournal] initial load: repo.getAll() returned',
+          Array.isArray(domainTrades) ? domainTrades.length : typeof domainTrades,
+          Array.isArray(domainTrades) ? domainTrades.slice(0, 5) : domainTrades
+        );
         if (!mounted) return;
         // convert domain Trades to presentation primitives
         const all = domainTrades.map((dt) => TradeFactory.toDTO(dt));
+        console.info('[TradeJournal] initial load: mapped to DTOs', all.length);
         setPositions(all as unknown as TradeRow[]);
       } catch {
+        console.warn('[TradeJournal] initial load: failed to load trades from repo');
         // ignore init errors
       }
     })();
@@ -184,10 +192,13 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
   // Helper: update trade in state and persist to repo
   const updateTradeById = async (id: string, patch: Partial<TradeRow>) => {
     setPositions((prev) => {
-      const next = prev.map((p) => (p.id === id ? { ...p, ...patch } : p));
-      // persist updated trade
-      const updated = next.find((t) => t.id === id);
-      if (updated) {
+      // Merge patch into existing entry if present
+      const existing = prev.find((p) => p.id === id);
+      let next: TradeRow[];
+      if (existing) {
+        next = prev.map((p) => (p.id === id ? { ...p, ...patch } : p));
+        const updated = next.find((t) => t.id === id)!;
+        // persist updated trade
         (async () => {
           try {
             if (!repoRef.current) {
@@ -198,6 +209,27 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
             await repoRef.current.update(domain);
           } catch (err) {
             console.error('Failed to persist trade update', err);
+          }
+        })();
+      } else {
+        // entry not found (e.g. undo after delete) -> insert restored trade
+        const restored = Object.assign({}, patch as TradeRow, { id }) as TradeRow;
+        next = [restored, ...prev];
+        (async () => {
+          try {
+            if (!repoRef.current) {
+              console.warn('Repository unavailable');
+              return;
+            }
+            const domain = TradeFactory.create(restored as unknown as TradeInput);
+            // prefer save for new entries
+            if (typeof repoRef.current.save === 'function') {
+              await repoRef.current.save(domain);
+            } else if (typeof repoRef.current.update === 'function') {
+              await repoRef.current.update(domain);
+            }
+          } catch (err) {
+            console.error('Failed to persist restored trade', err);
           }
         })();
       }
@@ -785,6 +817,10 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
                             }))}
                             selectedId={selectedId}
                             onSelect={(id) => setSelectedId(id)}
+                            onToggleSide={(id) => performAction('toggle-side', id)}
+                            onSetSLtoBE={(id) => performAction('sl-be', id)}
+                            onSetSLHit={(id) => performAction('sl-hit', id)}
+                            onClose={(id) => performAction('close', id)}
                             compactView={compactGrid}
                           />
                           <div style={{ height: 12 }} />
@@ -866,6 +902,10 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
                               }))}
                               selectedId={selectedId}
                               onSelect={(id) => setSelectedId(id)}
+                              onToggleSide={(id) => performAction('toggle-side', id)}
+                              onSetSLtoBE={(id) => performAction('sl-be', id)}
+                              onSetSLHit={(id) => performAction('sl-hit', id)}
+                              onClose={(id) => performAction('close', id)}
                               compactView={compactGrid}
                             />
                           </div>
