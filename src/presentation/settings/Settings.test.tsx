@@ -123,7 +123,7 @@ describe('Settings Switch and TradeJournal debug banner', () => {
     vi.useRealTimers();
     if (spied) {
       // restore spy
-      // @ts-ignore - vi adds mockRestore
+      // @ts-expect-error Vi mockRestore exists on the mocked reload
       window.location.reload.mockRestore();
     }
   });
@@ -167,7 +167,7 @@ describe('Settings Switch and TradeJournal debug banner', () => {
     if (spied2) expect(reloadSpy).toHaveBeenCalled();
     vi.useRealTimers();
     if (spied2) {
-      // @ts-ignore
+      // @ts-expect-error Vi mockRestore exists on the mocked reload
       window.location.reload.mockRestore();
     }
   });

@@ -34,7 +34,9 @@ describe('LocalStorageTradeRepository.toRepoTrade conversions', () => {
       leverage: 10,
     } as unknown;
 
-    const converted = (repo as unknown as { toRepoTrade: (o: unknown) => RepoTrade }).toRepoTrade(voLike);
+    const converted = (repo as unknown as { toRepoTrade: (o: unknown) => RepoTrade }).toRepoTrade(
+      voLike
+    );
 
     expect(converted.id).toBe('v1');
     expect(converted.market).toBe('Crypto');
@@ -63,7 +65,9 @@ describe('LocalStorageTradeRepository.toRepoTrade conversions', () => {
       pnl: 0,
     } as unknown;
 
-    const converted = (repo as unknown as { toRepoTrade: (o: unknown) => RepoTrade }).toRepoTrade(prim);
+    const converted = (repo as unknown as { toRepoTrade: (o: unknown) => RepoTrade }).toRepoTrade(
+      prim
+    );
 
     expect(converted.id).toBe('p1');
     expect(converted.market).toBe('Forex');
@@ -75,7 +79,9 @@ describe('LocalStorageTradeRepository.toRepoTrade conversions', () => {
   });
 
   it('returns fallback RepoTrade for non-object input', () => {
-    const converted = (repo as unknown as { toRepoTrade: (o: unknown) => RepoTrade }).toRepoTrade('a-string');
+    const converted = (repo as unknown as { toRepoTrade: (o: unknown) => RepoTrade }).toRepoTrade(
+      'a-string'
+    );
     expect(converted.id).toBe('unknown');
     expect(converted.symbol).toBe('UNKNOWN');
     expect(converted.size).toBe(0);
@@ -169,11 +175,23 @@ describe('LocalStorageTradeRepository.toRepoTrade conversions', () => {
   it('update replaces an existing trade and save path is used when not found', async () => {
     const repo2 = new LocalStorageTradeRepository('mt_test_key', { seedDefaults: false });
     // save initial trade
-    const trade = TradeFactory.create({ id: 'u1', symbol: 'UP1', size: 1, price: 100, side: 'LONG' });
+    const trade = TradeFactory.create({
+      id: 'u1',
+      symbol: 'UP1',
+      size: 1,
+      price: 100,
+      side: 'LONG',
+    });
     await repo2.save(trade);
 
     // modify and update
-    const updated = TradeFactory.create({ id: 'u1', symbol: 'UPD', size: 2, price: 200, side: 'LONG' });
+    const updated = TradeFactory.create({
+      id: 'u1',
+      symbol: 'UPD',
+      size: 2,
+      price: 200,
+      side: 'LONG',
+    });
     await repo2.update(updated);
     const all = await repo2.getAll();
     const found = all.find((t) => t.id === 'u1');
@@ -185,7 +203,13 @@ describe('LocalStorageTradeRepository.toRepoTrade conversions', () => {
     }
 
     // update non-existing should save
-    const notFound = TradeFactory.create({ id: 'u2', symbol: 'NF', size: 1, price: 50, side: 'SHORT' });
+    const notFound = TradeFactory.create({
+      id: 'u2',
+      symbol: 'NF',
+      size: 1,
+      price: 50,
+      side: 'SHORT',
+    });
     await repo2.update(notFound);
     const all2 = await repo2.getAll();
     expect(all2.find((t) => t.id === 'u2')).toBeDefined();
@@ -254,5 +278,169 @@ describe('LocalStorageTradeRepository.toRepoTrade conversions', () => {
     } finally {
       window.localStorage.setItem = originalSetItem;
     }
+  });
+
+  it('constructor without key populates defaults when seedDefaults=true', async () => {
+    // ensure no key present
+    window.localStorage.removeItem('mt_test_key_defaults');
+    const repo3 = new LocalStorageTradeRepository('mt_test_key_defaults', { seedDefaults: true });
+    // defaults flushed to localStorage
+    const raw = window.localStorage.getItem('mt_test_key_defaults');
+    expect(raw).not.toBeNull();
+    const parsed = JSON.parse(raw as string) as RepoTrade[];
+    expect(parsed.length).toBeGreaterThan(0);
+    const all = await repo3.getAll();
+    expect(all.length).toBeGreaterThan(0);
+    expect(all[0].id).toBe('t1');
+  });
+
+  it('toRepoTrade handles VO-like with missing entryDate (falls back to now) and primitive side', () => {
+    const voLikePartial = {
+      id: 'vp1',
+      market: 'All',
+      symbol: { value: 'VP' },
+      // entryDate omitted to trigger fallback
+      size: { value: 1 },
+      price: { value: 10 },
+      side: 'LONG', // primitive side should be accepted
+      status: 'OPEN',
+      pnl: 0,
+    } as unknown;
+
+    const converted = (repo as unknown as { toRepoTrade: (o: unknown) => RepoTrade }).toRepoTrade(
+      voLikePartial
+    );
+    expect(converted.id).toBe('vp1');
+    expect(converted.symbol).toBe('VP');
+    // entryDate fallback should be a valid ISO string
+    expect(typeof converted.entryDate).toBe('string');
+    expect(isNaN(Date.parse(converted.entryDate))).toBe(false);
+    expect(converted.side).toBe('LONG');
+  });
+
+  it('delete is a no-op when id not found (does not throw)', async () => {
+    const repo4 = new LocalStorageTradeRepository('mt_test_key', { seedDefaults: false });
+    // ensure empty
+    expect(await repo4.getAll()).toHaveLength(0);
+    await expect(repo4.delete('non-existent-id')).resolves.toBeUndefined();
+  });
+
+  it('toRepoTrade VO-like with primitive entryDate and primitive size/price inside VO-like object', () => {
+    const voLike2 = {
+      id: 'v2',
+      market: 'All',
+      symbol: { value: 'S2' },
+      entryDate: '2025-12-30T00:00:00Z', // primitive string instead of { value }
+      size: 3, // primitive number even though symbol is VO-like
+      price: 33,
+      side: { value: 'LONG' },
+      status: 'CLOSED',
+      pnl: 10,
+    } as unknown;
+
+    const converted = (repo as unknown as { toRepoTrade: (o: unknown) => RepoTrade }).toRepoTrade(
+      voLike2
+    );
+    expect(converted.id).toBe('v2');
+    expect(converted.entryDate).toBe('2025-12-30T00:00:00Z');
+    expect(converted.size).toBe(3);
+    expect(converted.price).toBe(33);
+    expect(converted.status).toBe('CLOSED');
+  });
+
+  it('toRepoTrade primitive object missing side/status/market/pnl falls back to defaults', () => {
+    const prim2 = {
+      id: 'p2',
+      symbol: 'XYZ',
+      entryDate: '2025-11-11T11:11:00Z',
+      size: 1,
+      price: 1.11,
+      // side/status omitted
+    } as unknown;
+
+    const converted = (repo as unknown as { toRepoTrade: (o: unknown) => RepoTrade }).toRepoTrade(
+      prim2
+    );
+    expect(converted.id).toBe('p2');
+    expect(converted.side).toBe('LONG'); // default
+    expect(converted.status).toBe('OPEN');
+    expect(converted.market).toBe('All');
+    expect(converted.pnl).toBe(0);
+  });
+
+  it('toRepoTrade handles null and undefined as non-object fallback', () => {
+    const convertedNull = (
+      repo as unknown as { toRepoTrade: (o: unknown) => RepoTrade }
+    ).toRepoTrade(null);
+    expect(convertedNull.id).toBe('unknown');
+    const convertedUndef = (
+      repo as unknown as { toRepoTrade: (o: unknown) => RepoTrade }
+    ).toRepoTrade(undefined);
+    expect(convertedUndef.id).toBe('unknown');
+  });
+
+  it('isObject and looksLikeVOTrade helper branches', () => {
+    const helper = repo as unknown as {
+      isObject: (v: unknown) => boolean;
+      looksLikeVOTrade: (v: unknown) => boolean;
+      toRepoTrade: (v: unknown) => RepoTrade;
+    };
+
+    // isObject
+    expect(helper.isObject({})).toBe(true);
+    expect(helper.isObject(null)).toBe(false);
+    expect(helper.isObject('str')).toBe(false);
+
+    // looksLikeVOTrade variants
+    expect(helper.looksLikeVOTrade({})).toBe(false); // no symbol
+    expect(helper.looksLikeVOTrade({ symbol: 'X' })).toBe(false); // symbol not object
+    expect(helper.looksLikeVOTrade({ symbol: {} })).toBe(false); // symbol object but no value
+    expect(helper.looksLikeVOTrade({ symbol: { value: 'X' } })).toBe(true); // valid VO
+
+    // toRepoTrade: object where symbol is object without value should fall back to primitive branch (String(o.symbol))
+    const weird = {
+      id: 'weird',
+      symbol: {},
+      entryDate: '2025-01-01T00:00:00Z',
+      size: 1,
+      price: 1,
+      side: 'LONG',
+    } as unknown;
+    const convertedWeird = helper.toRepoTrade(weird);
+    expect(convertedWeird.symbol).toBe(String((weird as Record<string, unknown>).symbol));
+
+    // seed non-array is no-op
+    (repo as unknown as LocalStorageTradeRepository).seed(null as unknown as RepoTrade[]);
+    expect(window.localStorage.getItem('mt_test_key')).toBeNull();
+  });
+
+  it('toRepoTrade VO-like edge cases where nested objects lack value keys', () => {
+    const voEdge = {
+      id: 'edge1',
+      market: undefined,
+      symbol: { value: 'EDGE' },
+      entryDate: {}, // object without 'value'
+      size: { foo: 1 }, // object without 'value' -> else branch
+      price: { bar: 2 }, // object without 'value' -> else branch
+      side: { foo: 'UNKNOWN' }, // object without 'value' -> else branch
+      // status omitted -> default
+      // pnl omitted -> default 0
+    } as unknown;
+
+    const converted = (repo as unknown as { toRepoTrade: (o: unknown) => RepoTrade }).toRepoTrade(
+      voEdge
+    );
+    expect(converted.id).toBe('edge1');
+    expect(converted.symbol).toBe('EDGE');
+    // entryDate becomes String(entryDateVO) -> "[object Object]"
+    expect(converted.entryDate).toBe(String((voEdge as Record<string, unknown>).entryDate));
+    // size/price fallback to Number(o.size as number) which will be NaN for objects
+    expect(Number.isNaN(converted.size)).toBe(true);
+    expect(Number.isNaN(converted.price)).toBe(true);
+    // side will be the raw object cast; ensure it's not 'LONG' or 'SHORT'
+    expect(converted.side === 'LONG' || converted.side === 'SHORT').toBe(false);
+    expect(converted.status).toBe('OPEN');
+    expect(converted.market).toBe('All');
+    expect(converted.pnl).toBe(0);
   });
 });
