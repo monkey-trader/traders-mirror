@@ -220,22 +220,18 @@ describe('LocalStorageTradeRepository', () => {
       throw new Error('quota exceeded');
     };
 
-    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      const trade = TradeFactory.create({ id: 'f1', symbol: 'FUSD', size: 1, price: 1, side: 'LONG' });
+      // save should not throw despite setItem throwing internally
+      await expect(repo.save(trade)).resolves.toBeUndefined();
 
-    const trade = TradeFactory.create({
-      id: 'f1',
-      symbol: 'FUSD',
-      size: 1,
-      price: 1,
-      side: 'LONG',
-    });
-    // save should not throw despite setItem throwing internally
-    await expect(repo.save(trade)).resolves.toBeUndefined();
-
-    expect(spy).toHaveBeenCalled();
-
-    // restore
-    spy.mockRestore();
-    window.localStorage.setItem = originalSetItem;
+      // flush failure shouldn't prevent in-memory state update
+      const all = await repo.getAll();
+      expect(all.length).toBe(1);
+      expect(all[0].id).toBe('f1');
+    } finally {
+      // restore
+      window.localStorage.setItem = originalSetItem;
+    }
   });
 });
