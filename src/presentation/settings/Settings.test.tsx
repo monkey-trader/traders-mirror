@@ -33,7 +33,7 @@ beforeEach(() => {
   try {
     window.localStorage.removeItem('mt_user_settings_v1');
     window.localStorage.removeItem('mt_trades_v1');
-  } catch (e) {
+  } catch {
     // ignore if localStorage not available
   }
 });

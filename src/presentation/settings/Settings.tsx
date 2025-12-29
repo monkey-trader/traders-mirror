@@ -103,7 +103,7 @@ function StorageControls() {
         try {
           const parsed = raw ? JSON.parse(raw) : [];
           if (Array.isArray(parsed)) count = parsed.length;
-        } catch (_e) {
+        } catch {
           count = 0;
         }
         localStorage.removeItem('mt_trades_v1');
@@ -141,7 +141,7 @@ function StorageControls() {
       if (infoTimerRef.current) {
         try {
           window.clearTimeout(infoTimerRef.current);
-        } catch (_e) {
+        } catch {
           /* ignore */
         }
         infoTimerRef.current = null;

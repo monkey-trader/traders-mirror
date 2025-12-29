@@ -50,7 +50,7 @@ export function StatusSelect({
         // blur immediately after selection so parent onBlur handlers run and edit mode is closed reliably
         try {
           (e.currentTarget as HTMLSelectElement).blur();
-        } catch (err) {
+        } catch {
           /* ignore */
         }
       }}

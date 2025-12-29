@@ -310,6 +310,7 @@ describe('NewTradeForm', () => {
     const onSubmit = vi.fn();
     const onReset = vi.fn();
     const setMarketFilter = vi.fn();
+    const onChangeFormMock = onChangeForm as unknown as { mock: { calls: unknown[] } };
 
     render(
       <NewTradeForm
@@ -330,10 +331,16 @@ describe('NewTradeForm', () => {
     // price -> number
     const price = screen.getByLabelText('Entry Price *') as HTMLInputElement;
     fireEvent.change(price, { target: { value: '123.45' } });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- autofix: preserve tests that intentionally use any
-    const priceCalled = (onChangeForm as any).mock.calls.some(
-      (c: any) => c[0] && c[0].price === 123.45
-    );
+    // check via typed mock wrapper
+    const priceCalled = onChangeFormMock.mock.calls.some((c: unknown) => {
+      if (!Array.isArray(c)) return false;
+      const firstArg = c[0] as unknown;
+      if (!firstArg || typeof firstArg !== 'object') return false;
+      const p = (firstArg as Record<string, unknown>).price;
+      if (typeof p === 'number') return p === 123.45;
+      if (typeof p === 'string') return Number(p) === 123.45;
+      return false;
+    });
     expect(priceCalled).toBeTruthy();
 
     // NOTE: Clearing controlled inputs in this test harness may not reliably fire an onChange with undefined
@@ -342,22 +349,22 @@ describe('NewTradeForm', () => {
     // margin -> number
     const margin = screen.getByLabelText('Margin *') as HTMLInputElement;
     fireEvent.change(margin, { target: { value: '10' } });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- autofix: preserve tests that intentionally use any
-    const lastCall2 = (onChangeForm as any).mock.calls[(onChangeForm as any).mock.calls.length - 1];
-    expect(lastCall2[0].margin).toBe(10);
+    const calls2 = onChangeFormMock.mock.calls as unknown[];
+    const lastCall2 = calls2[calls2.length - 1] as unknown[];
+    expect((lastCall2[0] as Record<string, unknown>).margin).toBe(10);
 
     // leverage -> number
     const leverage = screen.getByLabelText('Leverage *') as HTMLInputElement;
     fireEvent.change(leverage, { target: { value: '5' } });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- autofix: preserve tests that intentionally use any
-    const lastCall3 = (onChangeForm as any).mock.calls[(onChangeForm as any).mock.calls.length - 1];
-    expect(lastCall3[0].leverage).toBe(5);
+    const calls3 = onChangeFormMock.mock.calls as unknown[];
+    const lastCall3 = calls3[calls3.length - 1] as unknown[];
+    expect((lastCall3[0] as Record<string, unknown>).leverage).toBe(5);
 
     // tp1 -> number
     const tp1 = screen.getByLabelText('TP1') as HTMLInputElement;
     fireEvent.change(tp1, { target: { value: '1.11' } });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- autofix: preserve tests that intentionally use any
-    const lastCall4 = (onChangeForm as any).mock.calls[(onChangeForm as any).mock.calls.length - 1];
-    expect(lastCall4[0].tp1).toBe(1.11);
+    const calls4 = onChangeFormMock.mock.calls as unknown[];
+    const lastCall4 = calls4[calls4.length - 1] as unknown[];
+    expect((lastCall4[0] as Record<string, unknown>).tp1).toBe(1.11);
   });
 });

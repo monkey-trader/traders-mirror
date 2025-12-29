@@ -56,7 +56,7 @@ export function TradeDetailEditor({
     if (!base) return true;
     try {
       return JSON.stringify(local) !== JSON.stringify(base);
-    } catch (_e) {
+    } catch {
       return true;
     }
   }, [local, /* initialTradeRef is stable */ hasValidationErrors]);
@@ -204,8 +204,8 @@ export function TradeDetailEditor({
 
         <label className={styles.label}>Status</label>
         <StatusSelect
-          value={(local as any).status ?? 'OPEN'}
-          onChange={(v: StatusValue) => fieldChange('status' as any, v as any)}
+          value={(local.status ?? 'OPEN') as StatusValue}
+          onChange={(v: StatusValue) => fieldChange('status', v)}
           ariaLabel="Trade status"
           compact
           colored

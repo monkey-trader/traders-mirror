@@ -1,11 +1,11 @@
-import { render, screen } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import { TradeJournal } from './TradeJournal';
 import InMemoryTradeRepository from '@/infrastructure/trade/repositories/InMemoryTradeRepository';
 
 // Mock ResizeObserver for jsdom environment used in tests
 class FakeResizeObserver {
-  callback: any;
-  constructor(cb: any) {
+  callback: unknown;
+  constructor(cb: unknown) {
     this.callback = cb;
   }
   observe() {}

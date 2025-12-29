@@ -3,8 +3,8 @@ import { TradeJournal } from '@/presentation/trade/TradeJournal';
 
 // Mock ResizeObserver for jsdom environment used in tests
 class FakeResizeObserver {
-  callback: any;
-  constructor(cb: any) {
+  callback: unknown;
+  constructor(cb: unknown) {
     this.callback = cb;
   }
   observe() {}
@@ -13,7 +13,7 @@ class FakeResizeObserver {
 }
 
 // attach to global (vitest/node environment)
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- autofix: preserve tests that intentionally use any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- attach fake to global
 (global as any).ResizeObserver = FakeResizeObserver;
 
 describe('Analysis -> prefill new trade', () => {

@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { TradeFactory } from '@/domain/trade/entities/TradeFactory';
 import { Trade } from '@/domain/trade/entities/Trade';
 
@@ -326,7 +327,7 @@ export class InMemoryTradeRepository {
 
       return {
         id: String(o.id),
-        market: (o.market as any) ?? 'All',
+        market: (o.market as RepoTrade['market']) ?? 'All',
         symbol: String(symbolVO.value),
         entryDate:
           entryDateVO && typeof entryDateVO === 'object' && 'value' in entryDateVO

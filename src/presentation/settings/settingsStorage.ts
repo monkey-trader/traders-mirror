@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 export const SETTINGS_KEY = 'mt_user_settings_v1';
 
 export type UserSettings = {

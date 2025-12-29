@@ -61,16 +61,7 @@ describe('InMemoryTradeRepository', () => {
   });
 
   it('toRepoTrade accepts VO-like objects and primitive shapes', async () => {
-    // VO-like shape
-    const voLike = {
-      id: 'vo1',
-      market: 'Crypto',
-      symbol: { value: 'VOUSD' },
-      entryDate: { value: new Date().toISOString() },
-      size: { value: 2 },
-      price: { value: 5 },
-      side: { value: 'LONG' },
-    };
+    // VO-like shape (we'll simulate this by mutating the DTO below)
     const fakeTrade = TradeFactory.create({
       id: 'vo1',
       symbol: 'VOUSD',
@@ -81,7 +72,7 @@ describe('InMemoryTradeRepository', () => {
     });
     // mimic VO by converting to DTO and then manually replacing fields
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- autofix: preserve tests that intentionally use any
-    const dto = TradeFactory.toDTO(fakeTrade) as any;
+    const dto = TradeFactory.toDTO(fakeTrade) as unknown as Record<string, unknown>;
     dto.symbol = { value: 'VOUSD' };
     dto.size = { value: 2 };
     dto.price = { value: 5 };

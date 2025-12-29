@@ -1,18 +1,20 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { TradeService } from './TradeService';
 import { TradeInput } from '@/domain/trade/entities/TradeFactory';
+import type { TradeRepository } from '@/domain/trade/interfaces/TradeRepository';
 
 class MockRepo {
   trades: TradeInput[] = [];
-  async save(trade: any) {
-    this.trades.push(trade);
+  async save(trade: unknown) {
+    this.trades.push(trade as TradeInput);
   }
   async getAll() {
     return this.trades;
   }
-  async update(trade: any) {
-    const idx = this.trades.findIndex((t) => t.id === trade.id);
-    if (idx >= 0) this.trades[idx] = trade;
+  async update(trade: unknown) {
+    const t = trade as TradeInput;
+    const idx = this.trades.findIndex((x) => x.id === t.id);
+    if (idx >= 0) this.trades[idx] = t;
   }
 }
 
@@ -21,8 +23,7 @@ describe('TradeService', () => {
   let repo: MockRepo;
   beforeEach(() => {
     repo = new MockRepo();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- autofix: preserve tests that intentionally use any
-    service = new TradeService(repo as any);
+    service = new TradeService(repo as unknown as TradeRepository);
   });
 
   it('should add and list trades', async () => {

@@ -7,7 +7,7 @@ import InMemoryTradeRepository from '@/infrastructure/trade/repositories/InMemor
 describe('TradeJournal compact editor toggle', () => {
   it('shows compact summary and toggles editor when Show details clicked', async () => {
     const repo = new InMemoryTradeRepository();
-    const { container } = render(<TradeJournal repo={repo} forceCompact />);
+    render(<TradeJournal repo={repo} forceCompact />);
 
     // Wait for PositionCard symbols to render (compact view uses PositionCard)
     const symbols = await screen.findAllByText(/USD$/, {}, { timeout: 1000 });
