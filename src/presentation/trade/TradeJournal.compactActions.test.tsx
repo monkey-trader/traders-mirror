@@ -1,12 +1,13 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { TradeJournal } from './TradeJournal';
 import { TradeFactory } from '@/domain/trade/entities/TradeFactory';
+import type { TradeInput } from '@/domain/trade/entities/TradeFactory';
 
 describe('TradeJournal compact actions (toggle-side, sl-be, sl-hit, close)', () => {
   it('executes compact action buttons and shows undo banner each time', async () => {
-    const dto = {
+    const dto: TradeInput = {
       id: 'tx-compact-1',
       symbol: 'COMPACT',
       entryDate: '2025-12-29T12:00',
@@ -19,26 +20,29 @@ describe('TradeJournal compact actions (toggle-side, sl-be, sl-hit, close)', () 
       margin: 10,
       leverage: 1,
     };
-    const domainTrade = TradeFactory.create(dto as any);
+    const domainTrade = TradeFactory.create(dto as TradeInput);
 
     class MockRepo {
-      async getAll() {
+      async getAll(): Promise<ReturnType<typeof TradeFactory.create>[]> {
         return [domainTrade];
       }
-      async update(_t: any) {
+      async update(_t: ReturnType<typeof TradeFactory.create>): Promise<void> {
+        void _t;
         return Promise.resolve();
       }
-      async delete(_id: string) {
+      async delete(_id: string): Promise<void> {
+        void _id;
         return Promise.resolve();
       }
-      async save(_t: any) {
+      async save(_t: ReturnType<typeof TradeFactory.create>): Promise<void> {
+        void _t;
         return Promise.resolve();
       }
     }
 
     const repo = new MockRepo();
     // Force compact grid so PositionCard actions are visible inline
-    render(<TradeJournal repo={repo as any} forceCompact={true} />);
+    render(<TradeJournal repo={repo as unknown as import('@/domain/trade/interfaces/TradeRepository').TradeRepository} forceCompact={true} />);
 
     // Wait for the compact item to render
     await waitFor(() => expect(screen.getByText(/COMPACT/i)).toBeTruthy());

@@ -1,5 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
 import { Switch } from './Switch';
 
 describe('Switch', () => {
@@ -15,10 +16,10 @@ describe('Switch', () => {
       />
     );
 
-    expect(screen.getByText('My Switch')).to.exist;
+    expect(screen.getByText('My Switch')).toBeTruthy();
     const btn = screen.getByRole('switch');
-    expect(btn.getAttribute('aria-checked')).to.equal('false');
-    expect(btn.getAttribute('aria-label')).to.equal('switch-aria');
+    expect(btn.getAttribute('aria-checked')).toBe('false');
+    expect(btn.getAttribute('aria-label')).toBe('switch-aria');
 
     // click should call onChange with inverted value
     fireEvent.click(btn);
@@ -27,7 +28,7 @@ describe('Switch', () => {
     // rerender checked true and click again
     rerender(<Switch checked={true} onChange={onChange} id="s1" />);
     const btn2 = screen.getByRole('switch');
-    expect(btn2.getAttribute('aria-checked')).to.equal('true');
+    expect(btn2.getAttribute('aria-checked')).toBe('true');
     fireEvent.click(btn2);
     expect(onChange).toHaveBeenCalledWith(false);
   });

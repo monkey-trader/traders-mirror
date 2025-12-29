@@ -1,8 +1,10 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { TradeJournal } from './TradeJournal';
 import { TradeFactory } from '@/domain/trade/entities/TradeFactory';
+import type { TradeInput } from '@/domain/trade/entities/TradeFactory';
+import type { TradeRepository } from '@/domain/trade/interfaces/TradeRepository';
 
 // Ensure matchMedia exists and reports mobile by default for mobile-related tests
 function mockMatchMedia(matches: boolean) {
@@ -11,12 +13,12 @@ function mockMatchMedia(matches: boolean) {
     return {
       media: query,
       matches,
-      addEventListener: (_: string, __: any) => {},
-      removeEventListener: (_: string, __: any) => {},
-      addListener: (_: any) => {},
-      removeListener: (_: any) => {},
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      addListener: () => {},
+      removeListener: () => {},
       onchange: null,
-      dispatchEvent: (_: any) => true,
+      dispatchEvent: () => true,
     } as unknown as MediaQueryList;
   };
 }
@@ -57,7 +59,7 @@ describe('TradeJournal actions (mobile add and delete/undo)', () => {
 
   it('deletes a trade and allows undo to restore it (with repo)', async () => {
     // create a domain trade to return from repo.getAll
-    const dto = {
+    const dto: TradeInput = {
       id: 'tx-delete-1',
       symbol: 'DELME',
       entryDate: '2025-12-29T12:00',
@@ -70,26 +72,29 @@ describe('TradeJournal actions (mobile add and delete/undo)', () => {
       margin: 10,
       leverage: 1,
     };
-    const domainTrade = TradeFactory.create(dto as any);
+    const domainTrade = TradeFactory.create(dto as TradeInput);
 
     class MockRepo {
-      async getAll() {
+      async getAll(): Promise<ReturnType<typeof TradeFactory.create>[]> {
         return [domainTrade];
       }
-      async update(_t: any) {
+      async update(t: ReturnType<typeof TradeFactory.create>): Promise<void> {
+        void t;
         return Promise.resolve();
       }
-      async delete(_id: string) {
+      async delete(id: string): Promise<void> {
+        void id;
         return Promise.resolve();
       }
-      async save(_t: any) {
+      async save(t: ReturnType<typeof TradeFactory.create>): Promise<void> {
+        void t;
         return Promise.resolve();
       }
     }
 
     const repo = new MockRepo();
     // Force non-compact layout so the right-side editor (with Delete) is rendered
-    render(<TradeJournal repo={repo as any} forceCompact={false} />);
+    render(<TradeJournal repo={repo as unknown as TradeRepository} forceCompact={false} />);
 
     // Wait for the list to render the trade
     await waitFor(() => expect(screen.getByText(/DELME/i)).toBeTruthy());

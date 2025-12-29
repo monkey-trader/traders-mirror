@@ -76,7 +76,8 @@ describe('TradeDetailEditor', () => {
 
   it('maps errors from onSave rejection and displays field error', async () => {
     // match expected signature: (t: TradeInput) => Promise<void>
-    const onSave = vi.fn(async (_t: TradeInput): Promise<void> => {
+    const onSave = vi.fn(async (_trade: TradeInput): Promise<void> => {
+      void _trade;
       // reject asynchronously so the component's try/catch can handle it
       await new Promise((r) => setTimeout(r, 0));
       throw { field: 'price', message: 'invalid price' };
