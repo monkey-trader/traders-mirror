@@ -25,7 +25,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
 
       - name: Install dependencies
         run: npm ci
@@ -53,11 +53,11 @@ jobs:
 
       - name: Create branch & PR
         if: steps.git-check.outputs.has_changes == 'true'
-        env:
-          BRANCH_NAME: auto/lint-fixes-$(date +'%Y%m%d%H%M%S')
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          BRANCH_NAME="auto/lint-fixes-$(date +%Y%m%d%H%M%S)"
+          echo "Using branch name: $BRANCH_NAME"
           git checkout -b "$BRANCH_NAME"
           git add -A
           git commit -m "chore: autofix lint & format (CI)"
