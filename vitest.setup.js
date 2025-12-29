@@ -42,3 +42,47 @@ try {
   // eslint-disable-next-line no-console
   console.warn('Could not shim HTMLFormElement.submit in vitest.setup.js', e && e.message);
 }
+
+// Suppress the noisy jsdom "Not implemented: HTMLFormElement.prototype.submit" error message which is thrown
+// from internal jsdom code. We still allow other console.error messages through.
+(() => {
+  const originalConsoleError = console.error.bind(console);
+  console.error = (...args) => {
+    try {
+      const joined = args.map((a) => (typeof a === 'string' ? a : String(a))).join(' ');
+      if (joined && joined.includes('Not implemented: HTMLFormElement.prototype.submit')) {
+        return; // swallow this specific jsdom not-implemented error
+      }
+    } catch (e) {
+      // if anything goes wrong, fallback to original
+    }
+    originalConsoleError(...args);
+  };
+})();
+
+// Wrap EventTarget.prototype.dispatchEvent to catch and swallow the internal jsdom "Not implemented" error
+// which is thrown during native form submit activation; this prevents the stack trace from appearing in test logs.
+try {
+  if (typeof EventTarget !== 'undefined' && EventTarget.prototype && typeof EventTarget.prototype.dispatchEvent === 'function') {
+    const _origDispatch = EventTarget.prototype.dispatchEvent;
+    // eslint-disable-next-line no-extend-native
+    EventTarget.prototype.dispatchEvent = function (event) {
+      try {
+        return _origDispatch.call(this, event);
+      } catch (err) {
+        try {
+          if (err && err.message && typeof err.message === 'string' && err.message.includes('Not implemented: HTMLFormElement.prototype.submit')) {
+            // swallow this specific jsdom internal error to keep test logs clean
+            return false;
+          }
+        } catch (e) {
+          // ignore
+        }
+        throw err;
+      }
+    };
+  }
+} catch (e) {
+  // eslint-disable-next-line no-console
+  console.warn('Could not wrap EventTarget.prototype.dispatchEvent in vitest.setup.js', e && e.message);
+}
