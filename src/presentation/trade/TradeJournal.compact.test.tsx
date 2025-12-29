@@ -8,6 +8,7 @@ describe('TradeJournal compact editor toggle', () => {
   it('shows compact summary and toggles editor when Show details clicked', async () => {
     const repo = new InMemoryTradeRepository();
     render(<TradeJournal repo={repo} forceCompact />);
+    await screen.findByText(/Trading Journal/i);
 
     // Wait for PositionCard symbols to render (compact view uses PositionCard)
     const symbols = await screen.findAllByText(/USD$/, {}, { timeout: 1000 });

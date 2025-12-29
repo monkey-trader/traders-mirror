@@ -56,6 +56,8 @@ describe('Settings Switch and TradeJournal debug banner', () => {
 
     // render TradeJournal with a repo and expect debug banner visible
     render(<TradeJournal repo={new LocalStorageTradeRepository()} />);
+    // wait for TradeJournal heading to ensure mount completed
+    await screen.findByRole('heading', { name: /Trading Journal/i });
     const banner = await screen.findByText(/trades loaded/i);
     expect(banner).toBeTruthy();
   });

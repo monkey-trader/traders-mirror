@@ -19,6 +19,8 @@ class FakeResizeObserver {
 describe('Analysis -> prefill new trade', () => {
   it('prefills the New Trade form when creating from analysis', async () => {
     render(<TradeJournal />);
+    // wait for the component to mount and run effects
+    await screen.findByText(/Trading Journal/i);
 
     // open Analysis tab inside the Trades card
     const analyseTab = await screen.findByRole('tab', { name: /Analyse/i });

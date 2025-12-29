@@ -8,6 +8,7 @@ describe('TradeJournal Integration', () => {
   it('allows creating, editing, filtering, and deleting trades (desktop)', async () => {
     const repo = new InMemoryTradeRepository();
     render(<TradeJournal repo={repo} />);
+    await screen.findByText(/Trading Journal/i);
 
     // Add a new trade with a unique symbol to avoid colliding with mock data in repo
     const newSymbol = 'EURUSD-INT';
@@ -115,6 +116,7 @@ describe('TradeJournal Integration', () => {
   it('renders and interacts correctly in compactView (mobile/forceCompact)', async () => {
     const repo = new InMemoryTradeRepository();
     render(<TradeJournal repo={repo} forceCompact />);
+    await screen.findByText(/Trading Journal/i);
 
     // Add a new trade (open modal if needed)
     fireEvent.change(screen.getByLabelText(/Symbol/i), { target: { value: 'GBPUSD' } });
@@ -141,6 +143,7 @@ describe('TradeJournal Integration', () => {
 
   it('shows validation errors for missing required fields', async () => {
     render(<TradeJournal repo={new InMemoryTradeRepository()} />);
+    await screen.findByText(/Trading Journal/i);
     // Direkt Add klicken ohne Felder zu füllen
     fireEvent.click(screen.getByRole('button', { name: /Add/i }));
     // Es sollten Fehlermeldungen erscheinen (z.B. für Symbol, Entry Price, Size, Margin, Leverage, SL)
@@ -154,6 +157,7 @@ describe('TradeJournal Integration', () => {
 
   it('resets the form when Reset is clicked', async () => {
     render(<TradeJournal repo={new InMemoryTradeRepository()} />);
+    await screen.findByText(/Trading Journal/i);
     fireEvent.change(screen.getByLabelText(/Symbol/i), { target: { value: 'TEST' } });
     fireEvent.click(screen.getByRole('button', { name: /Reset/i }));
     expect((screen.getByLabelText(/Symbol/i) as HTMLInputElement).value).toBe('');
@@ -162,6 +166,7 @@ describe('TradeJournal Integration', () => {
   it('shows undo after delete and restores the trade', async () => {
     const repo = new InMemoryTradeRepository();
     render(<TradeJournal repo={repo} />);
+    await screen.findByText(/Trading Journal/i);
     // Add a trade
     fireEvent.change(screen.getByLabelText(/Symbol/i), { target: { value: 'UNDOUSD' } });
     fireEvent.change(screen.getByLabelText(/Entry Price/i), { target: { value: '1.000' } });
@@ -185,6 +190,7 @@ describe('TradeJournal Integration', () => {
 
   it('prefills new trade form from analysis tab', async () => {
     render(<TradeJournal repo={new InMemoryTradeRepository()} />);
+    await screen.findByText(/Trading Journal/i);
     // Analyse-Tab öffnen
     const analyseTab = await screen.findByRole('tab', { name: /Analyse/i });
     fireEvent.click(analyseTab);

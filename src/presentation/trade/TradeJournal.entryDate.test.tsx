@@ -1,4 +1,4 @@
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { TradeJournal } from './TradeJournal';
 import InMemoryTradeRepository from '@/infrastructure/trade/repositories/InMemoryTradeRepository';
 
@@ -19,6 +19,7 @@ class FakeResizeObserver {
 describe('TradeJournal entryDate', () => {
   it('prefills entryDate with current datetime (within 2 minutes)', async () => {
     const { container } = render(<TradeJournal repo={new InMemoryTradeRepository()} />);
+    await screen.findByText(/Trading Journal/i);
 
     const entryInput = container.querySelector('#entryDate') as HTMLInputElement | null;
     expect(entryInput).toBeTruthy();
