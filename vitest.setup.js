@@ -22,3 +22,23 @@ if (typeof window !== 'undefined') {
   }
 }
 
+// Shim HTMLFormElement.submit for jsdom which currently throws "Not implemented" when invoked via button activation.
+// We provide a safe no-op implementation so tests that trigger native form submit don't fail. This mirrors common test setups.
+try {
+  if (typeof HTMLFormElement !== 'undefined') {
+    // Replace (or define) the submit function with a harmless no-op. Use defineProperty to overwrite even if it's present.
+    Object.defineProperty(HTMLFormElement.prototype, 'submit', {
+      configurable: true,
+      enumerable: false,
+      writable: true,
+      value: function submitShim() {
+        // no-op: avoid throwing in jsdom when submit is invoked
+        return undefined;
+      },
+    });
+  }
+} catch (e) {
+  // If anything goes wrong, don't break test setup — fall back silently
+  // eslint-disable-next-line no-console
+  console.warn('Could not shim HTMLFormElement.submit in vitest.setup.js', e && e.message);
+}
