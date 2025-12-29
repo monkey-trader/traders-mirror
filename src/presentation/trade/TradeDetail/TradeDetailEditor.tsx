@@ -60,7 +60,7 @@ export function TradeDetailEditor({ trade, onChange, onSave, onDelete, compactVi
         anschließend die Details hier vervollständigen.
       </div>
       <ul style={{ color: 'var(--muted)', marginLeft: 16 }}>
-        <li>-- Ein Trade in der linken Liste anklicken, um Details zu laden. --</li>
+        <li>Ein Trade in der linken Liste anklicken, um Details zu laden.</li>
         <li>Im Formular links einen neuen Trade anlegen (Add) und hier nachbearbeiten.</li>
         <li>Änderungen werden beim Verlassen eines Felds (onBlur) validiert und können mit "Save now" gespeichert werden.</li>
       </ul>
