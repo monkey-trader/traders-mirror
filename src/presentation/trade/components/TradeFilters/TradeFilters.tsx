@@ -1,4 +1,3 @@
-import React from 'react'
 import { Button } from '@/presentation/shared/components/Button/Button'
 import styles from '../../TradeJournal.module.css'
 

@@ -1,4 +1,3 @@
-import React from 'react'
 import { render, fireEvent, within } from '@testing-library/react'
 import { describe, it, vi, expect } from 'vitest'
 import TradeFilters, { MarketFilters, StatusFilters } from './TradeFilters'

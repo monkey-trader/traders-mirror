@@ -1,4 +1,3 @@
-import React from 'react'
 import styles from './Switch.module.css'
 
 export type SwitchProps = {

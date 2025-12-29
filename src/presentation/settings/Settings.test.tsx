@@ -1,4 +1,3 @@
-import React from 'react'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { Settings } from './Settings'
 import { TradeJournal } from '@/presentation/trade/TradeJournal'

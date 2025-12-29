@@ -1,4 +1,3 @@
-import React from 'react'
 import styles from './MarketSelect.module.css'
 import inputStyles from '@/presentation/shared/components/Input/Input.module.css'
 

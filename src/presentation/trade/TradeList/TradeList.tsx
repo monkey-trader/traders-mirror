@@ -1,4 +1,3 @@
-import React from 'react'
 // Use a lightweight presentation DTO here (avoid coupling to domain TradeInput)
 export type TradeListItem = {
   id: string
