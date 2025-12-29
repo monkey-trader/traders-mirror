@@ -66,16 +66,20 @@ export class LocalStorageTradeRepository implements TradeRepository {
       if (raw) {
         const parsed = JSON.parse(raw) as RepoTrade[];
         this.trades = parsed.map((t) => ({ ...t }));
+        // eslint-disable-next-line no-console
         console.info('[LocalStorageRepo] loaded', this.trades.length, 'trades');
       } else if (seedDefaults) {
         this.trades = DEFAULT_MOCK_TRADES.map((t) => ({ ...t }));
         this.flush();
+        // eslint-disable-next-line no-console
         console.info('[LocalStorageRepo] initialized with defaults');
       } else {
         this.trades = [];
+        // eslint-disable-next-line no-console
         console.info('[LocalStorageRepo] initialized empty (no defaults)');
       }
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error('[LocalStorageRepo] failed to initialize', err);
       this.trades = seedDefaults ? DEFAULT_MOCK_TRADES.map((t) => ({ ...t })) : [];
     }
@@ -89,14 +93,17 @@ export class LocalStorageTradeRepository implements TradeRepository {
     const toAdd = trades.map((t) => ({ ...t }));
     this.trades = [...toAdd, ...this.trades];
     this.flush();
+    // eslint-disable-next-line no-console
     console.info('[LocalStorageRepo] seeded', toAdd.length, 'trades');
   }
 
   private flush() {
     try {
       window.localStorage.setItem(this.key, JSON.stringify(this.trades));
+      // eslint-disable-next-line no-console
       console.info('[LocalStorageRepo] flushed', this.trades.length, 'trades to localStorage');
     } catch (err) {
+      // eslint-disable-next-line no-console
       console.error('[LocalStorageRepo] failed to persist to localStorage', err);
     }
   }
@@ -123,7 +130,7 @@ export class LocalStorageTradeRepository implements TradeRepository {
 
       return {
         id: String(o.id),
-        market: (o.market as any) ?? 'All',
+        market: (o.market as RepoTrade['market']) ?? 'All',
         symbol: String(symbolVO.value),
         entryDate:
           entryDateVO && typeof entryDateVO === 'object' && 'value' in entryDateVO
@@ -198,6 +205,7 @@ export class LocalStorageTradeRepository implements TradeRepository {
     const dto = TradeFactory.toDTO(trade);
     const repoTrade = this.toRepoTrade(dto);
     this.trades.push({ ...repoTrade });
+    // eslint-disable-next-line no-console
     console.info('[LocalStorageRepo] save', repoTrade.id);
     this.flush();
   }
@@ -226,6 +234,7 @@ export class LocalStorageTradeRepository implements TradeRepository {
       try {
         return TradeFactory.create(input);
       } catch (err) {
+        // eslint-disable-next-line no-console
         console.error('[LocalStorageRepo] failed to convert stored trade to domain Trade', err);
         // create a minimal Trade to keep API stable
         return TradeFactory.create({
@@ -246,9 +255,11 @@ export class LocalStorageTradeRepository implements TradeRepository {
     const idx = this.trades.findIndex((t) => t.id === repoTrade.id);
     if (idx >= 0) {
       this.trades[idx] = { ...this.trades[idx], ...repoTrade };
+      // eslint-disable-next-line no-console
       console.info('[LocalStorageRepo] update', repoTrade.id);
       this.flush();
     } else {
+      // eslint-disable-next-line no-console
       console.warn(
         '[LocalStorageRepo] update: trade not found, performing save instead',
         repoTrade.id
@@ -262,6 +273,7 @@ export class LocalStorageTradeRepository implements TradeRepository {
     const idx = this.trades.findIndex((t) => t.id === id);
     if (idx >= 0) {
       this.trades.splice(idx, 1);
+      // eslint-disable-next-line no-console
       console.info('[LocalStorageRepo] delete', id);
       this.flush();
     }

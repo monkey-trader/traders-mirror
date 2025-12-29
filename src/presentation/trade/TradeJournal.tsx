@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 // Layout is provided by App; do not render Layout again here to avoid duplicate headers
 import { Card } from '@/presentation/shared/components/Card/Card';
@@ -55,7 +56,7 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
     try {
       const s = loadSettings();
       return typeof s.showLoadMockButton === 'boolean' ? s.showLoadMockButton : true;
-    } catch (_e) {
+    } catch {
       return true;
     }
   });
@@ -67,7 +68,7 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
         setShowLoadMockButton(
           typeof s.showLoadMockButton === 'boolean' ? s.showLoadMockButton : true
         );
-      } catch (_e) {
+      } catch {
         /* ignore */
       }
     };
@@ -121,12 +122,16 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
   useEffect(() => {
     let mounted = true;
     (async () => {
-      if (!repoRef.current) return;
-      const domainTrades = await repoRef.current.getAll();
-      if (!mounted) return;
-      // convert domain Trades to presentation primitives
-      const all = domainTrades.map((dt) => TradeFactory.toDTO(dt));
-      setPositions(all as unknown as TradeRow[]);
+      try {
+        if (!repoRef.current) return;
+        const domainTrades = await repoRef.current.getAll();
+        if (!mounted) return;
+        // convert domain Trades to presentation primitives
+        const all = domainTrades.map((dt) => TradeFactory.toDTO(dt));
+        setPositions(all as unknown as TradeRow[]);
+      } catch {
+        // ignore init errors
+      }
     })();
     return () => {
       mounted = false;
@@ -140,7 +145,7 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
     if (typeof window.matchMedia !== 'function') return false;
     try {
       return window.matchMedia('(max-width:480px)').matches;
-    } catch (_e) {
+    } catch {
       return false;
     }
   });
@@ -153,14 +158,14 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
     const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
     try {
       mq.addEventListener('change', handler);
-    } catch (_e) {
+    } catch {
       mq.addListener(handler);
     }
     setIsMobile(mq.matches);
     return () => {
       try {
         mq.removeEventListener('change', handler);
-      } catch (_e) {
+      } catch {
         mq.removeListener(handler);
       }
     };
@@ -189,7 +194,7 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
               console.warn('Repository unavailable');
               return;
             }
-            const domain = TradeFactory.create(updated as any);
+            const domain = TradeFactory.create(updated as unknown as TradeInput);
             await repoRef.current.update(domain);
           } catch (err) {
             console.error('Failed to persist trade update', err);
@@ -260,7 +265,7 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
         size: dto.size,
         price: dto.price,
         side: dto.side as 'LONG' | 'SHORT',
-        status: (dto as any).status ?? existing.status,
+        status: dto.status ?? existing.status,
         notes: dto.notes,
       };
       return prev.map((p) => (p.id === dto.id ? updatedTrade! : p));
@@ -276,7 +281,7 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
         console.warn('Repository unavailable');
         return;
       }
-      const domain = TradeFactory.create(updatedTrade as any);
+      const domain = TradeFactory.create(updatedTrade as unknown as TradeInput);
       await repoRef.current.update(domain);
       setDirtyIds((prev) => {
         const next = new Set(prev);
@@ -316,13 +321,17 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
     setLastStatus('handleAdd start');
 
     // helper: parse form values which may be strings -> numbers
-    const parseNumberField = (v: any): number | undefined => {
+    const parseNumberField = (v: unknown): number | undefined => {
       if (v === undefined || v === null) return undefined;
       if (typeof v === 'number') return v;
-      const s = String(v).trim();
-      if (s.length === 0) return undefined;
-      const n = Number(s);
-      return Number.isNaN(n) ? undefined : n;
+      try {
+        const s = String(v).trim();
+        if (s.length === 0) return undefined;
+        const n = Number(s);
+        return Number.isNaN(n) ? undefined : n;
+      } catch {
+        return undefined;
+      }
     };
 
     // Validate using presentation validation helper (returns array of field errors)
@@ -337,7 +346,9 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
       margin: form.margin,
       leverage: form.leverage,
     };
-    const validation = validateNewTrade(toValidate as any);
+    const validation = validateNewTrade(
+      toValidate as unknown as import('@/presentation/trade/validation').TradeForm
+    );
     const mapped: Record<string, string> = {};
     validation.forEach((v) => {
       if (v && v.field) mapped[v.field] = v.message;
@@ -387,7 +398,7 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
       } else {
         console.info('[TradeJournal] persisting trade to repo', newTrade.id);
         setLastStatus(`persisting ${newTrade.id}`);
-        const domain = TradeFactory.create(newTrade as any);
+        const domain = TradeFactory.create(newTrade as unknown as TradeInput);
         await repoRef.current.save(domain);
         console.info('[TradeJournal] persisted trade to repo', newTrade.id);
         setLastStatus(`persisted ${newTrade.id}`);
@@ -944,8 +955,8 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
                     // prefer calling a seed method if repo supports it
                     const repoAny = repoRef.current as unknown as {
                       seed?: (trades: RepoTrade[]) => void;
-                      save?: (t: any) => Promise<void>;
-                      getAll?: () => Promise<any[]>;
+                      save?: (t: unknown) => Promise<void>;
+                      getAll?: () => Promise<unknown[]>;
                     } | null;
                     if (repoAny && typeof repoAny.seed === 'function') {
                       try {
@@ -971,7 +982,7 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
                         const dto = combined.map((c) => ({
                           ...c,
                           entryDate: EntryDate.toInputValue(c.entryDate),
-                          status: (c as any).status ?? 'OPEN',
+                          status: (c as unknown as { status?: unknown }).status ?? 'OPEN',
                         })) as unknown as TradeRow[];
                         return [...dto, ...prev];
                       });

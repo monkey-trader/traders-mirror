@@ -36,7 +36,7 @@ export function ThemeSwitcher() {
     document.documentElement.setAttribute('data-theme', current);
     try {
       localStorage.setItem('theme', current);
-    } catch (e) {
+    } catch {
       // ignore if localStorage is not available
     }
   }, [current]);

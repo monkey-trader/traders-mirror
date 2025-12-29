@@ -4,8 +4,8 @@ import InMemoryTradeRepository from '@/infrastructure/trade/repositories/InMemor
 
 // Mock ResizeObserver for jsdom environment used in tests
 class FakeResizeObserver {
-  callback: any;
-  constructor(cb: any) {
+  callback: unknown;
+  constructor(cb: unknown) {
     this.callback = cb;
   }
   observe() {}
@@ -19,6 +19,7 @@ class FakeResizeObserver {
 describe('TradeJournal entryDate', () => {
   it('prefills entryDate with current datetime (within 2 minutes)', async () => {
     const { container } = render(<TradeJournal repo={new InMemoryTradeRepository()} />);
+    await screen.findByText(/Trading Journal/i);
 
     const entryInput = container.querySelector('#entryDate') as HTMLInputElement | null;
     expect(entryInput).toBeTruthy();

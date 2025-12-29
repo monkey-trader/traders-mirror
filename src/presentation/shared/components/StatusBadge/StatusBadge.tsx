@@ -24,7 +24,7 @@ export function StatusBadge({ value, className = '', onClick }: StatusBadgeProps
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          onClick && onClick(e as any);
+          if (onClick) onClick(e as unknown as React.MouseEvent<HTMLSpanElement>);
         }
       }}
       className={`${cls} ${className}`}

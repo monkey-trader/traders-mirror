@@ -1,5 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import LocalStorageTradeRepository from '@/infrastructure/trade/repositories/LocalStorageTradeRepository';
+import LocalStorageTradeRepository, {
+  type RepoTrade,
+} from '@/infrastructure/trade/repositories/LocalStorageTradeRepository';
 import { TradeFactory } from '@/domain/trade/entities/TradeFactory';
 
 beforeEach(() => {
@@ -154,14 +156,18 @@ describe('LocalStorageTradeRepository', () => {
     expect(raw).toBeTruthy();
     const parsed = JSON.parse(raw as string);
     expect(Array.isArray(parsed)).toBe(true);
-    expect(parsed.find((r: any) => r.id === 'p1')).toBeTruthy();
+    expect(
+      (parsed as unknown[]).find(
+        (r: unknown) => (r as unknown as Record<string, unknown>).id === 'p1'
+      )
+    ).toBeTruthy();
   });
 
   it('seed prepends new trades (order preserved)', async () => {
     const key = 'test_seed_order';
     window.localStorage.removeItem(key);
     const repo = new LocalStorageTradeRepository(key, { seedDefaults: false });
-    const seedA = {
+    const seedA: RepoTrade = {
       id: 'a1',
       market: 'All',
       symbol: 'A',
@@ -172,7 +178,7 @@ describe('LocalStorageTradeRepository', () => {
       status: 'OPEN',
       pnl: 0,
     };
-    const seedB = {
+    const seedB: RepoTrade = {
       id: 'b1',
       market: 'All',
       symbol: 'B',
@@ -183,9 +189,7 @@ describe('LocalStorageTradeRepository', () => {
       status: 'OPEN',
       pnl: 0,
     };
-    // @ts-expect-error passing raw repo shapes
     repo.seed([seedA]);
-    // @ts-expect-error
     repo.seed([seedB]);
     const raw = window.localStorage.getItem(key) as string;
     const parsed = JSON.parse(raw);
@@ -198,11 +202,36 @@ describe('LocalStorageTradeRepository', () => {
     const key = 'test_seed_noop';
     window.localStorage.removeItem(key);
     const repo = new LocalStorageTradeRepository(key, { seedDefaults: false });
-    // @ts-expect-error pass invalid
-    repo.seed(undefined);
-    // @ts-expect-error
+    repo.seed(undefined as unknown as RepoTrade[]);
     repo.seed([]);
     const raw = window.localStorage.getItem(key);
     expect(raw).toBeNull();
+  });
+
+  it('handles localStorage.setItem throwing (flush error) without bubbling', async () => {
+    const key = 'test_flush_error';
+    window.localStorage.removeItem(key);
+    const repo = new LocalStorageTradeRepository(key, { seedDefaults: false });
+
+    // make setItem throw
+    const originalSetItem = window.localStorage.setItem;
+    // monkeypatch setItem to throw
+    window.localStorage.setItem = () => {
+      throw new Error('quota exceeded');
+    };
+
+    try {
+      const trade = TradeFactory.create({ id: 'f1', symbol: 'FUSD', size: 1, price: 1, side: 'LONG' });
+      // save should not throw despite setItem throwing internally
+      await expect(repo.save(trade)).resolves.toBeUndefined();
+
+      // flush failure shouldn't prevent in-memory state update
+      const all = await repo.getAll();
+      expect(all.length).toBe(1);
+      expect(all[0].id).toBe('f1');
+    } finally {
+      // restore
+      window.localStorage.setItem = originalSetItem;
+    }
   });
 });

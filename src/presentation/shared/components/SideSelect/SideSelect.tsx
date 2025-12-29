@@ -94,7 +94,7 @@ export function SideBadge({ value, className = '', onClick }: SideBadgeProps) {
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          onClick && onClick(e as any);
+          if (onClick) onClick(e as unknown as React.MouseEvent<HTMLSpanElement>);
         }
       }}
       className={`${styles.badge} ${
