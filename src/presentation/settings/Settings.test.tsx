@@ -4,14 +4,7 @@ import { Settings } from './Settings'
 import { TradeJournal } from '@/presentation/trade/TradeJournal'
 import LocalStorageTradeRepository from '@/infrastructure/trade/repositories/LocalStorageTradeRepository'
 
-// Mock ResizeObserver for jsdom environment used in tests
-class FakeResizeObserver {
-  constructor(cb: any) { }
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-}
-;(global as any).ResizeObserver = FakeResizeObserver
+// vitest.setup.js already mocks ResizeObserver; no local FakeResizeObserver needed
 
 // Provide a minimal localStorage implementation for tests if missing
 beforeAll(() => {
@@ -21,7 +14,9 @@ beforeAll(() => {
       getItem: (k: string) => (k in store ? store[k] : null),
       setItem: (k: string, v: string) => { store[k] = String(v) },
       removeItem: (k: string) => { delete store[k] },
-      clear: () => { Object.keys(store).forEach(k => delete store[k]) }
+      clear: () => { Object.keys(store).forEach(k => delete store[k]) },
+      key: (i: number) => Object.keys(store)[i] || null,
+      get length() { return Object.keys(store).length }
     }
     Object.defineProperty(window, 'localStorage', { value: mock, configurable: true })
   }
