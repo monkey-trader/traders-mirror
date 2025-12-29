@@ -2,7 +2,7 @@
    Provide full sets of design tokens per theme so switching themes visibly updates the UI.
 */
 
-:root[data-theme="nightscope"] {
+:root[data-theme='nightscope'] {
   /* default dark/night palette */
   --bg: #0b0f14;
   --surface: #0f1720;
@@ -11,13 +11,13 @@
   --color-text: #e6e6e6;
   --color-primary: #00bcd4;
   --accent: #58d68d;
-  --accent-glass: rgba(88,214,141,0.08);
-  --accent-strong: rgba(88,214,141,0.18);
-  --glass: rgba(255,255,255,0.03);
-  --glass-strong: rgba(255,255,255,0.06);
+  --accent-glass: rgba(88, 214, 141, 0.08);
+  --accent-strong: rgba(88, 214, 141, 0.18);
+  --glass: rgba(255, 255, 255, 0.03);
+  --glass-strong: rgba(255, 255, 255, 0.06);
 }
 
-:root[data-theme="warmledger"] {
+:root[data-theme='warmledger'] {
   /* warm, ledger-like palette */
   --bg: #101214;
   --surface: #161b1f;
@@ -26,13 +26,13 @@
   --color-text: #efe6dc;
   --color-primary: #f7b267; /* warm orange */
   --accent: #f7b267;
-  --accent-glass: rgba(247,178,103,0.08);
-  --accent-strong: rgba(247,178,103,0.18);
-  --glass: rgba(0,0,0,0.04);
-  --glass-strong: rgba(0,0,0,0.08);
+  --accent-glass: rgba(247, 178, 103, 0.08);
+  --accent-strong: rgba(247, 178, 103, 0.18);
+  --glass: rgba(0, 0, 0, 0.04);
+  --glass-strong: rgba(0, 0, 0, 0.08);
 }
 
-:root[data-theme="datagrid"] {
+:root[data-theme='datagrid'] {
   /* cool, blue data-grid palette */
   --bg: #0a0a0c;
   --surface: #0e0f12;
@@ -41,15 +41,15 @@
   --color-text: #e6f6ff;
   --color-primary: #4fb3ff;
   --accent: #4fb3ff;
-  --accent-glass: rgba(79,179,255,0.08);
-  --accent-strong: rgba(79,179,255,0.18);
-  --glass: rgba(255,255,255,0.02);
-  --glass-strong: rgba(255,255,255,0.04);
+  --accent-glass: rgba(79, 179, 255, 0.08);
+  --accent-strong: rgba(79, 179, 255, 0.18);
+  --glass: rgba(255, 255, 255, 0.02);
+  --glass-strong: rgba(255, 255, 255, 0.04);
 }
 
 /* --- New theme variants (surprise set) --- */
 
-:root[data-theme="solarized"] {
+:root[data-theme='solarized'] {
   /* softened solarized dark */
   --bg: #002b36;
   --surface: #073642;
@@ -58,13 +58,13 @@
   --color-text: #e8f1f1;
   --color-primary: #b58900; /* golden */
   --accent: #2aa198; /* teal */
-  --accent-glass: rgba(42,161,152,0.08);
-  --accent-strong: rgba(42,161,152,0.16);
-  --glass: rgba(255,255,255,0.02);
-  --glass-strong: rgba(255,255,255,0.04);
+  --accent-glass: rgba(42, 161, 152, 0.08);
+  --accent-strong: rgba(42, 161, 152, 0.16);
+  --glass: rgba(255, 255, 255, 0.02);
+  --glass-strong: rgba(255, 255, 255, 0.04);
 }
 
-:root[data-theme="neon"] {
+:root[data-theme='neon'] {
   /* punchy neon on near-black */
   --bg: #04060a;
   --surface: #0b0d11;
@@ -73,13 +73,13 @@
   --color-text: #ffffff;
   --color-primary: #ff2dd4; /* magenta */
   --accent: #00ffd5; /* cyan */
-  --accent-glass: rgba(0,255,213,0.06);
-  --accent-strong: rgba(255,45,212,0.18);
-  --glass: rgba(255,255,255,0.02);
-  --glass-strong: rgba(255,255,255,0.05);
+  --accent-glass: rgba(0, 255, 213, 0.06);
+  --accent-strong: rgba(255, 45, 212, 0.18);
+  --glass: rgba(255, 255, 255, 0.02);
+  --glass-strong: rgba(255, 255, 255, 0.05);
 }
 
-:root[data-theme="forest"] {
+:root[data-theme='forest'] {
   /* deep forest greens */
   --bg: #07120b;
   --surface: #0b1912;
@@ -88,13 +88,13 @@
   --color-text: #e8f7ea;
   --color-primary: #2e8b57; /* sea green */
   --accent: #79c267;
-  --accent-glass: rgba(121,194,103,0.08);
-  --accent-strong: rgba(121,194,103,0.18);
-  --glass: rgba(255,255,255,0.02);
-  --glass-strong: rgba(255,255,255,0.04);
+  --accent-glass: rgba(121, 194, 103, 0.08);
+  --accent-strong: rgba(121, 194, 103, 0.18);
+  --glass: rgba(255, 255, 255, 0.02);
+  --glass-strong: rgba(255, 255, 255, 0.04);
 }
 
-:root[data-theme="sunrise"] {
+:root[data-theme='sunrise'] {
   /* warm sunrise gradient vibe */
   --bg: #0c0a10;
   --surface: #130f15;
@@ -103,13 +103,13 @@
   --color-text: #fff6f2;
   --color-primary: #ff7a59; /* coral */
   --accent: #ffd166; /* sunrise yellow */
-  --accent-glass: rgba(255,209,102,0.08);
-  --accent-strong: rgba(255,122,89,0.18);
-  --glass: rgba(255,255,255,0.02);
-  --glass-strong: rgba(255,255,255,0.04);
+  --accent-glass: rgba(255, 209, 102, 0.08);
+  --accent-strong: rgba(255, 122, 89, 0.18);
+  --glass: rgba(255, 255, 255, 0.02);
+  --glass-strong: rgba(255, 255, 255, 0.04);
 }
 
-:root[data-theme="mono"] {
+:root[data-theme='mono'] {
   /* monochrome high-contrast */
   --bg: #070707;
   --surface: #0f0f10;
@@ -118,13 +118,13 @@
   --color-text: #e6e6e6;
   --color-primary: #a0a0a0;
   --accent: #cfcfcf;
-  --accent-glass: rgba(207,207,207,0.06);
-  --accent-strong: rgba(207,207,207,0.14);
-  --glass: rgba(255,255,255,0.02);
-  --glass-strong: rgba(255,255,255,0.04);
+  --accent-glass: rgba(207, 207, 207, 0.06);
+  --accent-strong: rgba(207, 207, 207, 0.14);
+  --glass: rgba(255, 255, 255, 0.02);
+  --glass-strong: rgba(255, 255, 255, 0.04);
 }
 
-:root[data-theme="aurora"] {
+:root[data-theme='aurora'] {
   /* aurora: rich purple -> teal -> gold gradient vibe */
   --bg: #070615;
   --surface: #0f0b16;
@@ -133,9 +133,9 @@
   --color-text: #efeaf6;
   --color-primary: #8b5cf6; /* violet */
   --accent: #3de7c9; /* teal */
-  --accent-glass: rgba(61,231,201,0.08);
-  --accent-strong: rgba(139,92,246,0.16);
+  --accent-glass: rgba(61, 231, 201, 0.08);
+  --accent-strong: rgba(139, 92, 246, 0.16);
   --gold: #ffd27a;
-  --glass: rgba(255,255,255,0.02);
-  --glass-strong: rgba(255,255,255,0.04);
+  --glass: rgba(255, 255, 255, 0.02);
+  --glass-strong: rgba(255, 255, 255, 0.04);
 }

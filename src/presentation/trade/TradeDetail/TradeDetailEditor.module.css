@@ -3,14 +3,14 @@
   flex-direction: column;
   gap: 12px;
   color: var(--text);
-  background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.01), rgba(255, 255, 255, 0.005));
   border-radius: 10px;
   padding: 12px;
-  box-shadow: 0 8px 30px rgba(2,8,23,0.45);
-  border: 1px solid rgba(255,255,255,0.02);
+  box-shadow: 0 8px 30px rgba(2, 8, 23, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.02);
 
   /* animation: subtle fade/slide when editor mounts or content changes */
-  transition: transform 220ms cubic-bezier(.2,.9,.2,1), opacity 180ms ease;
+  transition: transform 220ms cubic-bezier(0.2, 0.9, 0.2, 1), opacity 180ms ease;
   will-change: transform, opacity;
 }
 
@@ -54,8 +54,8 @@
 .input {
   padding: 10px 12px;
   border-radius: 8px;
-  border: 1px solid rgba(255,255,255,0.03);
-  background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.01), rgba(255, 255, 255, 0.005));
   color: var(--text);
   transition: box-shadow 120ms ease, border-color 120ms ease, transform 120ms ease;
   outline: none;
@@ -64,8 +64,8 @@
 }
 
 .input:focus {
-  border-color: rgba(124,92,255,0.85);
-  box-shadow: 0 6px 18px rgba(124,92,255,0.06);
+  border-color: rgba(124, 92, 255, 0.85);
+  box-shadow: 0 6px 18px rgba(124, 92, 255, 0.06);
   transform: translateY(-1px);
 }
 
@@ -73,8 +73,8 @@
   grid-column: 1 / -1;
   padding: 12px 14px;
   border-radius: 8px;
-  border: 1px solid rgba(255,255,255,0.03);
-  background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.01), rgba(255, 255, 255, 0.005));
   color: var(--text);
   min-height: 96px;
   resize: vertical;
@@ -114,7 +114,7 @@
 
 .saveBtn:not([disabled]):hover {
   transform: translateY(-3px) scale(1.01);
-  box-shadow: 0 10px 30px rgba(90,58,252,0.18);
+  box-shadow: 0 10px 30px rgba(90, 58, 252, 0.18);
 }
 
 .saveStatus {
@@ -151,29 +151,56 @@
 }
 
 @keyframes pulse {
-  0% { box-shadow: 0 0 0 0 rgba(124,92,255,0.18); }
-  70% { box-shadow: 0 0 0 12px rgba(124,92,255,0); }
-  100% { box-shadow: 0 0 0 0 rgba(124,92,255,0); }
+  0% {
+    box-shadow: 0 0 0 0 rgba(124, 92, 255, 0.18);
+  }
+  70% {
+    box-shadow: 0 0 0 12px rgba(124, 92, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(124, 92, 255, 0);
+  }
 }
 
 /* Responsive: single column on small screens */
 @media (max-width: 900px) {
-  .form { grid-template-columns: 1fr }
-  .saveBtn { width: 100%; justify-self: stretch }
+  .form {
+    grid-template-columns: 1fr;
+  }
+  .saveBtn {
+    width: 100%;
+    justify-self: stretch;
+  }
 }
 
 @media (max-width: 480px) {
-  .editor { padding: 10px; }
-  .title { font-size: var(--fs-md, 16px); }
-  .sub { font-size: var(--fs-xs, 13px); }
-  .input { padding: 12px; }
-  .textarea { padding: 10px; min-height: 80px; }
-  .saveBtn { width: 100%; justify-self: stretch; }
+  .editor {
+    padding: 10px;
+  }
+  .title {
+    font-size: var(--fs-md, 16px);
+  }
+  .sub {
+    font-size: var(--fs-xs, 13px);
+  }
+  .input {
+    padding: 12px;
+  }
+  .textarea {
+    padding: 10px;
+    min-height: 80px;
+  }
+  .saveBtn {
+    width: 100%;
+    justify-self: stretch;
+  }
 }
 
 /* accessibility: ensure focus outlines remain visible in high-contrast situations */
-.input:focus-visible, .textarea:focus-visible, .saveBtn:focus-visible {
-  outline: 3px solid rgba(124,92,255,0.15);
+.input:focus-visible,
+.textarea:focus-visible,
+.saveBtn:focus-visible {
+  outline: 3px solid rgba(124, 92, 255, 0.15);
   outline-offset: 2px;
 }
 
@@ -182,6 +209,14 @@
   padding: var(--space-3, 10px);
 }
 
-.compact .form { grid-template-columns: 1fr; }
-.compact .saveBtn { width: 100%; justify-self: stretch; }
-.compact .inlineDelete { margin-left: 0; margin-top: 8px; }
+.compact .form {
+  grid-template-columns: 1fr;
+}
+.compact .saveBtn {
+  width: 100%;
+  justify-self: stretch;
+}
+.compact .inlineDelete {
+  margin-left: 0;
+  margin-top: 8px;
+}

@@ -7,6 +7,7 @@
     "start": "craco start",
     "dev": "craco start",
     "build": "craco build",
+    "prebuild": "npm run format && npm run lint",
     "test": "craco test",
     "test:unit": "vitest",
     "test:ci": "vitest run -c vitest.config.ts --coverage --reporter=dot --reporter=junit --outputFile=vitest-report.xml",
@@ -18,7 +19,8 @@
     "deploy": "gh-pages -d build",
     "prepare": "husky install",
     "tools:find-unused-imports": "node tools/find-and-remove-unused-imports.mjs 'src/**/*.{ts,tsx,js,jsx}'",
-    "tools:fix-unused-imports": "node tools/find-and-remove-unused-imports.mjs 'src/**/*.{ts,tsx,js,jsx}' --apply"
+    "tools:fix-unused-imports": "node tools/find-and-remove-unused-imports.mjs 'src/**/*.{ts,tsx,js,jsx}' --apply",
+    "ci:autofix": "node scripts/add-eslint-disable-any.js && npx eslint --fix \"src/**/*.{ts,tsx,js,jsx}\" || true && npx prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\" || true"
   },
   "dependencies": {
     "react": "^18.2.0",

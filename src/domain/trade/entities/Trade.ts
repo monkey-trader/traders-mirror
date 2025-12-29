@@ -1,11 +1,11 @@
-import { TradeSymbol } from '../valueObjects/TradeSymbol'
-import { EntryDate } from '../valueObjects/EntryDate'
-import { Size } from '../valueObjects/Size'
-import { Price } from '../valueObjects/Price'
-import { Side } from '../valueObjects/Side'
-import { Market } from '../valueObjects/Market'
-import { Leverage } from '../valueObjects/Leverage'
-import { Margin } from '../valueObjects/Margin'
+import { TradeSymbol } from '../valueObjects/TradeSymbol';
+import { EntryDate } from '../valueObjects/EntryDate';
+import { Size } from '../valueObjects/Size';
+import { Price } from '../valueObjects/Price';
+import { Side } from '../valueObjects/Side';
+import { Market } from '../valueObjects/Market';
+import { Leverage } from '../valueObjects/Leverage';
+import { Margin } from '../valueObjects/Margin';
 
 export class Trade {
   public readonly id: string;
@@ -41,7 +41,7 @@ export class Trade {
     tp3?: Price,
     tp4?: Price,
     leverage?: Leverage,
-    margin?: Margin,
+    margin?: Margin
   ) {
     this.id = id;
     this.symbol = symbol;

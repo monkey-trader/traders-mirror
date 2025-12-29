@@ -34,7 +34,9 @@ describe('TradeJournal Integration', () => {
     // 1) explicit `Select <symbol>` button (non-compact)
     // 2) PositionCard expand/toggle button `Toggle details for <symbol>` (compact)
     // 3) fallback: click the listitem that contains the symbol
-    const selectBtn = screen.queryByRole('button', { name: new RegExp(`^Select ${newSymbol}$`, 'i') });
+    const selectBtn = screen.queryByRole('button', {
+      name: new RegExp(`^Select ${newSymbol}$`, 'i'),
+    });
     if (selectBtn) {
       fireEvent.click(selectBtn);
     } else {
@@ -48,7 +50,9 @@ describe('TradeJournal Integration', () => {
       for (const container of containers) {
         if (within(container).queryByText(newSymbol)) {
           // try to find a local toggle/expand button inside this container
-          const localToggles = within(container).queryAllByLabelText(new RegExp(`Toggle details for ${newSymbol}`, 'i'));
+          const localToggles = within(container).queryAllByLabelText(
+            new RegExp(`Toggle details for ${newSymbol}`, 'i')
+          );
           if (localToggles.length > 0) {
             fireEvent.click(localToggles[0]);
             clicked = true;
@@ -64,7 +68,9 @@ describe('TradeJournal Integration', () => {
       }
       // Fallback: if none found inside list, try a global toggle
       if (!clicked) {
-        const globalToggles = screen.queryAllByLabelText(new RegExp(`Toggle details for ${newSymbol}`, 'i'));
+        const globalToggles = screen.queryAllByLabelText(
+          new RegExp(`Toggle details for ${newSymbol}`, 'i')
+        );
         if (globalToggles.length > 0) {
           fireEvent.click(globalToggles[0]);
           clicked = true;
@@ -79,12 +85,14 @@ describe('TradeJournal Integration', () => {
 
     // Now the editor should be visible in the right pane — find the Price input by aria-label
     // Use findByLabelText which waits for the element to appear
-    let priceInput = await screen.findByLabelText('Price', {}, { timeout: 2000 }).catch(async (err) => {
-      // Debug: dump some DOM for inspection
-      // eslint-disable-next-line no-console
-      console.error('DEBUG DOM snapshot:', document.body.innerHTML.slice(0, 2000));
-      throw err;
-    });
+    const priceInput = await screen
+      .findByLabelText('Price', {}, { timeout: 2000 })
+      .catch(async (err) => {
+        // Debug: dump some DOM for inspection
+        // eslint-disable-next-line no-console
+        console.error('DEBUG DOM snapshot:', document.body.innerHTML.slice(0, 2000));
+        throw err;
+      });
     fireEvent.change(priceInput as HTMLInputElement, { target: { value: '1.120' } });
     fireEvent.click(screen.getByRole('button', { name: /Save now/i }));
     await screen.findByDisplayValue('1.120');
@@ -99,7 +107,9 @@ describe('TradeJournal Integration', () => {
     const beforeCount = (await screen.findAllByText(newSymbol)).length;
     fireEvent.click(screen.getByRole('button', { name: /Delete/i }));
     fireEvent.click(screen.getByRole('button', { name: /Ja/i })); // Confirm dialog
-    await waitFor(() => expect((screen.queryAllByText(newSymbol).length || 0) < beforeCount).toBeTruthy());
+    await waitFor(() =>
+      expect((screen.queryAllByText(newSymbol).length || 0) < beforeCount).toBeTruthy()
+    );
   });
 
   it('renders and interacts correctly in compactView (mobile/forceCompact)', async () => {

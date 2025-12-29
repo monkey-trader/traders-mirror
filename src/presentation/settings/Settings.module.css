@@ -1,5 +1,5 @@
 :root {
-  --settings-bg: rgba(255,255,255,0.02);
+  --settings-bg: rgba(255, 255, 255, 0.02);
 }
 
 .container {
@@ -8,7 +8,7 @@
 }
 
 .section {
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
   padding: 14px;
   border-radius: 10px;
   margin-bottom: 12px;
@@ -24,42 +24,70 @@
   width: 160px;
   border-radius: 10px;
   overflow: hidden;
-  border: 1px solid rgba(255,255,255,0.03);
+  border: 1px solid rgba(255, 255, 255, 0.03);
   cursor: pointer;
-  background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.01), rgba(255, 255, 255, 0.005));
   transition: transform 150ms ease, box-shadow 150ms ease, border-color 120ms ease;
 }
 
-.previewCard:hover { transform: translateY(-6px); box-shadow: 0 14px 40px rgba(0,0,0,0.6); }
+.previewCard:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.6);
+}
 
-.previewActive { border-color: var(--accent); box-shadow: 0 10px 30px rgba(0,0,0,0.6); }
+.previewActive {
+  border-color: var(--accent);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+}
 
 .previewHeader {
   padding: 8px 10px;
   font-weight: 800;
   color: var(--surface);
-  background: linear-gradient(90deg, rgba(255,255,255,0.01), rgba(255,255,255,0.003));
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.01), rgba(255, 255, 255, 0.003));
 }
 
 .previewBody {
   padding: 10px;
 }
 
-.sampleRow { display: flex; gap: 8px; align-items: center; margin-bottom: 8px }
-.sampleBox { width: 36px; height: 22px; background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.005)); border-radius: 4px }
-.sampleBtn { padding: 6px 10px; border-radius: 8px; background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 70%, black)); color: var(--surface); border: none; cursor: pointer }
-.sampleText { color: var(--muted); font-size: 12px }
+.sampleRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.sampleBox {
+  width: 36px;
+  height: 22px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.005));
+  border-radius: 4px;
+}
+.sampleBtn {
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 70%, black));
+  color: var(--surface);
+  border: none;
+  cursor: pointer;
+}
+.sampleText {
+  color: var(--muted);
+  font-size: 12px;
+}
 
 .themeBtn {
   padding: 8px 12px;
   border-radius: 999px;
-  border: 1px solid rgba(255,255,255,0.04);
+  border: 1px solid rgba(255, 255, 255, 0.04);
   background: transparent;
   color: var(--muted);
   cursor: pointer;
 }
 
-.themeBtn:hover { color: var(--text); }
+.themeBtn:hover {
+  color: var(--text);
+}
 
 .themeBtn.active {
   background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 70%, black));
@@ -82,7 +110,7 @@
 .debugBtn {
   padding: 8px 12px;
   border-radius: 999px;
-  border: 1px solid rgba(255,255,255,0.06);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   background: transparent;
   color: var(--muted);
   cursor: pointer;
@@ -97,7 +125,7 @@
   background: linear-gradient(90deg, #34d399, #059669);
   color: var(--surface);
   border: none;
-  box-shadow: 0 6px 18px rgba(5,150,105,0.16);
+  box-shadow: 0 6px 18px rgba(5, 150, 105, 0.16);
   transform: translateY(-1px);
 }
 
@@ -108,7 +136,7 @@
 
 .debugBtn:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 4px rgba(52,211,153,0.12), 0 4px 12px rgba(0,0,0,0.6);
+  box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.12), 0 4px 12px rgba(0, 0, 0, 0.6);
 }
 
 /* keep help text spanning columns nicely */
@@ -130,13 +158,15 @@
   padding: 8px 12px;
   border-radius: 8px;
   font-weight: 700;
-  box-shadow: 0 8px 20px rgba(255,59,48,0.14);
+  box-shadow: 0 8px 20px rgba(255, 59, 48, 0.14);
 }
 .dangerBtn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 28px rgba(255,59,48,0.18);
+  box-shadow: 0 12px 28px rgba(255, 59, 48, 0.18);
 }
-.dangerBtn:active { transform: translateY(0); }
+.dangerBtn:active {
+  transform: translateY(0);
+}
 
 .restoreBtn {
   background: linear-gradient(90deg, #7c5cff, #6b46c1);
@@ -145,28 +175,31 @@
   padding: 8px 12px;
   border-radius: 8px;
   font-weight: 700;
-  box-shadow: 0 8px 20px rgba(124,92,255,0.12);
+  box-shadow: 0 8px 20px rgba(124, 92, 255, 0.12);
 }
 .restoreBtn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 28px rgba(124,92,255,0.16);
+  box-shadow: 0 12px 28px rgba(124, 92, 255, 0.16);
 }
-.restoreBtn:active { transform: translateY(0); }
+.restoreBtn:active {
+  transform: translateY(0);
+}
 
 /* ensure accessibility focus outline */
-.dangerBtn:focus-visible, .restoreBtn:focus-visible {
+.dangerBtn:focus-visible,
+.restoreBtn:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 4px rgba(99,102,241,0.12), inset 0 1px 0 rgba(255,255,255,0.02);
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.02);
 }
 
 .infoBanner {
   margin-top: 12px;
   padding: 8px 12px;
   border-radius: 8px;
-  background: linear-gradient(90deg, rgba(124,92,255,0.09), rgba(34,193,195,0.04));
+  background: linear-gradient(90deg, rgba(124, 92, 255, 0.09), rgba(34, 193, 195, 0.04));
   color: var(--text);
   font-weight: 700;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.45);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
 }
 
 /* position infoBanner in the 2nd column of the debugRow grid (under the help text) */
@@ -187,13 +220,27 @@
 }
 
 @media (max-width: 720px) {
-  .debugRow { grid-template-columns: 1fr; gap: 10px; }
-  .debugRow .help { grid-column: 1 / -1; }
-  .storageButtons { flex-direction: column; align-items: stretch; }
-  .previewCard { width: 100%; }
+  .debugRow {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .debugRow .help {
+    grid-column: 1 / -1;
+  }
+  .storageButtons {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .previewCard {
+    width: 100%;
+  }
 }
 
 @media (max-width: 420px) {
-  .container { padding: var(--space-3, 12px); }
-  .previewHeader { font-size: var(--fs-sm, 14px); }
+  .container {
+    padding: var(--space-3, 12px);
+  }
+  .previewHeader {
+    font-size: var(--fs-sm, 14px);
+  }
 }

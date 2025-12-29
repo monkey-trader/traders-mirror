@@ -1,12 +1,12 @@
-import { Trade } from './Trade'
-import { Price } from '../valueObjects/Price'
-import { Size } from '../valueObjects/Size'
-import { EntryDate } from '../valueObjects/EntryDate'
-import { TradeSymbol } from '../valueObjects/TradeSymbol'
-import { Side } from '../valueObjects/Side'
-import { Market } from '../valueObjects/Market'
-import { Leverage } from '../valueObjects/Leverage'
-import { Margin } from '../valueObjects/Margin'
+import { Trade } from './Trade';
+import { Price } from '../valueObjects/Price';
+import { Size } from '../valueObjects/Size';
+import { EntryDate } from '../valueObjects/EntryDate';
+import { TradeSymbol } from '../valueObjects/TradeSymbol';
+import { Side } from '../valueObjects/Side';
+import { Market } from '../valueObjects/Market';
+import { Leverage } from '../valueObjects/Leverage';
+import { Margin } from '../valueObjects/Margin';
 
 export type TradeInput = {
   id: string;
@@ -30,7 +30,7 @@ export type TradeInput = {
 export class TradeFactory {
   static create(input: TradeInput): Trade {
     // If entryDate omitted (e.g. Add form hides it), default to now here in the factory
-    const entryDateValue = input.entryDate ?? new Date().toISOString()
+    const entryDateValue = input.entryDate ?? new Date().toISOString();
     return new Trade(
       input.id,
       new TradeSymbol(input.symbol),
@@ -70,7 +70,7 @@ export class TradeFactory {
       tp3: trade.tp3?.value,
       tp4: trade.tp4?.value,
       leverage: trade.leverage?.value,
-      margin: trade.margin?.value
-    }
+      margin: trade.margin?.value,
+    };
   }
 }

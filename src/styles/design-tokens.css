@@ -8,26 +8,26 @@
   --color-primary: #00bcd4;
   --accent: #58d68d; /* green */
   --danger: #ff6b6b;
-  --glass: rgba(255,255,255,0.03);
+  --glass: rgba(255, 255, 255, 0.03);
   --card-radius: 12px;
   --card-padding: 12px;
-  --glass-strong: rgba(255,255,255,0.06);
-  --accent-glass: rgba(88,214,141,0.08);
-  --accent-strong: rgba(88,214,141,0.18);
+  --glass-strong: rgba(255, 255, 255, 0.06);
+  --accent-glass: rgba(88, 214, 141, 0.08);
+  --accent-strong: rgba(88, 214, 141, 0.18);
 
   /* New semantic tokens for trade sides */
-  --color-long-600: #0F9D58; /* primary long (green) */
-  --color-long-800: #0B7A45; /* darker long */
-  --color-short-600: #DB4437; /* primary short (red) */
-  --color-short-800: #B0362C; /* darker short */
-  --color-neutral-600: #6C757D; /* neutral */
+  --color-long-600: #0f9d58; /* primary long (green) */
+  --color-long-800: #0b7a45; /* darker long */
+  --color-short-600: #db4437; /* primary short (red) */
+  --color-short-800: #b0362c; /* darker short */
+  --color-neutral-600: #6c757d; /* neutral */
 }
 
 /* Theme variants have been moved to src/presentation/settings/themes.css to allow them to be managed from the Settings page. */
 
 /* small helper tokens */
 :root {
-  --shadow-1: 0 6px 18px rgba(3,6,10,0.6);
+  --shadow-1: 0 6px 18px rgba(3, 6, 10, 0.6);
 }
 
 /* Responsive design tokens (breakpoints, fluid type, spacing, container padding)
@@ -70,8 +70,8 @@
   :root {
     --card-radius: 8px;
     --card-padding: 12px;
-    --shadow-1: 0 4px 12px rgba(3,6,10,0.5);
-    --accent-strong: rgba(88,214,141,0.14);
+    --shadow-1: 0 4px 12px rgba(3, 6, 10, 0.5);
+    --accent-strong: rgba(88, 214, 141, 0.14);
   }
 }
 

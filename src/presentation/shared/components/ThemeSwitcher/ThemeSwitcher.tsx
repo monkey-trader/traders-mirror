@@ -1,8 +1,18 @@
-import React, { useEffect, useState } from 'react'
-import styles from './ThemeSwitcher.module.css'
+import React, { useEffect, useState } from 'react';
+import styles from './ThemeSwitcher.module.css';
 
-const THEMES = ['nightscope', 'warmledger', 'datagrid', 'solarized', 'neon', 'forest', 'sunrise', 'mono', 'aurora'] as const
-export type ThemeName = typeof THEMES[number]
+const THEMES = [
+  'nightscope',
+  'warmledger',
+  'datagrid',
+  'solarized',
+  'neon',
+  'forest',
+  'sunrise',
+  'mono',
+  'aurora',
+] as const;
+export type ThemeName = (typeof THEMES)[number];
 
 const SWATCH: Record<ThemeName, string> = {
   nightscope: 'linear-gradient(90deg,#58d68d,#00bcd4)',
@@ -13,29 +23,31 @@ const SWATCH: Record<ThemeName, string> = {
   forest: 'linear-gradient(90deg,#79c267,#2e8b57)',
   sunrise: 'linear-gradient(90deg,#ff7a59,#ffd166)',
   mono: 'linear-gradient(90deg,#cfcfcf,#9a9a9a)',
-  aurora: 'linear-gradient(90deg,#8b5cf6,#3de7c9,#ffd27a)'
-}
+  aurora: 'linear-gradient(90deg,#8b5cf6,#3de7c9,#ffd27a)',
+};
 
 export function ThemeSwitcher() {
-  const [current, setCurrent] = useState<ThemeName>(() => (localStorage.getItem('theme') as ThemeName) || 'nightscope')
+  const [current, setCurrent] = useState<ThemeName>(
+    () => (localStorage.getItem('theme') as ThemeName) || 'nightscope'
+  );
 
   useEffect(() => {
     // apply theme to document and persist
-    document.documentElement.setAttribute('data-theme', current)
+    document.documentElement.setAttribute('data-theme', current);
     try {
-      localStorage.setItem('theme', current)
+      localStorage.setItem('theme', current);
     } catch (e) {
       // ignore if localStorage is not available
     }
-  }, [current])
+  }, [current]);
 
   const setTheme = (t: ThemeName) => {
-    setCurrent(t)
-  }
+    setCurrent(t);
+  };
 
   return (
     <div className={styles.switcher} role="toolbar" aria-label="Theme switcher">
-      {THEMES.map(t => (
+      {THEMES.map((t) => (
         <button
           key={t}
           className={[styles.btn, current === t ? styles.active : ''].filter(Boolean).join(' ')}
@@ -47,5 +59,5 @@ export function ThemeSwitcher() {
         </button>
       ))}
     </div>
-  )
+  );
 }

@@ -1,28 +1,28 @@
 // Use a lightweight presentation DTO here (avoid coupling to domain TradeInput)
 export type TradeListItem = {
-  id: string
-  symbol: string
-  entryDate: string
-  size: number
-  price: number
-  side: string
-  status?: string
-  notes?: string
-  tp1?: number
-  tp2?: number
-  tp3?: number
-  tp4?: number
-}
+  id: string;
+  symbol: string;
+  entryDate: string;
+  size: number;
+  price: number;
+  side: string;
+  status?: string;
+  notes?: string;
+  tp1?: number;
+  tp2?: number;
+  tp3?: number;
+  tp4?: number;
+};
 
-import styles from './TradeList.module.css'
-import { PositionCard } from '@/presentation/trade/components/PositionCard/PositionCard'
+import styles from './TradeList.module.css';
+import { PositionCard } from '@/presentation/trade/components/PositionCard/PositionCard';
 
 export type TradeListProps = {
-  trades: TradeListItem[]
-  selectedId?: string | null
-  onSelect: (id: string) => void
-  compactView?: boolean
-}
+  trades: TradeListItem[];
+  selectedId?: string | null;
+  onSelect: (id: string) => void;
+  compactView?: boolean;
+};
 
 export function TradeList({ trades, selectedId, onSelect, compactView = false }: TradeListProps) {
   if (compactView) {
@@ -33,7 +33,7 @@ export function TradeList({ trades, selectedId, onSelect, compactView = false }:
             (t.side || '').toString().trim().toUpperCase() === 'LONG' ||
             (t.side || '').toString().trim().toLowerCase() === 'buy'
               ? 'LONG'
-              : 'SHORT'
+              : 'SHORT';
           return (
             <div key={t.id} className={styles.compactItem}>
               <PositionCard
@@ -46,36 +46,34 @@ export function TradeList({ trades, selectedId, onSelect, compactView = false }:
                 onExpand={(id) => onSelect(id)}
               />
               <div className={styles.tpLevelsCompact}>
-                <span>TP1: {t.tp1 ?? '-'}</span>{' '}
-                <span>TP2: {t.tp2 ?? '-'}</span>{' '}
-                <span>TP3: {t.tp3 ?? '-'}</span>{' '}
-                <span>TP4: {t.tp4 ?? '-'}</span>
+                <span>TP1: {t.tp1 ?? '-'}</span> <span>TP2: {t.tp2 ?? '-'}</span>{' '}
+                <span>TP3: {t.tp3 ?? '-'}</span> <span>TP4: {t.tp4 ?? '-'}</span>
               </div>
             </div>
-          )
+          );
         })}
       </div>
-    )
+    );
   }
 
   return (
     <div className={styles.list} role="list">
       {trades.map((t) => {
-        const isSelected = selectedId === t.id
+        const isSelected = selectedId === t.id;
 
         // normalize side value to a predictable key and restrict to only 'long' or 'short'
-        const rawSide = (t.side || '').toString().trim().toLowerCase()
-        const sideKey = rawSide === 'long' || rawSide === 'buy' ? 'long' : 'short'
+        const rawSide = (t.side || '').toString().trim().toLowerCase();
+        const sideKey = rawSide === 'long' || rawSide === 'buy' ? 'long' : 'short';
 
-        const sideClass = sideKey === 'long' ? styles.sideLong : styles.sideShort
+        const sideClass = sideKey === 'long' ? styles.sideLong : styles.sideShort;
 
-        const rawStatus = (t.status || '').toString().trim().toUpperCase()
+        const rawStatus = (t.status || '').toString().trim().toUpperCase();
         const statusClass =
           rawStatus === 'OPEN'
             ? styles.statusOpen
             : rawStatus === 'CLOSED'
             ? styles.statusClosed
-            : styles.statusFilled
+            : styles.statusFilled;
 
         return (
           <button
@@ -92,7 +90,11 @@ export function TradeList({ trades, selectedId, onSelect, compactView = false }:
               {/* TP1–TP4 werden hier NICHT mehr angezeigt */}
             </div>
             <div className={styles.rowRight}>
-              <div className={[styles.side, sideClass].join(' ')} aria-label={`Side: ${sideKey}`} title={sideKey}>
+              <div
+                className={[styles.side, sideClass].join(' ')}
+                aria-label={`Side: ${sideKey}`}
+                title={sideKey}
+              >
                 {sideKey.toUpperCase()}
               </div>
               <div
@@ -104,8 +106,8 @@ export function TradeList({ trades, selectedId, onSelect, compactView = false }:
               </div>
             </div>
           </button>
-        )
+        );
       })}
     </div>
-  )
+  );
 }

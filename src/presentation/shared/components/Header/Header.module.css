@@ -4,7 +4,7 @@
   justify-content: space-between;
   gap: 16px;
   padding: 14px 18px;
-  background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
   border-radius: 10px;
   position: relative;
 }
@@ -48,8 +48,14 @@
 }
 
 @media (max-width: 720px) {
-  .nav { display: none; }
-  .hamburger { display: inline-flex; align-items: center; justify-content: center; }
+  .nav {
+    display: none;
+  }
+  .hamburger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
 }
 
 /* When mobile nav is opened (JS toggles .open) show as vertical list */
@@ -62,29 +68,36 @@
   top: 56px;
   right: 12px;
   /* Use a solid background to avoid transparency issues on dark headers */
-  background: var(--card-bg-solid, rgba(10,12,15,1));
+  background: var(--card-bg-solid, rgba(10, 12, 15, 1));
   border-radius: 8px;
   padding: 8px;
-  box-shadow: var(--shadow-1, 0 10px 30px rgba(0,0,0,0.6));
+  box-shadow: var(--shadow-1, 0 10px 30px rgba(0, 0, 0, 0.6));
   z-index: 3000;
 }
-.mobileNav a { display: block; padding: 8px 12px; color: var(--text); text-decoration: none; }
+.mobileNav a {
+  display: block;
+  padding: 8px 12px;
+  color: var(--text);
+  text-decoration: none;
+}
 
 /* ensure focus styles inside mobile nav */
 .mobileNav a:focus {
   outline: none;
-  box-shadow: 0 0 0 4px rgba(88,214,141,0.12);
+  box-shadow: 0 0 0 4px rgba(88, 214, 141, 0.12);
 }
 
 /* ensure hamburger button is always above nav for click handling */
-.hamburger { z-index: 3100; }
+.hamburger {
+  z-index: 3100;
+}
 
 /* backdrop behind mobile nav */
 .backdrop {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.45);
+  background: rgba(0, 0, 0, 0.45);
   z-index: 2500;
   opacity: 0;
   transition: opacity 220ms ease;

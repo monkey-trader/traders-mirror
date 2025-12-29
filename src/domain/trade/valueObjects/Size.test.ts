@@ -1,18 +1,19 @@
-import { describe, it, expect } from 'vitest'
-import { Size, SizeMustBePositiveError } from './Size'
+import { describe, it, expect } from 'vitest';
+import { Size, SizeMustBePositiveError } from './Size';
 
 describe('Size VO', () => {
   it('accepts positive sizes', () => {
-    const s = new Size(1)
-    expect(s).toBeInstanceOf(Size)
-    expect(s.value).toBe(1)
-  })
+    const s = new Size(1);
+    expect(s).toBeInstanceOf(Size);
+    expect(s.value).toBe(1);
+  });
 
   it('throws SizeMustBePositiveError for zero', () => {
-    expect(() => new Size(0)).toThrow(SizeMustBePositiveError)
-  })
+    expect(() => new Size(0)).toThrow(SizeMustBePositiveError);
+  });
 
   it('throws SizeMustBePositiveError for non-number inputs', () => {
-    expect(() => new Size(undefined as any)).toThrow(SizeMustBePositiveError)
-  })
-})
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- autofix: preserve tests that intentionally use any
+    expect(() => new Size(undefined as any)).toThrow(SizeMustBePositiveError);
+  });
+});

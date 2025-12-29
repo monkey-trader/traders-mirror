@@ -1,17 +1,21 @@
-import styles from './Switch.module.css'
+import styles from './Switch.module.css';
 
 export type SwitchProps = {
-  checked: boolean
-  onChange: (v: boolean) => void
-  id?: string
-  label?: string
-  ariaLabel?: string
-}
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  id?: string;
+  label?: string;
+  ariaLabel?: string;
+};
 
 export function Switch({ checked, onChange, id, label, ariaLabel }: SwitchProps) {
   return (
     <div className={styles.wrapper}>
-      {label && <label htmlFor={id} className={styles.label}>{label}</label>}
+      {label && (
+        <label htmlFor={id} className={styles.label}>
+          {label}
+        </label>
+      )}
       <button
         id={id}
         role="switch"
@@ -24,6 +28,5 @@ export function Switch({ checked, onChange, id, label, ariaLabel }: SwitchProps)
         <span className={styles.knob} aria-hidden />
       </button>
     </div>
-  )
+  );
 }
-

@@ -1,20 +1,31 @@
-import styles from './MarketSelect.module.css'
-import inputStyles from '@/presentation/shared/components/Input/Input.module.css'
+import styles from './MarketSelect.module.css';
+import inputStyles from '@/presentation/shared/components/Input/Input.module.css';
 
-export type MarketValue = '' | 'All' | 'Forex' | 'Crypto'
+export type MarketValue = '' | 'All' | 'Forex' | 'Crypto';
 
 export type MarketSelectProps = {
-  value: MarketValue
-  onChange: (v: MarketValue) => void
-  compact?: boolean
-  showAll?: boolean // when false, do not render the 'All' option (useful for New Trade form)
-  label?: string
-  hasError?: boolean
-  ariaDescribedBy?: string
-}
+  value: MarketValue;
+  onChange: (v: MarketValue) => void;
+  compact?: boolean;
+  showAll?: boolean; // when false, do not render the 'All' option (useful for New Trade form)
+  label?: string;
+  hasError?: boolean;
+  ariaDescribedBy?: string;
+};
 
-export function MarketSelect({ value, onChange, compact = false, showAll = true, label, hasError = false, ariaDescribedBy }: MarketSelectProps) {
-  const options = (showAll ? ['All', 'Forex', 'Crypto'] : ['Forex', 'Crypto']) as Exclude<MarketValue, ''>[]
+export function MarketSelect({
+  value,
+  onChange,
+  compact = false,
+  showAll = true,
+  label,
+  hasError = false,
+  ariaDescribedBy,
+}: MarketSelectProps) {
+  const options = (showAll ? ['All', 'Forex', 'Crypto'] : ['Forex', 'Crypto']) as Exclude<
+    MarketValue,
+    ''
+  >[];
 
   const container = (
     <div
@@ -23,19 +34,21 @@ export function MarketSelect({ value, onChange, compact = false, showAll = true,
       aria-label="Market select"
       aria-describedby={ariaDescribedBy}
     >
-      {options.map(m => (
+      {options.map((m) => (
         <button
           key={m}
           role="tab"
           aria-selected={value === m}
-          className={`${styles.badge} ${value === m ? styles.active : ''} ${compact ? styles.compact : ''}`}
+          className={`${styles.badge} ${value === m ? styles.active : ''} ${
+            compact ? styles.compact : ''
+          }`}
           onClick={() => onChange(m)}
         >
           {m}
         </button>
       ))}
     </div>
-  )
+  );
 
   // If a label was provided, render the input-like wrapper so consumers don't need to wrap it manually
   if (label) {
@@ -44,10 +57,10 @@ export function MarketSelect({ value, onChange, compact = false, showAll = true,
         <span className={inputStyles.label}>{label}</span>
         {container}
       </label>
-    )
+    );
   }
 
-  return container
+  return container;
 }
 
-export default MarketSelect
+export default MarketSelect;

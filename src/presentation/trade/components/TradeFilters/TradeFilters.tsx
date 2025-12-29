@@ -1,15 +1,19 @@
-import { Button } from '@/presentation/shared/components/Button/Button'
-import styles from '../../TradeJournal.module.css'
+import { Button } from '@/presentation/shared/components/Button/Button';
+import styles from '../../TradeJournal.module.css';
 
 export type TradeFiltersProps = {
-  marketFilter: 'All' | 'Crypto' | 'Forex'
-  setMarketFilter: (m: 'All' | 'Crypto' | 'Forex') => void
-  tradeStatusFilter: 'ALL' | 'OPEN' | 'CLOSED' | 'FILLED'
-  setTradeStatusFilter: (s: 'ALL' | 'OPEN' | 'CLOSED' | 'FILLED') => void
-  tradesCount?: number
-}
+  marketFilter: 'All' | 'Crypto' | 'Forex';
+  setMarketFilter: (m: 'All' | 'Crypto' | 'Forex') => void;
+  tradeStatusFilter: 'ALL' | 'OPEN' | 'CLOSED' | 'FILLED';
+  setTradeStatusFilter: (s: 'ALL' | 'OPEN' | 'CLOSED' | 'FILLED') => void;
+  tradesCount?: number;
+};
 
-export function MarketFilters({ marketFilter, setMarketFilter, tradesCount = 0 }: Pick<TradeFiltersProps, 'marketFilter' | 'setMarketFilter' | 'tradesCount'>) {
+export function MarketFilters({
+  marketFilter,
+  setMarketFilter,
+  tradesCount = 0,
+}: Pick<TradeFiltersProps, 'marketFilter' | 'setMarketFilter' | 'tradesCount'>) {
   return (
     <div className={styles.tradesFilters}>
       <Button
@@ -32,10 +36,13 @@ export function MarketFilters({ marketFilter, setMarketFilter, tradesCount = 0 }
       </Button>
       <div className={styles.tradesCount}>{tradesCount} trades</div>
     </div>
-  )
+  );
 }
 
-export function StatusFilters({ tradeStatusFilter, setTradeStatusFilter }: Pick<TradeFiltersProps, 'tradeStatusFilter' | 'setTradeStatusFilter'>) {
+export function StatusFilters({
+  tradeStatusFilter,
+  setTradeStatusFilter,
+}: Pick<TradeFiltersProps, 'tradeStatusFilter' | 'setTradeStatusFilter'>) {
   return (
     <div className={styles.controls}>
       <Button
@@ -63,17 +70,24 @@ export function StatusFilters({ tradeStatusFilter, setTradeStatusFilter }: Pick<
         Filled
       </Button>
     </div>
-  )
+  );
 }
 
 export default function TradeFilters(props: TradeFiltersProps) {
   // default composition for places that previously relied on the single component
   return (
     <>
-      <MarketFilters marketFilter={props.marketFilter} setMarketFilter={props.setMarketFilter} tradesCount={props.tradesCount} />
+      <MarketFilters
+        marketFilter={props.marketFilter}
+        setMarketFilter={props.setMarketFilter}
+        tradesCount={props.tradesCount}
+      />
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <StatusFilters tradeStatusFilter={props.tradeStatusFilter} setTradeStatusFilter={props.setTradeStatusFilter} />
+        <StatusFilters
+          tradeStatusFilter={props.tradeStatusFilter}
+          setTradeStatusFilter={props.setTradeStatusFilter}
+        />
       </div>
     </>
-  )
+  );
 }

@@ -1,11 +1,11 @@
-import React from 'react'
-import styles from './Layout.module.css'
-import { Header } from '../Header/Header'
+import React from 'react';
+import styles from './Layout.module.css';
+import { Header } from '../Header/Header';
 
 export type LayoutProps = {
-  children?: React.ReactNode
-  fullWidth?: boolean
-}
+  children?: React.ReactNode;
+  fullWidth?: boolean;
+};
 
 export function Layout({ children, fullWidth = false }: LayoutProps) {
   return (
@@ -15,5 +15,5 @@ export function Layout({ children, fullWidth = false }: LayoutProps) {
         <main className={styles.main}>{children}</main>
       </div>
     </div>
-  )
+  );
 }

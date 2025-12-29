@@ -2,19 +2,26 @@
 .createBtn {
   padding: 8px 12px;
   border-radius: 8px;
-  background: linear-gradient(90deg, rgba(34,193,195,0.08), rgba(124,92,255,0.08));
+  background: linear-gradient(90deg, rgba(34, 193, 195, 0.08), rgba(124, 92, 255, 0.08));
   color: var(--text);
-  border: 1px solid rgba(255,255,255,0.03);
+  border: 1px solid rgba(255, 255, 255, 0.03);
 }
 
 /* ...existing code... */
 
 @media (max-width: 980px) {
-  .grid { grid-template-columns: 1fr !important; gap: var(--space-3, 12px); }
+  .grid {
+    grid-template-columns: 1fr !important;
+    gap: var(--space-3, 12px);
+  }
 }
 
 @media (max-width: 480px) {
-  .createBtn { width: 100%; display: inline-flex; justify-content: center; }
+  .createBtn {
+    width: 100%;
+    display: inline-flex;
+    justify-content: center;
+  }
 }
 
 /* ...existing code... */

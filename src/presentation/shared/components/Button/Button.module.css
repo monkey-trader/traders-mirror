@@ -18,36 +18,36 @@
 .primary {
   background: linear-gradient(180deg, var(--accent), color-mix(in srgb, var(--accent) 70%, black));
   color: var(--surface);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
 }
 
 .primary:hover {
   transform: translateY(-2px) scale(1.01);
-  box-shadow: 0 12px 36px rgba(0,0,0,0.7);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.7);
 }
 
 .secondary {
-  background: rgba(255,255,255,0.02);
+  background: rgba(255, 255, 255, 0.02);
   color: var(--text);
-  border: 1px solid rgba(255,255,255,0.04);
+  border: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 .ghost {
   background: transparent;
   color: var(--muted);
-  border: 1px dashed rgba(255,255,255,0.02);
+  border: 1px dashed rgba(255, 255, 255, 0.02);
 }
 
 .danger {
   background: linear-gradient(180deg, #ff4d4f, #c41d1d);
   color: white;
-  border: 1px solid rgba(0,0,0,0.2);
-  box-shadow: 0 8px 18px rgba(196,29,29,0.35);
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 18px rgba(196, 29, 29, 0.35);
 }
 
 .danger:hover {
   transform: translateY(-2px) scale(1.01);
-  box-shadow: 0 14px 36px rgba(196,29,29,0.45);
+  box-shadow: 0 14px 36px rgba(196, 29, 29, 0.45);
 }
 
 .fullWidth {
@@ -56,6 +56,15 @@
 }
 
 @media (max-width: 480px) {
-  .button { padding: 12px 14px; font-size: var(--fs-sm, 15px); }
-  .button, .primary, .secondary, .danger, .ghost { width: 100%; }
+  .button {
+    padding: 12px 14px;
+    font-size: var(--fs-sm, 15px);
+  }
+  .button,
+  .primary,
+  .secondary,
+  .danger,
+  .ghost {
+    width: 100%;
+  }
 }

@@ -1,11 +1,13 @@
-import React from 'react'
-import { Card } from '@/presentation/shared/components/Card/Card'
-import { Button } from '@/presentation/shared/components/Button/Button'
-import { Input } from '@/presentation/shared/components/Input/Input'
-import { SideSelect, type SideValue } from '@/presentation/shared/components/SideSelect/SideSelect'
-import MarketSelect, { type MarketValue } from '@/presentation/shared/components/MarketSelect/MarketSelect'
-import { StatusSelect } from '@/presentation/shared/components/StatusSelect/StatusSelect'
-import styles from './NewTradeForm.module.css'
+import React from 'react';
+import { Card } from '@/presentation/shared/components/Card/Card';
+import { Button } from '@/presentation/shared/components/Button/Button';
+import { Input } from '@/presentation/shared/components/Input/Input';
+import { SideSelect, type SideValue } from '@/presentation/shared/components/SideSelect/SideSelect';
+import MarketSelect, {
+  type MarketValue,
+} from '@/presentation/shared/components/MarketSelect/MarketSelect';
+import { StatusSelect } from '@/presentation/shared/components/StatusSelect/StatusSelect';
+import styles from './NewTradeForm.module.css';
 
 export type NewTradeFormState = {
   symbol: string;
@@ -26,19 +28,19 @@ export type NewTradeFormState = {
 };
 
 export type NewTradeFormProps = {
-  form: NewTradeFormState
-  formErrors: Record<string, string>
-  touched: Record<string, boolean>
-  formSubmitted: boolean
-  formKey: number
-  debugUiEnabled: boolean
-  lastStatus?: string | null
-  onChangeForm: (patch: Partial<NewTradeFormState>) => void
-  onBlurField: (field: string) => void
-  onSubmit: (e?: React.FormEvent) => void
-  onReset: () => void
-  setMarketFilter: (m: MarketValue | '') => void
-}
+  form: NewTradeFormState;
+  formErrors: Record<string, string>;
+  touched: Record<string, boolean>;
+  formSubmitted: boolean;
+  formKey: number;
+  debugUiEnabled: boolean;
+  lastStatus?: string | null;
+  onChangeForm: (patch: Partial<NewTradeFormState>) => void;
+  onBlurField: (field: string) => void;
+  onSubmit: (e?: React.FormEvent) => void;
+  onReset: () => void;
+  setMarketFilter: (m: MarketValue | '') => void;
+};
 
 export function NewTradeForm({
   form,
@@ -52,7 +54,7 @@ export function NewTradeForm({
   onBlurField,
   onSubmit,
   onReset,
-  setMarketFilter
+  setMarketFilter,
 }: NewTradeFormProps) {
   return (
     <Card>

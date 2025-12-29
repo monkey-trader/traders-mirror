@@ -14,7 +14,11 @@
 }
 
 @media (max-width: 720px) {
-  .main { padding-left: var(--space-3, 12px); padding-right: var(--space-3, 12px); gap: var(--space-3, 12px); }
+  .main {
+    padding-left: var(--space-3, 12px);
+    padding-right: var(--space-3, 12px);
+    gap: var(--space-3, 12px);
+  }
 }
 
 /* Page can opt into using the full browser width by passing fullWidth to the Layout. */

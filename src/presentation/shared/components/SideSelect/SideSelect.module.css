@@ -37,15 +37,15 @@
 }
 
 .coloredLong {
-  background: rgba(105,240,174,0.10);
+  background: rgba(105, 240, 174, 0.1);
   color: #69f0ae;
-  border: 1px solid rgba(105,240,174,0.18);
+  border: 1px solid rgba(105, 240, 174, 0.18);
 }
 
 .coloredShort {
-  background: rgba(255,107,107,0.10);
+  background: rgba(255, 107, 107, 0.1);
   color: #ff6b6b;
-  border: 1px solid rgba(255,107,107,0.18);
+  border: 1px solid rgba(255, 107, 107, 0.18);
 }
 
 /* Adjust compact colored size */
@@ -69,18 +69,18 @@
 }
 
 .badgeLong {
-  background: rgba(105,240,174,0.10);
+  background: rgba(105, 240, 174, 0.1);
   color: #69f0ae;
 }
 
 .badgeShort {
-  background: rgba(255,107,107,0.10);
+  background: rgba(255, 107, 107, 0.1);
   color: #ff6b6b;
 }
 
 .error {
-  outline: 1px solid rgba(255,107,107,0.12);
-  box-shadow: 0 0 0 3px rgba(255,107,107,0.04);
+  outline: 1px solid rgba(255, 107, 107, 0.12);
+  box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.04);
 }
 
 .containerFull {

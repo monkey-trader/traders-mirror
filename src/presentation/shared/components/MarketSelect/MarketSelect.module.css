@@ -13,17 +13,17 @@
 .badge {
   padding: 6px 12px;
   border-radius: 999px;
-  background: rgba(255,255,255,0.02);
+  background: rgba(255, 255, 255, 0.02);
   color: var(--muted);
   font-weight: 700;
   cursor: pointer;
-  border: 1px solid rgba(255,255,255,0.03);
+  border: 1px solid rgba(255, 255, 255, 0.03);
 }
 
 .badge.active {
   color: var(--text);
-  background: linear-gradient(90deg, rgba(34,193,195,0.12), rgba(124,92,255,0.12));
-  box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+  background: linear-gradient(90deg, rgba(34, 193, 195, 0.12), rgba(124, 92, 255, 0.12));
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
 }
 
 .compact {
@@ -32,7 +32,7 @@
 }
 
 .error {
-  box-shadow: 0 0 0 3px rgba(255,107,107,0.04);
+  box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.04);
   border-radius: 8px;
-  outline: 1px solid rgba(255,107,107,0.12);
+  outline: 1px solid rgba(255, 107, 107, 0.12);
 }
