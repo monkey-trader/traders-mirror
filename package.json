@@ -16,7 +16,9 @@
     "eject": "react-scripts eject",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "tools:find-unused-imports": "node tools/find-and-remove-unused-imports.mjs 'src/**/*.{ts,tsx,js,jsx}'",
+    "tools:fix-unused-imports": "node tools/find-and-remove-unused-imports.mjs 'src/**/*.{ts,tsx,js,jsx}' --apply"
   },
   "dependencies": {
     "react": "^18.2.0",
