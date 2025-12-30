@@ -34,11 +34,16 @@ cat > branch-protection.json <<'EJSON'
     "strict": false,
     "contexts": []
   },
-  "enforce_admins": true,
+  "enforce_admins": false,
   "required_pull_request_reviews": {
     "dismiss_stale_reviews": true,
     "require_code_owner_reviews": false,
-    "required_approving_review_count": 1
+    "required_approving_review_count": 1,
+    "bypass_pull_request_allowances": {
+      "users": [],
+      "teams": [],
+      "apps": []
+    }
   },
   "restrictions": null,
   "required_linear_history": true,
@@ -128,3 +133,36 @@ All changes must go through a PR before merging to `main`.
 - Enforce **CODEOWNERS reviews**  
 - Restrict pushes to **bots only**  
 - Automate branch protection across **all repositories**
+
+
+## Workflow Integration
+
+### Create a Pull Request with GitHub CLI
+```bash
+gh pr create --title "chore: update README" --body "Add Github CLI commands"
+```
+
+### List Open Pull Requests
+```bash
+gh pr list
+```
+
+### View a Pull Request
+```bash
+gh pr view <PR_NUMBER>
+```
+## Approve a Pull Request
+```bashbash
+gh pr review <PR_NUMBER> --approve --body "LGTM! Looks good to merge."
+```
+
+
+### Merge a Pull Request with GitHub CLI
+```bash
+gh pr merge <PR_NUMBER> --squash --delete-branch
+```
+
+### Envorcement of Branch Protection Rules
+```bash
+gh pr merge <PR_NUMBER> --squash --delete-branch --admin
+```
