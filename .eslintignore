@@ -1,0 +1,3 @@
+# Ignore specific test files that break eslint parserOptions project resolution
+src/presentation/trade/hooks/useNewTradeForm.test.tsx
+

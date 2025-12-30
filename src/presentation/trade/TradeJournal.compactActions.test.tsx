@@ -2,8 +2,8 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 import { TradeJournal } from './TradeJournal';
-import { TradeFactory } from '@/domain/trade/entities/TradeFactory';
-import type { TradeInput } from '@/domain/trade/entities/TradeFactory';
+import { TradeFactory } from '@/domain/trade/factories/TradeFactory';
+import type { TradeInput } from '@/domain/trade/factories/TradeFactory';
 
 describe('TradeJournal compact actions (toggle-side, sl-be, sl-hit, close)', () => {
   it('executes compact action buttons and shows undo banner each time', async () => {

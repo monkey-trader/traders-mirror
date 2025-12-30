@@ -8,9 +8,10 @@ export default defineConfig({
     },
   },
   test: {
-    // Use jsdom (default). We add a safe shim for HTMLFormElement.submit in vitest.setup.js to avoid the
-    // jsdom "Not implemented" error while preserving previously passing tests.
-    environment: 'jsdom',
+    // Use happy-dom for a more complete DOM implementation in tests (includes form submit). This avoids
+    // jsdom's intermittent "Not implemented: HTMLFormElement.prototype.submit" errors seen in CI.
+    // The repo still includes a defensive shim in `vitest.setup.js`.
+    environment: 'happy-dom',
     globals: true,
     setupFiles: ['./vitest.setup.js'], // global mocks für ResizeObserver und localStorage
     reporters: [

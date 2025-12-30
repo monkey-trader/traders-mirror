@@ -35,6 +35,7 @@ export function Card({
         <div className={styles.tabBar} role="tablist">
           {tabs!.map((tab) => (
             <button
+              type="button"
               key={tab.key}
               role="tab"
               aria-selected={tab.key === activeKey}

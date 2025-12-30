@@ -25,6 +25,7 @@ export type NewTradeFormState = {
   leverage?: number;
   margin?: number;
   market?: MarketValue;
+  analysisId?: string; // optional originating analysis id
 };
 
 export type NewTradeFormProps = {
@@ -37,7 +38,8 @@ export type NewTradeFormProps = {
   lastStatus?: string | null;
   onChangeForm: (patch: Partial<NewTradeFormState>) => void;
   onBlurField: (field: string) => void;
-  onSubmit: (e?: React.FormEvent) => void;
+  // allow async handlers so callers can await internal async logic (e.g., handleAdd)
+  onSubmit: (e?: React.FormEvent) => Promise<void> | void;
   onReset: () => void;
   setMarketFilter: (m: MarketValue | '') => void;
 };
@@ -69,6 +71,28 @@ export function NewTradeForm({
             }}
           >
             <span style={{ fontWeight: 700, color: 'var(--text)' }}>New Trade</span>
+            {form.analysisId ? (
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <span style={{ fontSize: 12, color: 'var(--muted)' }}>Prefilled from analysis</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    try {
+                      window.location.hash = '#/analysis';
+                      window.dispatchEvent(
+                        new CustomEvent('open-analysis', { detail: { id: form.analysisId } })
+                      );
+                    } catch {
+                      /* ignore */
+                    }
+                  }}
+                  className={styles.viewAnalysisBtn}
+                  style={{ padding: '6px 8px', borderRadius: 6 }}
+                >
+                  View Analysis
+                </button>
+              </div>
+            ) : null}
           </div>
         </div>
 
@@ -96,6 +120,7 @@ export function NewTradeForm({
 
         <form key={formKey} className={styles.form} onSubmit={onSubmit}>
           <input id="entryDate" type="hidden" value={form.entryDate} />
+          <input id="analysisId" type="hidden" value={form.analysisId ?? ''} />
           <div className={styles.newTradeGrid}>
             <div className={styles.newTradeField}>
               <MarketSelect
@@ -422,7 +447,7 @@ export function NewTradeForm({
                 Reset
               </Button>
               <Button type="submit" variant="primary">
-                Add
+                {form.analysisId ? 'Add (from Analysis)' : 'Add'}
               </Button>
             </div>
           </div>

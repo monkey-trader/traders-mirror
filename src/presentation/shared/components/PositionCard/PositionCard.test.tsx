@@ -2,7 +2,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, vi, expect } from 'vitest';
 import { PositionCard } from './PositionCard';
 
-describe('PositionCard', () => {
+describe('PositionCard (shared)', () => {
   it('renders symbol, side and size and shows entry + sl when provided', () => {
     render(
       <PositionCard

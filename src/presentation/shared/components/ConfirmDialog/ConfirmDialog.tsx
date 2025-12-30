@@ -28,10 +28,11 @@ export function ConfirmDialog({
         {title && <div className={styles.title}>{title}</div>}
         <div className={styles.message}>{message}</div>
         <div className={styles.actions}>
-          <button className={styles.cancel} onClick={onCancel}>
+          <button type="button" className={styles.cancel} onClick={onCancel}>
             {cancelLabel}
           </button>
           <button
+            type="button"
             className={confirmVariant === 'danger' ? styles.confirmDanger : styles.confirm}
             onClick={onConfirm}
           >

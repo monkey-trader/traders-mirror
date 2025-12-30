@@ -7,6 +7,21 @@
   border: 1px solid rgba(255, 255, 255, 0.03);
 }
 
+.container {
+  padding: 1.25rem;
+}
+
+.title {
+  font-size: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 1rem;
+}
+
 /* ...existing code... */
 
 @media (max-width: 980px) {

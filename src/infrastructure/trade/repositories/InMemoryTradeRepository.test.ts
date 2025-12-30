@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import InMemoryTradeRepository from './InMemoryTradeRepository';
-import { TradeFactory } from '@/domain/trade/entities/TradeFactory';
+import { TradeFactory } from '@/domain/trade/factories/TradeFactory';
 
 describe('InMemoryTradeRepository', () => {
   let repo: InMemoryTradeRepository;

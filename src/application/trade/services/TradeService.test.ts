@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { TradeService } from './TradeService';
-import { TradeInput } from '@/domain/trade/entities/TradeFactory';
+import { TradeInput } from '@/domain/trade/factories/TradeFactory';
 import type { TradeRepository } from '@/domain/trade/interfaces/TradeRepository';
 
 class MockRepo {

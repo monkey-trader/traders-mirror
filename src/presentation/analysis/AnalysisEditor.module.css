@@ -1,0 +1,86 @@
+:root {
+}
+
+.form {
+  padding: 1rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.label {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.95rem;
+  color: var(--color-text-muted, #cfcfcf);
+}
+
+.input {
+  padding: 0.75rem;
+  font-size: 1rem;
+  border: 1px solid var(--color-border, #222);
+  border-radius: 8px;
+  background: var(--color-surface, rgba(255, 255, 255, 0.02));
+  color: var(--color-text, #fff);
+}
+
+textarea.input {
+  min-height: 140px;
+  resize: vertical;
+}
+
+.timeframes {
+  margin-top: 0.25rem;
+  background: var(--color-surface, #0f1113);
+  padding: 0.5rem;
+  border-radius: 6px;
+}
+
+.tfTitle {
+  margin: 0 0 0.5rem 0;
+}
+
+.tfRow {
+  display: grid;
+  grid-template-columns: 110px 1fr 1fr;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.tfLabel {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.tfInput {
+  padding: 0.4rem 0.5rem;
+  border-radius: 6px;
+  border: 1px solid var(--color-border, #222);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--color-text, #fff);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.button {
+  background: var(--color-primary, #ff007a);
+  color: white;
+  border: none;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+@media (max-width: 640px) {
+  .tfRow {
+    grid-template-columns: 1fr;
+  }
+}

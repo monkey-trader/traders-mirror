@@ -1,5 +1,5 @@
 import type { MarketValue } from '@/presentation/shared/components/MarketSelect/MarketSelect';
-import type { TradeInput } from '@/domain/trade/entities/TradeFactory';
+import type { TradeInput } from '@/domain/trade/factories/TradeFactory';
 
 export type TradeForm = {
   symbol: string;

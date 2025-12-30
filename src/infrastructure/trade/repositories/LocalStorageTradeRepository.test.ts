@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import LocalStorageTradeRepository, { RepoTrade } from './LocalStorageTradeRepository';
-import { TradeFactory } from '@/domain/trade/entities/TradeFactory';
+import { TradeFactory } from '@/domain/trade/factories/TradeFactory';
 
 describe('LocalStorageTradeRepository.toRepoTrade conversions', () => {
   let repo: LocalStorageTradeRepository;
