@@ -37,9 +37,9 @@ describe('Header component', () => {
     const mobileNav = screen.getByRole('menu');
 
     // find the backdrop element (a div with aria-hidden that is not the menu)
-    const backdrop = container.querySelector('div[aria-hidden="false"]:not(#mobile-nav)') as
-      | HTMLElement
-      | null;
+    const backdrop = container.querySelector(
+      'div[aria-hidden="false"]:not(#mobile-nav)'
+    ) as HTMLElement | null;
     expect(backdrop).toBeTruthy();
 
     // clicking backdrop should close

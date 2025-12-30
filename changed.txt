@@ -1,0 +1,2 @@
+changed= M src/presentation/shared/components/Header/Header.test.tsx
+ M src/presentation/trade/TradeJournal.compactActions.test.tsx

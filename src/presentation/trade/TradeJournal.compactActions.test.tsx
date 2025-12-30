@@ -42,7 +42,14 @@ describe('TradeJournal compact actions (toggle-side, sl-be, sl-hit, close)', () 
 
     const repo = new MockRepo();
     // Force compact grid so PositionCard actions are visible inline
-    render(<TradeJournal repo={repo as unknown as import('@/domain/trade/interfaces/TradeRepository').TradeRepository} forceCompact={true} />);
+    render(
+      <TradeJournal
+        repo={
+          repo as unknown as import('@/domain/trade/interfaces/TradeRepository').TradeRepository
+        }
+        forceCompact={true}
+      />
+    );
 
     // Wait for the compact item to render
     await waitFor(() => expect(screen.getByText(/COMPACT/i)).toBeTruthy());
