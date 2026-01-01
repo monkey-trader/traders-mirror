@@ -13,7 +13,10 @@ import { TradeFactory } from '@/domain/trade/factories/TradeFactory';
 import type { TradeRow } from './types';
 import { useNewTradeForm, type NewTradeFormState } from './hooks/useNewTradeForm';
 import { MarketFilters, StatusFilters } from './components/TradeFilters/TradeFilters';
-import { NewTradeForm } from './components/NewTradeForm/NewTradeForm';
+import type { AnalysisInput } from '@/domain/analysis/factories/AnalysisFactory';
+import type { AnalysisFormValues } from '@/presentation/analysis/validation';
+import type { TimeframeInput } from '@/presentation/analysis/AnalysisEditor';
+import AddPanel from '@/presentation/shared/components/AddPanel/AddPanel';
 import useIsMobile from '@/presentation/shared/hooks/useIsMobile';
 import MobileNewTrade from './components/MobileNewTrade/MobileNewTrade';
 import { loadSettings } from '@/presentation/settings/settingsStorage';
@@ -361,29 +364,50 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
         }
       >
         <div className={styles.left}>
-          {/* Desktop & tablet: show inline NewTradeForm; Mobile: hide inline and use modal */}
-          {!isMobile && (
-            <NewTradeForm
-              form={form}
-              formErrors={formErrors}
-              touched={touched}
-              formSubmitted={formSubmitted}
-              formKey={formKey}
-              debugUiEnabled={debugUiEnabled}
-              lastStatus={lastStatus}
-              onChangeForm={(patch: Partial<NewTradeFormState>) =>
-                setForm((prev: NewTradeFormState) => ({ ...prev, ...patch }))
+          <AddPanel
+            mode={tradesCardTab === 'analysis' ? 'analysis' : 'trade'}
+            isMobile={isMobile}
+            form={form}
+            formErrors={formErrors}
+            touched={touched}
+            formSubmitted={formSubmitted}
+            formKey={formKey}
+            debugUiEnabled={debugUiEnabled}
+            lastStatus={lastStatus}
+            onChangeForm={(patch: Partial<NewTradeFormState>) =>
+              setForm((prev: NewTradeFormState) => ({ ...prev, ...patch }))
+            }
+            onBlurField={(f: string) =>
+              setTouched((prev: Record<string, boolean>) => ({ ...prev, [f]: true }))
+            }
+            onSubmit={submitNewTrade}
+            onReset={resetNewTradeForm}
+            setMarketFilter={(m: string) =>
+              setMarketFilter(m === '' ? 'All' : (m as 'All' | 'Crypto' | 'Forex'))
+            }
+            onSaveAnalysis={async (
+              input: AnalysisFormValues & { timeframes?: TimeframeInput[] }
+            ) => {
+              try {
+                const payload: AnalysisInput = {
+                  symbol: input.symbol,
+                  notes: input.notes,
+                  timeframes: Array.isArray(input.timeframes)
+                    ? input.timeframes.map((tf) => ({
+                        timeframe: tf.timeframe,
+                        tradingViewLink: tf.tradingViewLink,
+                        note: tf.note,
+                      }))
+                    : input.timeframes,
+                };
+                await analysisService.createAnalysis(payload);
+                // optionally switch to list and show created analysis later
+                setTradesCardTab('analysis');
+              } catch (err) {
+                console.warn('Failed to save analysis', err);
               }
-              onBlurField={(f: string) =>
-                setTouched((prev: Record<string, boolean>) => ({ ...prev, [f]: true }))
-              }
-              onSubmit={submitNewTrade}
-              onReset={resetNewTradeForm}
-              setMarketFilter={(m: string) =>
-                setMarketFilter(m === '' ? 'All' : (m as 'All' | 'Crypto' | 'Forex'))
-              }
-            />
-          )}
+            }}
+          />
         </div>
 
         <div className={styles.right}>
