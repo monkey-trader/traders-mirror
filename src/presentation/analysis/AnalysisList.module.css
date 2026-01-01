@@ -34,6 +34,11 @@
   padding: 0.5rem;
 }
 
+.selected {
+  border-color: rgba(124, 90, 255, 0.6);
+  box-shadow: 0 0 0 2px rgba(124, 90, 255, 0.06) inset;
+}
+
 .header {
   display: flex;
   justify-content: space-between;

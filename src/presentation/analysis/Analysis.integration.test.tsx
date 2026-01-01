@@ -26,21 +26,9 @@ describe('Analysis -> prefill new trade', () => {
     const analyseTab = await screen.findByRole('tab', { name: /Analyse/i });
     fireEvent.click(analyseTab);
 
-    // click the create example button
-    const createBtn = await screen.findByText(/Create Trade/i);
-    fireEvent.click(createBtn);
-
-    // now the New Trade form on the left should be prefilled with the suggestion (EURUSD)
-    await waitFor(() => {
-      const symbolInput = screen.getByLabelText(/Symbol/i) as HTMLInputElement;
-      expect(symbolInput.value).toMatch(/EURUSD/i);
-
-      const priceInput = screen.getByLabelText(/Price/i) as HTMLInputElement;
-      // price may be formatted as string
-      expect(parseFloat(priceInput.value)).toBeGreaterThan(0);
-
-      const sizeInput = screen.getByLabelText(/Size/i) as HTMLInputElement;
-      expect(Number(sizeInput.value)).toBeGreaterThan(0);
-    });
+    // after removing the global example buttons, ensure the Analysis tab renders its list/placeholder
+    const allAnalysen = await screen.findAllByText(/Analysen/i);
+    expect(allAnalysen.length).toBeGreaterThanOrEqual(1);
+    expect(await screen.findByText(/Keine Analysen vorhanden/i)).toBeDefined();
   });
 });

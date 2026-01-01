@@ -217,12 +217,9 @@ describe('TradeJournal Integration', () => {
     // Analyse-Tab öffnen
     const analyseTab = await screen.findByRole('tab', { name: /Analyse/i });
     fireEvent.click(analyseTab);
-    // Beispiel-Button suchen und klicken
-    const createBtn = await screen.findByText(/Create example trade from analysis/i);
-    fireEvent.click(createBtn);
-    // Symbol-Feld sollte mit EURUSD befüllt sein
-    await waitFor(() => {
-      expect((screen.getByLabelText(/Symbol/i) as HTMLInputElement).value).toMatch(/EURUSD/i);
-    });
+    // After removing the global example buttons, ensure the Analysis tab renders its list/placeholder
+    const allAnalysen = await screen.findAllByText(/Analysen/i);
+    expect(allAnalysen.length).toBeGreaterThanOrEqual(1);
+    expect(await screen.findByText(/Keine Analysen vorhanden/i)).toBeDefined();
   });
 });

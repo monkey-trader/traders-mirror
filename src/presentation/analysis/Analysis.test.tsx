@@ -8,31 +8,13 @@ describe('Analysis component', () => {
     expect(await screen.findByRole('heading', { name: /Marktanalyse/i })).toBeInTheDocument();
   });
 
-  it('shows editor and list when no analysis is selected', async () => {
+  it('shows list and placeholder when no analysis is selected', async () => {
     render(<Analysis />);
-    expect(await screen.findByText(/Analyse erstellen/i)).toBeInTheDocument();
     const allAnalysen = await screen.findAllByText(/Analysen/i);
     expect(allAnalysen.length).toBeGreaterThanOrEqual(1);
     expect(await screen.findByText(/Keine Analysen vorhanden/i)).toBeInTheDocument();
   });
 
-  it('calls onCreateTradeSuggestion when Create Trade button is clicked', async () => {
-    const mockFn = vi.fn();
-    render(<Analysis onCreateTradeSuggestion={mockFn} />);
-    const btn = await screen.findAllByRole('button', { name: /Create Trade/i });
-    fireEvent.click(btn[0]);
-    expect(mockFn).toHaveBeenCalled();
-  });
-
-  it('calls onCreateTradeSuggestion when Create example trade from analysis is clicked', async () => {
-    const mockFn = vi.fn();
-    render(<Analysis onCreateTradeSuggestion={mockFn} />);
-    const btn = await screen.findAllByRole('button', {
-      name: /Create example trade from analysis/i,
-    });
-    fireEvent.click(btn[0]);
-    expect(mockFn).toHaveBeenCalled();
-  });
 
   it('shows detail loader when selected is set', async () => {
     // Simulate deep-link event
@@ -42,14 +24,13 @@ describe('Analysis component', () => {
     expect(await screen.findByText(/Lädt Analyse/i)).toBeInTheDocument();
   });
 
-  it('handles Delete all button and clears list', async () => {
+  // Action buttons were removed from the Analysis UI; ensure list and placeholder still render
+  it('does not render action buttons and shows list placeholder', async () => {
     render(<Analysis />);
-    window.confirm = vi.fn(() => true);
-    const btn = await screen.findAllByRole('button', { name: /Delete all/i });
-    fireEvent.click(btn[0]);
-    const allAnalysen = await screen.findAllByText(/Analysen/i);
-    expect(allAnalysen.length).toBeGreaterThanOrEqual(1);
+    // Verify list placeholder exists
     expect(await screen.findByText(/Keine Analysen vorhanden/i)).toBeInTheDocument();
+    // Ensure there is no Delete all button
+    expect(screen.queryByRole('button', { name: /Delete all/i })).toBeNull();
   });
 
   it('renders compactView correctly', async () => {
