@@ -53,7 +53,11 @@ describe('useNewTradeForm', () => {
     const ref = React.createRef<NewTradeFormApi | null>();
     // render host and capture ref
     await act(async () => {
-      render(<NewTradeFormHost ref={ref} repoRef={repoRef} setPositions={setPositions} /> as unknown as JSX.Element);
+      render(
+        (
+          <NewTradeFormHost ref={ref} repoRef={repoRef} setPositions={setPositions} />
+        ) as unknown as JSX.Element
+      );
     });
 
     // wait for ref to be populated by forwardRef/useImperativeHandle
@@ -98,7 +102,11 @@ describe('useNewTradeForm', () => {
     const repoRef = { current: null } as React.MutableRefObject<TradeRepository | null>;
     const ref = React.createRef<NewTradeFormApi | null>();
     await act(async () => {
-      render(<NewTradeFormHost ref={ref} repoRef={repoRef} setPositions={setPositions} /> as unknown as JSX.Element);
+      render(
+        (
+          <NewTradeFormHost ref={ref} repoRef={repoRef} setPositions={setPositions} />
+        ) as unknown as JSX.Element
+      );
     });
     await waitFor(() => expect(ref.current).toBeDefined());
 

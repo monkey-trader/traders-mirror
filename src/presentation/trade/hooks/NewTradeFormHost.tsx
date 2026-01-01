@@ -16,4 +16,3 @@ export const NewTradeFormHost = forwardRef<NewTradeFormApi | null, NewTradeFormH
 );
 
 export default NewTradeFormHost;
-

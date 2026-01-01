@@ -5,15 +5,26 @@ describe('mapTradeError', () => {
   it('maps field error objects', () => {
     const err = { field: 'market', message: 'Bitte Markt auswählen' };
     const mapped = mapTradeError(err);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- autofix: preserve tests that intentionally use any
-    expect((mapped as any).field).toBe('market');
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- autofix: preserve tests that intentionally use any
-    expect((mapped as any).message).toBe('Bitte Markt auswählen');
+    expect(mapped).toEqual({ field: 'market', message: 'Bitte Markt auswählen' });
   });
 
   it('returns default message for unknown errors', () => {
     const mapped = mapTradeError(new Error('boom'));
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- autofix: preserve tests that intentionally use any
-    expect((mapped as any).message).toBe('Unbekannter Fehler beim Erstellen des Trades');
+    expect(mapped).toEqual({ message: 'Unbekannter Fehler beim Erstellen des Trades' });
+  });
+
+  it('returns default message for null', () => {
+    const mapped = mapTradeError(null);
+    expect(mapped).toEqual({ message: 'Unbekannter Fehler beim Erstellen des Trades' });
+  });
+
+  it('returns default message for object missing field/message', () => {
+    const mapped = mapTradeError({ foo: 1 });
+    expect(mapped).toEqual({ message: 'Unbekannter Fehler beim Erstellen des Trades' });
+  });
+
+  it('returns default message for wrong types', () => {
+    const mapped = mapTradeError({ field: 123, message: {} });
+    expect(mapped).toEqual({ message: 'Unbekannter Fehler beim Erstellen des Trades' });
   });
 });

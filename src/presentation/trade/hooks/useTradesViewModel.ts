@@ -29,7 +29,21 @@ export function useTradesViewModel({
   const serviceRef = useRef<TradeService | null>(
     tradeService ?? (repoRef.current ? new TradeService(repoRef.current) : null)
   );
-  const [positions, setPositions] = useState<TradeRow[]>([]);
+  const [positions, _setPositions] = useState<TradeRow[]>([]);
+  const positionsRef = useRef<TradeRow[]>([]);
+
+  const setPositions = useCallback((value: TradeRow[] | ((prev: TradeRow[]) => TradeRow[])) => {
+    if (typeof value === 'function') {
+      _setPositions((prev) => {
+        const next = (value as (prev: TradeRow[]) => TradeRow[])(prev);
+        positionsRef.current = next;
+        return next;
+      });
+    } else {
+      positionsRef.current = value;
+      _setPositions(value);
+    }
+  }, []);
   const [undoInfo, setUndoInfo] = useState<{ id: string; prev: TradeRow } | null>(null);
   const undoTimerRef = useRef<number | null>(null);
 
@@ -45,7 +59,24 @@ export function useTradesViewModel({
         const existing = prev.find((p) => p.id === id);
         let next: TradeRow[];
         if (existing) {
-          next = prev.map((p) => (p.id === id ? { ...p, ...patch } : p));
+          // Ensure side is always a primitive string
+          const normalizedPatch = { ...patch };
+          if (normalizedPatch.side !== undefined) {
+            // If side is a value object, extract its value
+            if (
+              typeof normalizedPatch.side === 'object' &&
+              normalizedPatch.side !== null &&
+              'value' in normalizedPatch.side
+            ) {
+              normalizedPatch.side = (normalizedPatch.side as { value: string }).value as
+                | 'LONG'
+                | 'SHORT';
+            }
+            // Normalize to uppercase and restrict to 'LONG' or 'SHORT'
+            const upper = String(normalizedPatch.side).toUpperCase();
+            normalizedPatch.side = upper === 'LONG' || upper === 'SHORT' ? upper : 'LONG';
+          }
+          next = prev.map((p) => (p.id === id ? { ...p, ...normalizedPatch } : p));
           const updated = next.find((t) => t.id === id)!;
           void (async () => {
             try {
@@ -92,7 +123,8 @@ export function useTradesViewModel({
 
   const performAction = useCallback(
     (action: 'toggle-side' | 'sl-be' | 'sl-hit' | 'close' | 'delete', id: string) => {
-      const prev = positions.find((p) => p.id === id);
+      const prev =
+        positionsRef.current.find((p) => p.id === id) ?? positions.find((p) => p.id === id);
       if (!prev) return;
       const prevCopy = { ...prev };
 

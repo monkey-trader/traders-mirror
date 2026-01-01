@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { render, screen, act } from '@testing-library/react';
+import { render, screen, act, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { useTradesViewModel } from './useTradesViewModel';
 import type { TradeRepository } from '@/domain/trade/interfaces/TradeRepository';
@@ -54,7 +54,9 @@ describe('useTradesViewModel', () => {
       screen.getByText('toggle').click();
     });
     // allow async persist to run
-    expect(update).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(update).toHaveBeenCalled();
+    });
   });
 
   it('sl-be sets sl and persists', async () => {
@@ -70,7 +72,9 @@ describe('useTradesViewModel', () => {
       screen.getByText('sl-be').click();
     });
 
-    expect(update).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(update).toHaveBeenCalled();
+    });
   });
 
   it('delete removes position and calls repo.delete', async () => {
@@ -87,6 +91,8 @@ describe('useTradesViewModel', () => {
       screen.getByText('delete').click();
     });
 
-    expect(del).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(del).toHaveBeenCalled();
+    });
   });
 });
