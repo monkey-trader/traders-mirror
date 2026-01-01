@@ -1,3 +1,4 @@
+import React from 'react';
 import styles from './PositionCard.module.css';
 
 export type PositionCardProps = {
@@ -30,6 +31,7 @@ export function PositionCard({
   onSetSLHit,
 }: PositionCardProps) {
   const sideClass = side === 'LONG' ? styles.sideLong : styles.sideShort;
+
   return (
     <div className={styles.card} role="group" aria-labelledby={`pos-${id}-symbol`}>
       <div className={styles.left}>
@@ -46,6 +48,7 @@ export function PositionCard({
         <div className={pnl >= 0 ? styles.pnlPositive : styles.pnlNegative}>{pnl.toFixed(2)}</div>
         <div className={styles.actions}>
           <button
+            type="button"
             className={styles.actionBtn}
             onClick={() => onToggleSide?.(id)}
             aria-label={`Toggle side for ${symbol}`}
@@ -53,6 +56,7 @@ export function PositionCard({
             Side
           </button>
           <button
+            type="button"
             className={styles.actionBtn}
             onClick={() => onSetSLtoBE?.(id)}
             aria-label={`Set SL to BE for ${symbol}`}
@@ -60,6 +64,7 @@ export function PositionCard({
             SL‑BE
           </button>
           <button
+            type="button"
             className={styles.actionBtn}
             onClick={() => onSetSLHit?.(id)}
             aria-label={`Set SL hit for ${symbol}`}
@@ -67,6 +72,7 @@ export function PositionCard({
             SL‑HIT
           </button>
           <button
+            type="button"
             className={styles.closeBtn}
             onClick={() => onClose?.(id)}
             aria-label={`Close ${symbol}`}
@@ -74,6 +80,7 @@ export function PositionCard({
             Close
           </button>
           <button
+            type="button"
             className={styles.expandBtn}
             onClick={() => onExpand?.(id)}
             aria-label={`Toggle details for ${symbol}`}

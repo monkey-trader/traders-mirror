@@ -1,10 +1,26 @@
-export function mapAnalysisError(err: unknown) {
-  // Simple mapper: if it's a known validation error object, map to field errors
-  if (err && typeof err === 'object' && 'field' in err && 'message' in err) {
-    const e = err as { field: unknown; message: unknown };
-    if (typeof e.field === 'string' && typeof e.message === 'string') {
-      return { field: e.field, message: e.message };
+import { EntryDateInvalidError } from '@/domain/analysis/errors/EntryDateInvalidError';
+import { TradeSymbolInvalidError } from '@/domain/analysis/errors/TradeSymbolInvalidError';
+import { TradingViewLinkInvalidError } from '@/domain/analysis/errors/TradingViewLinkInvalidError';
+
+type ValidationLike = { field?: string; message?: string };
+
+export function mapDomainErrorToUI(err: unknown) {
+  // if it's a plain validation-like object, re-expose its field/message
+  if (err && typeof err === 'object') {
+    const maybe = err as ValidationLike;
+    if (typeof maybe.field === 'string' || typeof maybe.message === 'string') {
+      return { field: maybe.field, message: maybe.message };
     }
   }
-  return { message: 'Unbekannter Fehler bei Analyse-Aktion' };
+
+  if (err instanceof TradeSymbolInvalidError)
+    return { field: 'symbol', message: 'Symbol ist ungültig' };
+  if (err instanceof EntryDateInvalidError)
+    return { field: 'entryDate', message: 'Datum ist ungültig' };
+  if (err instanceof TradingViewLinkInvalidError)
+    return { field: 'tradingViewLink', message: 'TradingView Link ist ungültig' };
+  return { field: undefined, message: 'Unbekannter Fehler' };
 }
+
+// backward-compatible alias expected by tests
+export const mapAnalysisError = mapDomainErrorToUI;

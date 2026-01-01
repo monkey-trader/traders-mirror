@@ -5,7 +5,9 @@ module.exports = {
     ecmaVersion: 2020,
     sourceType: 'module',
     ecmaFeatures: { jsx: true },
-    project: './tsconfig.json'
+    project: ['./tsconfig.eslint.json', './tsconfig.json'],
+    tsconfigRootDir: __dirname,
+    createDefaultProgram: true,
   },
   env: {
     browser: true,
@@ -21,3 +23,15 @@ module.exports = {
   }
 }
 
+// Ensure test files are parsed against the workspace tsconfig so parserOptions.project
+// includes them. Some CI/IDE runners resolve test files differently; this override
+// forces the parser to use `tsconfig.json` for tests.
+module.exports.overrides = [
+  {
+    files: ['**/*.test.ts', '**/*.test.tsx', '**/*.spec.ts', '**/*.spec.tsx'],
+    parserOptions: {
+      project: './tsconfig.json',
+      createDefaultProgram: true,
+    },
+  },
+];

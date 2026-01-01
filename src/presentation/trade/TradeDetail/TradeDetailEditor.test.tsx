@@ -2,7 +2,7 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { TradeDetailEditor } from './TradeDetailEditor';
-import type { TradeInput } from '@/domain/trade/entities/TradeFactory';
+import type { TradeInput } from '@/domain/trade/factories/TradeFactory';
 
 const exampleTrade: TradeInput = {
   id: 'tx1',

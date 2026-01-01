@@ -1,4 +1,4 @@
-import { Trade } from './Trade';
+import { Trade } from '../entities/Trade';
 import { Price } from '../valueObjects/Price';
 import { Size } from '../valueObjects/Size';
 import { EntryDate } from '../valueObjects/EntryDate';
@@ -25,6 +25,7 @@ export type TradeInput = {
   tp3?: number;
   tp4?: number;
   leverage?: number;
+  analysisId?: string;
 };
 
 export class TradeFactory {
@@ -47,7 +48,8 @@ export class TradeFactory {
       typeof input.tp3 === 'number' ? new Price(input.tp3) : undefined,
       typeof input.tp4 === 'number' ? new Price(input.tp4) : undefined,
       typeof input.leverage === 'number' ? new Leverage(input.leverage) : undefined,
-      typeof input.margin === 'number' ? new Margin(input.margin) : undefined
+      typeof input.margin === 'number' ? new Margin(input.margin) : undefined,
+      input.analysisId
     );
   }
 
@@ -71,6 +73,7 @@ export class TradeFactory {
       tp4: trade.tp4?.value,
       leverage: trade.leverage?.value,
       margin: trade.margin?.value,
+      analysisId: trade.analysisId,
     };
   }
 }

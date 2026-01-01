@@ -12,10 +12,11 @@ export type TradeListItem = {
   tp2?: number;
   tp3?: number;
   tp4?: number;
+  analysisId?: string; // optional link to originating analysis
 };
 
 import styles from './TradeList.module.css';
-import { PositionCard } from '@/presentation/trade/components/PositionCard/PositionCard';
+import { PositionCard } from '@/presentation/shared/components/PositionCard/PositionCard';
 
 export type TradeListProps = {
   trades: TradeListItem[];
@@ -50,19 +51,42 @@ export function TradeList({
               : 'SHORT';
           return (
             <div key={t.id} className={styles.compactItem}>
-              <PositionCard
-                id={t.id}
-                symbol={t.symbol}
-                side={sideKey as 'LONG' | 'SHORT'}
-                size={t.size}
-                entry={t.entryDate}
-                pnl={0}
-                onExpand={(id) => onSelect(id)}
-                onToggleSide={(id) => onToggleSide?.(id)}
-                onSetSLtoBE={(id) => onSetSLtoBE?.(id)}
-                onSetSLHit={(id) => onSetSLHit?.(id)}
-                onClose={(id) => onClose?.(id)}
-              />
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                <PositionCard
+                  id={t.id}
+                  symbol={t.symbol}
+                  side={sideKey as 'LONG' | 'SHORT'}
+                  size={t.size}
+                  entry={t.entryDate}
+                  pnl={0}
+                  onExpand={(id) => onSelect(id)}
+                  onToggleSide={(id) => onToggleSide?.(id)}
+                  onSetSLtoBE={(id) => onSetSLtoBE?.(id)}
+                  onSetSLHit={(id) => onSetSLHit?.(id)}
+                  onClose={(id) => onClose?.(id)}
+                />
+                {t.analysisId ? (
+                  <button
+                    type="button"
+                    title="Open analysis"
+                    aria-label={`Open analysis for ${t.symbol}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      try {
+                        window.location.hash = '#/analysis';
+                        window.dispatchEvent(
+                          new CustomEvent('open-analysis', { detail: { id: t.analysisId } })
+                        );
+                      } catch {
+                        /* ignore */
+                      }
+                    }}
+                    style={{ height: 28, padding: '4px 8px', borderRadius: 6 }}
+                  >
+                    A
+                  </button>
+                ) : null}
+              </div>
               <div className={styles.tpLevelsCompact}>
                 <span>TP1: {t.tp1 ?? '-'}</span> <span>TP2: {t.tp2 ?? '-'}</span>{' '}
                 <span>TP3: {t.tp3 ?? '-'}</span> <span>TP4: {t.tp4 ?? '-'}</span>

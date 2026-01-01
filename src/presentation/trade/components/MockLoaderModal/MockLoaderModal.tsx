@@ -1,0 +1,85 @@
+import React, { useState } from 'react';
+import { Button } from '@/presentation/shared/components/Button/Button';
+import type { TradeRepository } from '@/domain/trade/interfaces/TradeRepository';
+import type { TradeRow } from '../../types';
+import {
+  COMBINED_MOCK_TRADES,
+  MORE_CRYPTO_MOCK_TRADES,
+  MORE_FOREX_MOCK_TRADES,
+} from '@/infrastructure/trade/repositories/mockData';
+import { loadMockTrades } from '../../mockLoader';
+import styles from '../../TradeJournal.module.css';
+
+type Props = {
+  open: boolean;
+  onClose: () => void;
+  repoRef: React.MutableRefObject<TradeRepository | null>;
+  setPositions: React.Dispatch<React.SetStateAction<TradeRow[]>>;
+};
+
+export function MockLoaderModal({ open, onClose, repoRef, setPositions }: Props) {
+  const [mockLoadOption, setMockLoadOption] = useState<'crypto' | 'forex' | 'both'>('both');
+  const [mockLoading, setMockLoading] = useState(false);
+
+  if (!open) return null;
+
+  return (
+    <div className={styles.backdrop} role="dialog" aria-modal="true">
+      <div className={styles.mockDialog}>
+        <h3>Lade Mock-Daten</h3>
+        <p>
+          Wähle welches Set an Testdaten du laden möchtest. Bereits vorhandene Daten bleiben
+          erhalten.
+        </p>
+        <div style={{ display: 'flex', gap: 8, marginTop: 12, marginBottom: 12 }}>
+          <Button
+            variant={mockLoadOption === 'crypto' ? 'primary' : 'ghost'}
+            onClick={() => setMockLoadOption('crypto')}
+          >
+            Crypto
+          </Button>
+          <Button
+            variant={mockLoadOption === 'forex' ? 'primary' : 'ghost'}
+            onClick={() => setMockLoadOption('forex')}
+          >
+            Forex
+          </Button>
+          <Button
+            variant={mockLoadOption === 'both' ? 'primary' : 'ghost'}
+            onClick={() => setMockLoadOption('both')}
+          >
+            Both
+          </Button>
+        </div>
+        <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+          <Button variant="ghost" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            onClick={async () => {
+              setMockLoading(true);
+              try {
+                const seedSet =
+                  mockLoadOption === 'crypto'
+                    ? MORE_CRYPTO_MOCK_TRADES
+                    : mockLoadOption === 'forex'
+                    ? MORE_FOREX_MOCK_TRADES
+                    : COMBINED_MOCK_TRADES;
+
+                await loadMockTrades(repoRef.current, seedSet, setPositions);
+              } finally {
+                setMockLoading(false);
+                onClose();
+              }
+            }}
+          >
+            {mockLoading ? 'Loading…' : 'Load'}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default MockLoaderModal;

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { TradeFactory } from './TradeFactory';
+import { TradeFactory } from '../factories/TradeFactory';
 import { TradeSymbolInvalidError } from '../valueObjects/TradeSymbol';
 import { EntryDateInvalidError } from '../valueObjects/EntryDate';
 import { SizeMustBePositiveError } from '../valueObjects/Size';

@@ -1,0 +1,61 @@
+:root {
+}
+
+.container {
+  padding: 1rem;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.symbol {
+  margin: 0;
+}
+
+.notes {
+  margin-top: 0.5rem;
+  color: var(--color-text, #333);
+}
+
+.timeframes {
+  margin-top: 1rem;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+}
+
+.tf {
+  padding: 0.5rem;
+  border: 1px solid var(--color-border, #eee);
+  border-radius: 6px;
+}
+
+.tfHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.link {
+  color: var(--color-primary, #0366d6);
+}
+
+.tfNote {
+  margin: 0.5rem 0 0 0;
+}
+
+.button {
+  background: var(--color-primary, #0366d6);
+  color: white;
+  border: none;
+  padding: 0.4rem 0.6rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.compact {
+  padding: 0.25rem;
+}

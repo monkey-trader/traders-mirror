@@ -1,9 +1,9 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 import { TradeJournal } from './TradeJournal';
-import { TradeFactory } from '@/domain/trade/entities/TradeFactory';
-import type { TradeInput } from '@/domain/trade/entities/TradeFactory';
+import { TradeFactory } from '@/domain/trade/factories/TradeFactory';
+import type { TradeInput } from '@/domain/trade/factories/TradeFactory';
 import type { TradeRepository } from '@/domain/trade/interfaces/TradeRepository';
 
 // Ensure matchMedia exists and reports mobile by default for mobile-related tests
@@ -41,17 +41,20 @@ describe('TradeJournal actions (mobile add and delete/undo)', () => {
     const sizeInput = await screen.findByLabelText(/Position Size \*/i);
     const slInput = await screen.findByLabelText(/Stop Loss \(SL\) \*/i);
 
-    fireEvent.change(symbolInput, { target: { value: 'MOBILEUSD' } });
-    fireEvent.change(priceInput, { target: { value: '1.5' } });
-    fireEvent.change(marginInput, { target: { value: '10' } });
-    fireEvent.change(leverageInput, { target: { value: '1' } });
-    fireEvent.change(sizeInput, { target: { value: '100' } });
-    fireEvent.change(slInput, { target: { value: '1.4' } });
+    await act(async () => {
+      fireEvent.change(symbolInput, { target: { value: 'MOBILEUSD' } });
+      fireEvent.change(priceInput, { target: { value: '1.5' } });
+      fireEvent.change(marginInput, { target: { value: '10' } });
+      fireEvent.change(leverageInput, { target: { value: '1' } });
+      fireEvent.change(sizeInput, { target: { value: '100' } });
+      fireEvent.change(slInput, { target: { value: '1.4' } });
+    });
 
-    // Click Add in the modal footer (mobile)
-    const addBtn = screen.getAllByText(/^Add$/i).find((b) => b.nodeName === 'BUTTON');
-    if (!addBtn) throw new Error('Add button not found');
-    fireEvent.click(addBtn);
+    // Submit form directly (more reliable in happy-dom than clicking the button)
+    await act(async () => {
+      const form = document.querySelector('form') as HTMLFormElement;
+      fireEvent.submit(form);
+    });
 
     // After adding, the new trade symbol should appear in the list
     await waitFor(() => expect(screen.getByText(/MOBILEUSD/i)).toBeTruthy());

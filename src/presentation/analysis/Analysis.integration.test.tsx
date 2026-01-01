@@ -27,7 +27,7 @@ describe('Analysis -> prefill new trade', () => {
     fireEvent.click(analyseTab);
 
     // click the create example button
-    const createBtn = await screen.findByText(/Create example trade from analysis/i);
+    const createBtn = await screen.findByText(/Create Trade/i);
     fireEvent.click(createBtn);
 
     // now the New Trade form on the left should be prefilled with the suggestion (EURUSD)

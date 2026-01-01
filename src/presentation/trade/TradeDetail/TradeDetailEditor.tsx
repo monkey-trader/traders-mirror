@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo, useRef } from 'react';
-import type { TradeInput } from '@/domain/trade/entities/TradeFactory';
+import type { TradeInput } from '@/domain/trade/factories/TradeFactory';
 import { validateTrade } from '@/presentation/trade/validation';
 import { mapTradeError } from '@/presentation/trade/errorMapper';
 import styles from './TradeDetailEditor.module.css';
@@ -127,12 +127,34 @@ export function TradeDetailEditor({
   // Tests expect clicking Save on an invalid (but not changed) trade to run validation and block saving.
   const saveDisabled = status === 'saving' || (!isDirty && !hasValidationErrors) || !onSave;
 
+  const openAnalysis = (aid: string) => {
+    try {
+      window.location.hash = '#/analysis';
+      window.dispatchEvent(new CustomEvent('open-analysis', { detail: { id: aid } }));
+    } catch {
+      // ignore
+    }
+  };
+
   return (
     <div className={`${styles.editor} ${compactView ? styles.compact : ''}`} aria-live="polite">
       <div className={styles.header}>
         <div className={styles.title}>
           {local.symbol} <span className={styles.sub}>#{local.id}</span>
         </div>
+        {local.analysisId ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <button
+              type="button"
+              onClick={() => openAnalysis(local.analysisId as string)}
+              className={styles.analysisLink}
+              aria-label="Open analysis"
+              title="Open analysis"
+            >
+              View Analysis
+            </button>
+          </div>
+        ) : null}
         <div className={styles.saveStatus} aria-hidden={status === 'idle'}>
           {status === 'saving'
             ? 'Saving…'

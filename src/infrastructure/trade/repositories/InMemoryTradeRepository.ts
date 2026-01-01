@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { TradeFactory } from '@/domain/trade/entities/TradeFactory';
+import { TradeFactory } from '@/domain/trade/factories/TradeFactory';
 import { Trade } from '@/domain/trade/entities/Trade';
 
 // Simple in-memory repository used for demo/testing. Not persistent.

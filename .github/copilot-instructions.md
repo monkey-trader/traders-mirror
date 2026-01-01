@@ -41,6 +41,7 @@
 - Keine Verwendung von `any`
   - `any` unterdrückt Typprüfungen und ist verboten. Verwende unions, `unknown` + Narrowing oder konkrete Typen.
   - Beispiel: Statt `(input as any).size` verwende `input: TradeInput` mit korrekten Union-Typen und greife direkt auf `input.size` zu oder führe einen Type-Guard durch.
+  - WICHTIG: Beim Schreiben von neuem Code verwenden wir KEIN `any`. (We do not want ANY usage of `any` when we write new code.)
 - Typed Domain Errors
   - Domain-Validierungen werfen spezifische Fehlerklassen (z. B. `SizeMustBePositiveError`, `EntryDateInvalidError`).
   - Presentation-Layer verwendet `instanceof` um Fehler zu erkennen und in Feld- oder globale Fehlermeldungen zu übersetzen (i18n-ready).

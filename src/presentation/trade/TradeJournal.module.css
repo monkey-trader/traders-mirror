@@ -1281,3 +1281,38 @@ textarea {
     grid-template-columns: repeat(2, 1fr); /* keep TP1/TP2 side-by-side when stacked */
   }
 }
+
+/* Utility classes used by TradeJournal.tsx to avoid inline styles */
+.tradesHeaderColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.spacer12 {
+  height: 12px;
+}
+
+.compactSummaryInner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.strong {
+  font-weight: 700;
+}
+
+.mutedSmall {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.compactPlaceholderTitle {
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.mutedText {
+  color: var(--muted);
+}

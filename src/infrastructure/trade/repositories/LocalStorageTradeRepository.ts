@@ -2,7 +2,7 @@
 // Mirrors the shape/behaviour of InMemoryTradeRepository but persists to window.localStorage
 
 import type { TradeRepository } from '@/domain/trade/interfaces/TradeRepository';
-import { TradeFactory } from '@/domain/trade/entities/TradeFactory';
+import { TradeFactory } from '@/domain/trade/factories/TradeFactory';
 import { Trade } from '@/domain/trade/entities/Trade';
 
 export type RepoTrade = {
@@ -24,6 +24,7 @@ export type RepoTrade = {
   tp4?: number;
   margin?: number;
   leverage?: number;
+  analysisId?: string; // optional link to analysis
 };
 
 const STORAGE_KEY = 'mt_trades_v1';
@@ -159,6 +160,7 @@ export class LocalStorageTradeRepository implements TradeRepository {
         tp4: typeof o.tp4 === 'number' ? (o.tp4 as number) : undefined,
         margin: typeof o.margin === 'number' ? (o.margin as number) : undefined,
         leverage: typeof o.leverage === 'number' ? (o.leverage as number) : undefined,
+        analysisId: typeof o.analysisId === 'string' ? (o.analysisId as string) : undefined,
       };
     }
 
@@ -183,6 +185,7 @@ export class LocalStorageTradeRepository implements TradeRepository {
         tp4: typeof o.tp4 === 'number' ? (o.tp4 as number) : undefined,
         margin: typeof o.margin === 'number' ? (o.margin as number) : undefined,
         leverage: typeof o.leverage === 'number' ? (o.leverage as number) : undefined,
+        analysisId: typeof o.analysisId === 'string' ? (o.analysisId as string) : undefined,
       };
     }
 
@@ -230,6 +233,7 @@ export class LocalStorageTradeRepository implements TradeRepository {
         tp4: rt.tp4,
         leverage: rt.leverage,
         margin: rt.margin,
+        analysisId: rt.analysisId,
       };
       try {
         return TradeFactory.create(input);
