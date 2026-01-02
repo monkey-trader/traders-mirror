@@ -73,15 +73,15 @@ export function Analysis({ onCreateTradeSuggestion, compactView = false }: Analy
 
       {/* Show list of analyses (left) and detail panel (right) — no editor on this screen */}
       <div className={styles.grid}>
-        <div style={{ minWidth: 320 }}>
+        <div className={styles.leftColumn}>
           <Card title="Analysen">
             <AnalysisList items={list} compactView={compactView} selectedId={selected} onSelect={handleOpen} />
           </Card>
         </div>
 
-        <div style={{ flex: 1 }}>
+        <div className={styles.rightColumn}>
           <React.Suspense fallback={<div>Loading...</div>}>
-            {selected ? <DetailLoader id={selected} onCreateTrade={onCreateTradeSuggestion} /> : <div style={{ padding: 16 }}>Keine Analyse ausgewählt</div>}
+            {selected ? <DetailLoader id={selected} onCreateTrade={onCreateTradeSuggestion} /> : <div className={styles.noSelection}>Keine Analyse ausgewählt</div>}
           </React.Suspense>
         </div>
       </div>

@@ -88,7 +88,15 @@ jobs:
         uses: codecov/codecov-action@v4
         with:
           files: ./coverage/lcov.info
-          config_file: .codecov.yml
+          codecov_yml_path: .codecov.yml
           verbose: true
           fail_ci_if_error: false
+
+      # SonarCloud automatic analysis is enabled for this repository via the
+      # SonarCloud GitHub App. Running a manual `sonar-scanner` in CI conflicts
+      # with automatic analysis and causes execution failures. Keep CI focused
+      # on tests and coverage artifacts; SonarCloud will pick up the analysis
+      # automatically. If you prefer to run the scanner from CI instead,
+      # disable Automatic Analysis in the SonarCloud project settings and
+      # reinstate the manual steps below.
 
