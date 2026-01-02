@@ -11,25 +11,54 @@ export type AnalysisSummary = {
 type Props = {
   items?: AnalysisSummary[];
   compactView?: boolean;
+  selectedId?: string | null;
+  onSelect?: (id: string) => void;
+  // legacy prop used by tests / older callers
   onOpen?: (id: string) => void;
 };
 
-export function AnalysisList({ items = [], compactView = false, onOpen }: Props) {
+export function AnalysisList({
+  items = [],
+  compactView = false,
+  selectedId = null,
+  onSelect,
+  onOpen,
+}: Props) {
+  if (!items || items.length === 0) {
+    return (
+      <div className={styles.container} data-testid="analysis-list">
+        <div className={styles.empty}>Keine Analysen vorhanden</div>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.container} data-testid="analysis-list">
-      {items.length === 0 ? (
-        <div className={styles.empty}>Keine Analysen vorhanden</div>
-      ) : (
-        <ul className={styles.list}>
-          {items.map((it) => (
-            <li
+      <div className={styles.list} role="list">
+        {items.map((it) => {
+          const isSelected = selectedId === it.id;
+          return (
+            <div
               key={it.id}
-              className={`${styles.item} ${compactView ? styles.compact : ''}`}
               data-testid={`analysis-item-${it.id}`}
+              role="listitem"
+              aria-pressed={isSelected}
+              className={[styles.item, compactView ? styles.compact : '', isSelected ? styles.selected : '']
+                .filter(Boolean)
+                .join(' ')}
+              onClick={() => onSelect && onSelect(it.id)}
+              tabIndex={0}
             >
               <div className={styles.header}>
                 <strong className={styles.symbol}>{it.symbol}</strong>
-                <button className={styles.openButton} onClick={() => onOpen && onOpen(it.id)}>
+                <button
+                  className={styles.openButton}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (onOpen) onOpen(it.id);
+                    if (onSelect) onSelect(it.id);
+                  }}
+                >
                   Open
                 </button>
               </div>
@@ -37,10 +66,10 @@ export function AnalysisList({ items = [], compactView = false, onOpen }: Props)
                 <span className={styles.date}>{new Date(it.createdAt).toLocaleString()}</span>
                 {it.notes ? <p className={styles.notes}>{it.notes}</p> : null}
               </div>
-            </li>
-          ))}
-        </ul>
-      )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

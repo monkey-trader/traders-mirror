@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import styles from './Analysis.module.css';
 import { Card } from '@/presentation/shared/components/Card/Card';
-import { AnalysisEditor } from '@/presentation/analysis/AnalysisEditor';
+// Editor removed: show list-only UI similar to TradeJournal
 import { AnalysisList, AnalysisSummary } from '@/presentation/analysis/AnalysisList';
 import { AnalysisDetail } from '@/presentation/analysis/AnalysisDetail';
 import { LocalStorageAnalysisRepository } from '@/infrastructure/analysis/repositories/LocalStorageAnalysisRepository';
-import { AnalysisService } from '@/application/analysis/services/AnalysisService';
 import type { AnalysisDTO as AnalysisDTOType } from '@/domain/analysis/interfaces/AnalysisRepository';
-import type { TimeframeInput } from '@/presentation/analysis/AnalysisEditor';
+// Editor types removed
 
 export type AnalysisSuggestion = {
   analysisId?: string;
@@ -25,7 +24,6 @@ export type AnalysisProps = {
 };
 
 const repository = new LocalStorageAnalysisRepository();
-const service = new AnalysisService(repository);
 
 export function Analysis({ onCreateTradeSuggestion, compactView = false }: AnalysisProps) {
   const [list, setList] = useState<AnalysisSummary[]>([]);
@@ -62,24 +60,6 @@ export function Analysis({ onCreateTradeSuggestion, compactView = false }: Analy
     return () => window.removeEventListener('open-analysis', handler as EventListener);
   }, []);
 
-  const handleSaveAnalysis = async (input: {
-    symbol: string;
-    notes?: string;
-    timeframes?: TimeframeInput[];
-  }) => {
-    // create an analysis via service and update local list
-    const a = await service.createAnalysis({
-      symbol: input.symbol,
-      notes: input.notes,
-      timeframes: input.timeframes,
-    });
-    setList((prev) => [
-      ...prev,
-      { id: a.id, symbol: a.symbol, createdAt: a.createdAt, notes: a.notes },
-    ]);
-    // keep editor focused and don't auto-open the detail view
-  };
-
   const handleOpen = async (id: string) => {
     setSelected(id);
   };
@@ -91,191 +71,20 @@ export function Analysis({ onCreateTradeSuggestion, compactView = false }: Analy
     >
       <h2 className={styles.title}>Marktanalyse</h2>
 
-      {/* If no analysis selected: show editor full-width and list below. If selected: show two-column with list/editor on the left and detail on the right. */}
-      {selected ? (
-        <div className={styles.grid}>
-          <div style={{ minWidth: 320 }}>
-            <Card title="Analyse erstellen">
-              <AnalysisEditor onSave={handleSaveAnalysis} />
-            </Card>
-
-            <Card title="Analysen">
-              <div
-                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-              >
-                <div> </div>
-                <div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      // provide a simple example suggestion so tests can click this control
-                      if (onCreateTradeSuggestion) {
-                        onCreateTradeSuggestion({
-                          symbol: 'EURUSD',
-                          price: 1.12,
-                          size: 1000,
-                          side: 'LONG',
-                          market: 'Forex',
-                          entryDate: new Date().toISOString(),
-                        });
-                      }
-                    }}
-                    style={{ marginRight: 8, padding: '6px 8px', borderRadius: 6 }}
-                  >
-                    Create example trade from analysis
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (onCreateTradeSuggestion) {
-                        onCreateTradeSuggestion({
-                          symbol: 'EURUSD',
-                          price: 1.12,
-                          size: 1000,
-                          side: 'LONG',
-                          market: 'Forex',
-                          entryDate: new Date().toISOString(),
-                        });
-                      }
-                    }}
-                    style={{
-                      background: 'transparent',
-                      border: '1px solid rgba(255,255,255,0.04)',
-                      color: 'var(--color-text)',
-                      padding: '6px 8px',
-                      borderRadius: 6,
-                    }}
-                  >
-                    Create Trade
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      if (
-                        !window.confirm(
-                          'Alle Analysen löschen? Diese Aktion kann nicht rückgängig gemacht werden.'
-                        )
-                      )
-                        return;
-                      await repository.clear();
-                      setList([]);
-                      setSelected(null);
-                    }}
-                    style={{
-                      background: 'transparent',
-                      border: '1px solid rgba(255,255,255,0.04)',
-                      color: 'var(--color-text)',
-                      padding: '6px 8px',
-                      borderRadius: 6,
-                      marginLeft: 8,
-                    }}
-                  >
-                    Delete all
-                  </button>
-                </div>
-              </div>
-              <AnalysisList items={list} compactView={compactView} onOpen={handleOpen} />
-            </Card>
-          </div>
-
-          <div style={{ flex: 1 }}>
-            <React.Suspense fallback={<div>Loading...</div>}>
-              {/* show detail when an analysis is selected */}
-              <DetailLoader id={selected} onCreateTrade={onCreateTradeSuggestion} />
-            </React.Suspense>
-          </div>
+      {/* Show list of analyses (left) and detail panel (right) — no editor on this screen */}
+      <div className={styles.grid}>
+        <div style={{ minWidth: 320 }}>
+          <Card title="Analysen">
+            <AnalysisList items={list} compactView={compactView} selectedId={selected} onSelect={handleOpen} />
+          </Card>
         </div>
-      ) : (
-        <div className={styles.grid} style={{ gridTemplateColumns: '1fr' }}>
-          <div>
-            <Card title="Analyse erstellen">
-              <AnalysisEditor onSave={handleSaveAnalysis} />
-            </Card>
 
-            <Card title="Analysen">
-              <div
-                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-              >
-                <div> </div>
-                <div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      // provide a simple example suggestion so tests can click this control
-                      if (onCreateTradeSuggestion) {
-                        onCreateTradeSuggestion({
-                          symbol: 'EURUSD',
-                          price: 1.12,
-                          size: 1000,
-                          side: 'LONG',
-                          market: 'Forex',
-                          entryDate: new Date().toISOString(),
-                        });
-                      }
-                    }}
-                    style={{ marginRight: 8, padding: '6px 8px', borderRadius: 6 }}
-                  >
-                    Create example trade from analysis
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (onCreateTradeSuggestion) {
-                        onCreateTradeSuggestion({
-                          symbol: 'EURUSD',
-                          price: 1.12,
-                          size: 1000,
-                          side: 'LONG',
-                          market: 'Forex',
-                          entryDate: new Date().toISOString(),
-                        });
-                      }
-                    }}
-                    style={{
-                      background: 'transparent',
-                      border: '1px solid rgba(255,255,255,0.04)',
-                      color: 'var(--color-text)',
-                      padding: '6px 8px',
-                      borderRadius: 6,
-                    }}
-                  >
-                    Create Trade
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      if (
-                        !window.confirm(
-                          'Alle Analysen löschen? Diese Aktion kann nicht rückgängig gemacht werden.'
-                        )
-                      )
-                        return;
-                      await repository.clear();
-                      setList([]);
-                      setSelected(null);
-                    }}
-                    style={{
-                      background: 'transparent',
-                      border: '1px solid rgba(255,255,255,0.04)',
-                      color: 'var(--color-text)',
-                      padding: '6px 8px',
-                      borderRadius: 6,
-                      marginLeft: 8,
-                    }}
-                  >
-                    Delete all
-                  </button>
-                </div>
-              </div>
-              <AnalysisList items={list} compactView={compactView} onOpen={handleOpen} />
-            </Card>
-          </div>
+        <div style={{ flex: 1 }}>
+          <React.Suspense fallback={<div>Loading...</div>}>
+            {selected ? <DetailLoader id={selected} onCreateTrade={onCreateTradeSuggestion} /> : <div style={{ padding: 16 }}>Keine Analyse ausgewählt</div>}
+          </React.Suspense>
         </div>
-      )}
+      </div>
     </div>
   );
 }
