@@ -33,7 +33,7 @@ jobs:
             npm install --no-audit --no-fund
           fi
 
-      - name: Run tests (Vitest) + coverage
+      - name: Run tests (vilest) + coverage
         run: |
           # Prefer unified npm script for CI but fallback to direct npx if script missing
           if npm run -s test:ci --silent; then
@@ -88,5 +88,7 @@ jobs:
         uses: codecov/codecov-action@v4
         with:
           files: ./coverage/lcov.info
+          config_file: .codecov.yml
+          verbose: true
           fail_ci_if_error: false
 

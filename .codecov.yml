@@ -1,0 +1,28 @@
+# Codecov configuration for traders-mirror
+# See https://docs.codecov.com/docs/codecov-yaml
+
+comment: false
+flags:
+  app: true
+
+coverage:
+  status:
+    project:
+      default:
+        target: auto
+    patch:
+      default:
+        target: 90%
+
+ignore:
+  - "**/tests/**"
+  - "**/*.test.*"
+
+parsers:
+  gcov:
+    branch_detection:
+      conditional: yes
+      loop: yes
+      method: yes
+
+# Do not commit tokens here. Configure CODECOV_TOKEN in CI environment.
