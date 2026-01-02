@@ -92,28 +92,11 @@ jobs:
           verbose: true
           fail_ci_if_error: false
 
-      # SonarCloud: run manual scanner in CI
-      # NOTE: If SonarCloud Automatic Analysis is enabled for this project,
-      # running a manual scanner will conflict. Disable Automatic Analysis in
-      # SonarCloud (Administration > Analysis Method) before enabling these steps.
-
-      - name: Set up Java 17 (required by SonarScanner)
-        if: success()
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      - name: Install SonarScanner (npm wrapper)
-        if: success()
-        run: |
-          npm install -g sonar-scanner
-
-      - name: Run SonarScanner
-        if: success()
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: |
-          # sonar-project.properties at repo root provides projectKey, org, and paths
-          sonar-scanner -Dsonar.login=$SONAR_TOKEN
+      # SonarCloud automatic analysis is enabled for this repository via the
+      # SonarCloud GitHub App. Running a manual `sonar-scanner` in CI conflicts
+      # with automatic analysis and causes execution failures. Keep CI focused
+      # on tests and coverage artifacts; SonarCloud will pick up the analysis
+      # automatically. If you prefer to run the scanner from CI instead,
+      # disable Automatic Analysis in the SonarCloud project settings and
+      # reinstate the manual steps below.
 
