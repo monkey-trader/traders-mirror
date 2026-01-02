@@ -47,11 +47,18 @@ export function AnalysisList({
                 .filter(Boolean)
                 .join(' ')}
               onClick={() => onSelect && onSelect(it.id)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onSelect && onSelect(it.id);
+                }
+              }}
               tabIndex={0}
             >
               <div className={styles.header}>
                 <strong className={styles.symbol}>{it.symbol}</strong>
                 <button
+                  type="button"
                   className={styles.openButton}
                   onClick={(e) => {
                     e.stopPropagation();

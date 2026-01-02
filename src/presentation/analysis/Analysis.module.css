@@ -22,6 +22,18 @@
   gap: 1rem;
 }
 
+.leftColumn {
+  min-width: 320px;
+}
+
+.rightColumn {
+  flex: 1;
+}
+
+.noSelection {
+  padding: 16px;
+}
+
 /* ...existing code... */
 
 @media (max-width: 980px) {
