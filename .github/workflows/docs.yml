@@ -10,6 +10,7 @@ on:
 
 jobs:
   build-docs:
+    if: false
     runs-on: ubuntu-latest
     # Run the whole job inside the asciidoctor Docker image for reliability
     container:
