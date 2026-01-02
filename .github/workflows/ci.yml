@@ -98,8 +98,15 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@v1
+      - name: Install Sonar Scanner (npm)
+        run: |
+          echo "Installing sonar-scanner npm package"
+          npm install -g sonar-scanner
+
+      - name: Run SonarScanner CLI
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          echo "Running sonar-scanner using runner Java"
+          sonar-scanner -Dsonar.login=$SONAR_TOKEN
 
