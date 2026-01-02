@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card } from '@/presentation/shared/components/Card/Card';
+import AddFormCard from '@/presentation/shared/components/AddFormCard/AddFormCard';
 import { Button } from '@/presentation/shared/components/Button/Button';
 import { Input } from '@/presentation/shared/components/Input/Input';
 import { SideSelect, type SideValue } from '@/presentation/shared/components/SideSelect/SideSelect';
@@ -58,44 +58,39 @@ export function NewTradeForm({
   onReset,
   setMarketFilter,
 }: NewTradeFormProps) {
-  return (
-    <Card>
-      <div className={styles.newTradeWrapper}>
-        <div className={styles.newTradeHeader}>
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              width: '100%',
-            }}
-          >
-            <span style={{ fontWeight: 700, color: 'var(--text)' }}>New Trade</span>
-            {form.analysisId ? (
-              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                <span style={{ fontSize: 12, color: 'var(--muted)' }}>Prefilled from analysis</span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    try {
-                      window.location.hash = '#/analysis';
-                      window.dispatchEvent(
-                        new CustomEvent('open-analysis', { detail: { id: form.analysisId } })
-                      );
-                    } catch {
-                      /* ignore */
-                    }
-                  }}
-                  className={styles.viewAnalysisBtn}
-                  style={{ padding: '6px 8px', borderRadius: 6 }}
-                >
-                  View Analysis
-                </button>
-              </div>
-            ) : null}
-          </div>
-        </div>
+  const headerActions = form.analysisId ? (
+    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+      <span style={{ fontSize: 12, color: 'var(--muted)' }}>Prefilled from analysis</span>
+      <Button
+        type="button"
+        variant="ghost"
+        onClick={() => {
+          try {
+            window.location.hash = `#/analysis?id=${encodeURIComponent(form.analysisId ?? '')}`;
+            setTimeout(() => {
+              try {
+                window.dispatchEvent(
+                  new CustomEvent('open-analysis', { detail: { id: form.analysisId } })
+                );
+              } catch {
+                /* ignore */
+              }
+            }, 50);
+          } catch {
+            /* ignore */
+          }
+        }}
+        className={styles.viewAnalysisBtn}
+        style={{ padding: '6px 8px', borderRadius: 6 }}
+      >
+        View Analysis
+      </Button>
+    </div>
+  ) : undefined;
 
+  return (
+    <AddFormCard title="New Trade" actions={headerActions}>
+      <div className={styles.newTradeWrapper}>
         {debugUiEnabled && (lastStatus || Object.keys(formErrors).length > 0) && (
           <div className={styles.inlineStatus} style={{ margin: '8px 0', color: 'var(--muted)' }}>
             {lastStatus && (
@@ -453,6 +448,6 @@ export function NewTradeForm({
           </div>
         </form>
       </div>
-    </Card>
+    </AddFormCard>
   );
 }

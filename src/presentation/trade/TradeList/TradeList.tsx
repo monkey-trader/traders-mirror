@@ -16,7 +16,44 @@ export type TradeListItem = {
 };
 
 import styles from './TradeList.module.css';
+import btnStyles from '@/presentation/shared/components/Button/Button.module.css';
+import { IconButton } from '@/presentation/shared/components/IconButton/IconButton';
 import { PositionCard } from '@/presentation/shared/components/PositionCard/PositionCard';
+
+function AnalysisOpenButton({ analysisId, symbol, extraClass }: { analysisId?: string | null; symbol: string; extraClass?: string }) {
+  if (!analysisId) return null;
+  const className = [btnStyles.button, extraClass || ''].filter(Boolean).join(' ');
+  return (
+    <IconButton
+      ariaLabel={`Open analysis for ${symbol}`}
+      variant="ghost"
+      color="primary"
+      className={className}
+      title="Open analysis"
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        try {
+          window.location.hash = `#/analysis?id=${encodeURIComponent(analysisId ?? '')}`;
+          setTimeout(() => {
+            try {
+              window.dispatchEvent(new CustomEvent('open-analysis', { detail: { id: analysisId } }));
+            } catch {
+              /* ignore */
+            }
+          }, 50);
+        } catch {
+          /* ignore */
+        }
+      }}
+      icon={
+        <svg className={styles.analysisIcon} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+          <path d="M14 3h7v7h-2V6.41l-9.29 9.3-1.42-1.42L17.59 5H14V3zM5 5h6v2H7v10h10v-4h2v6H5V5z" fill="currentColor" />
+        </svg>
+      }
+    />
+  );
+}
 
 export type TradeListProps = {
   trades: TradeListItem[];
@@ -44,11 +81,9 @@ export function TradeList({
     return (
       <div className={styles.list} role="list">
         {trades.map((t) => {
+          const sideRaw = (t.side || '').toString().replace(/['"`]/g, '').trim();
           const sideKey =
-            (t.side || '').toString().trim().toUpperCase() === 'LONG' ||
-            (t.side || '').toString().trim().toLowerCase() === 'buy'
-              ? 'LONG'
-              : 'SHORT';
+            sideRaw.toUpperCase() === 'LONG' || sideRaw.toLowerCase() === 'buy' ? 'LONG' : 'SHORT';
           return (
             <div key={t.id} className={styles.compactItem}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
@@ -66,25 +101,9 @@ export function TradeList({
                   onClose={(id) => onClose?.(id)}
                 />
                 {t.analysisId ? (
-                  <button
-                    type="button"
-                    title="Open analysis"
-                    aria-label={`Open analysis for ${t.symbol}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      try {
-                        window.location.hash = '#/analysis';
-                        window.dispatchEvent(
-                          new CustomEvent('open-analysis', { detail: { id: t.analysisId } })
-                        );
-                      } catch {
-                        /* ignore */
-                      }
-                    }}
-                    style={{ height: 28, padding: '4px 8px', borderRadius: 6 }}
-                  >
-                    A
-                  </button>
+                  <div>
+                    <AnalysisOpenButton analysisId={t.analysisId} symbol={t.symbol} extraClass={styles.analysisBtn} />
+                  </div>
                 ) : null}
               </div>
               <div className={styles.tpLevelsCompact}>
@@ -101,11 +120,11 @@ export function TradeList({
   return (
     <div className={styles.list} role="list">
       {trades.map((t) => {
-        const isSelected = selectedId === t.id;
+      const isSelected = selectedId === t.id;
 
-        // normalize side value to a predictable key and restrict to only 'long' or 'short'
-        const rawSide = (t.side || '').toString().trim().toLowerCase();
-        const sideKey = rawSide === 'long' || rawSide === 'buy' ? 'long' : 'short';
+      // normalize side value to a predictable key and restrict to only 'long' or 'short'
+      const rawSide = (t.side || '').toString().replace(/['"`]/g, '').trim().toLowerCase();
+      const sideKey = rawSide === 'long' || rawSide === 'buy' ? 'long' : 'short';
 
         const sideClass = sideKey === 'long' ? styles.sideLong : styles.sideShort;
 
@@ -118,13 +137,20 @@ export function TradeList({
             : styles.statusFilled;
 
         return (
-          <button
+          <div
             key={t.id}
             className={[styles.item, isSelected ? styles.selected : ''].filter(Boolean).join(' ')}
             onClick={() => onSelect(t.id)}
             aria-label={`Select ${t.symbol}`}
             role="listitem"
             aria-pressed={isSelected}
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+                e.preventDefault();
+                onSelect(t.id);
+              }
+            }}
           >
             <div className={styles.rowLeft}>
               <div className={styles.symbol}>{t.symbol}</div>
@@ -132,6 +158,11 @@ export function TradeList({
               {/* TP1–TP4 werden hier NICHT mehr angezeigt */}
             </div>
             <div className={styles.rowRight}>
+                {t.analysisId ? (
+                  <div style={{ marginRight: 8 }}>
+                    <AnalysisOpenButton analysisId={t.analysisId} symbol={t.symbol} extraClass={styles.analysisBtn} />
+                  </div>
+                ) : null}
               <div
                 className={[styles.side, sideClass].join(' ')}
                 aria-label={`Side: ${sideKey}`}
@@ -147,7 +178,7 @@ export function TradeList({
                 {rawStatus || 'UNKNOWN'}
               </div>
             </div>
-          </button>
+          </div>
         );
       })}
     </div>

@@ -32,10 +32,29 @@
   border: 1px solid rgba(255, 255, 255, 0.04);
 }
 
+.secondary:hover {
+  transform: translateY(-2px) scale(1.01);
+  background: rgba(255, 255, 255, 0.035);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+}
+
 .ghost {
   background: transparent;
   color: var(--muted);
   border: 1px dashed rgba(255, 255, 255, 0.02);
+}
+
+.ghost:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.01);
+  color: var(--text);
+  border-color: rgba(255, 255, 255, 0.04);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+.button:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  outline-offset: 4px;
 }
 
 .danger {

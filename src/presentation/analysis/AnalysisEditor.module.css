@@ -12,6 +12,27 @@
   gap: 0.5rem;
 }
 
+/* symbol field: input and inline error placed on one horizontal line */
+.symbolField {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.symbolField > label {
+  width: 100%;
+}
+
+.fieldErrorRight {
+  color: var(--danger, #ff6b6b);
+  font-size: 0.75em;
+  font-weight: 400;
+  margin-top: 2px;
+  margin-left: 2px;
+  letter-spacing: 0.01em;
+}
+
 .label {
   display: flex;
   flex-direction: column;
@@ -50,11 +71,16 @@ textarea.input {
   gap: 0.5rem;
   align-items: center;
   margin-bottom: 0.5rem;
+  padding: 8px 6px;
+  border-radius: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
 }
 
 .tfLabel {
-  font-weight: 600;
-  font-size: 0.9rem;
+  font-weight: 700;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  color: var(--color-text-muted, #9aa0a6);
 }
 
 .tfInput {
@@ -77,6 +103,15 @@ textarea.input {
   padding: 0.5rem 0.75rem;
   border-radius: 8px;
   cursor: pointer;
+}
+
+.fieldError {
+  color: var(--danger, #ff6b6b);
+  font-size: 0.75em;
+  font-weight: 400;
+  margin-top: 2px;
+  margin-left: 2px;
+  letter-spacing: 0.01em;
 }
 
 @media (max-width: 640px) {

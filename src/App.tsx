@@ -26,10 +26,11 @@ function App() {
 
   return (
     <Layout fullWidth={true}>
-      {/* Simple hash-based routing: #/journal, #/analysis, #/settings */}
-      {route === '#/settings' ? (
+      {/* Simple hash-based routing: #/journal, #/analysis, #/settings.
+          Support query/hash params like #/analysis?id=... by matching prefix. */}
+      {route.startsWith('#/settings') ? (
         <Settings />
-      ) : route === '#/analysis' ? (
+      ) : route.startsWith('#/analysis') ? (
         <Analysis />
       ) : (
         // create repo at composition root and inject into TradeJournal

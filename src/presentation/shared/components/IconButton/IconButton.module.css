@@ -1,0 +1,21 @@
+.iconBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 36px;
+  padding: 6px;
+  border-radius: 9999px;
+}
+
+.inner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.inner svg {
+  width: 18px;
+  height: 18px;
+  color: inherit;
+}

@@ -15,6 +15,10 @@ export class AnalysisService {
     return this.repo.getById(id);
   }
 
+  async deleteAnalysis(id: string) {
+    await this.repo.delete(id);
+  }
+
   async listBySymbol(symbol: string) {
     return this.repo.listBySymbol(symbol);
   }

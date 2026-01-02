@@ -19,6 +19,7 @@ export type AnalysisInput = {
   createdAt?: string | Date | EntryDate;
   timeframes?: TimeframeInput[] | Record<string, TimeframeInput>;
   notes?: string;
+  market?: 'Forex' | 'Crypto';
 };
 
 export class AnalysisFactory {
@@ -71,6 +72,7 @@ export class AnalysisFactory {
     const analysis: AnalysisDTO = {
       id,
       symbol: tradeSymbol.value,
+      market: input.market,
       createdAt,
       updatedAt: undefined,
       timeframes: tfRecord,

@@ -15,7 +15,7 @@ import { useNewTradeForm, type NewTradeFormState } from './hooks/useNewTradeForm
 import { MarketFilters, StatusFilters } from './components/TradeFilters/TradeFilters';
 import type { AnalysisInput } from '@/domain/analysis/factories/AnalysisFactory';
 import type { AnalysisFormValues } from '@/presentation/analysis/validation';
-import type { TimeframeInput } from '@/presentation/analysis/AnalysisEditor';
+import type { TimeframeInput } from '@/presentation/analysis/types';
 import AddPanel from '@/presentation/shared/components/AddPanel/AddPanel';
 import useIsMobile from '@/presentation/shared/hooks/useIsMobile';
 import MobileNewTrade from './components/MobileNewTrade/MobileNewTrade';
@@ -275,6 +275,49 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
     setSelectedId(null);
   };
 
+  // Listen for open-trade events from Analysis view to select the trade linked to an analysis
+  useEffect(() => {
+    const handler = (e: Event) => {
+      try {
+        const detail = (e as CustomEvent).detail;
+        if (detail && typeof detail.analysisId === 'string') {
+          const aid = detail.analysisId as string;
+          // try to find a trade with this analysisId
+          const found = positions.find((p) => p.analysisId === aid);
+          if (found) {
+            // switch to trades list and select the trade
+            setTradesCardTab('list');
+            setMarketFilter(found.market ?? 'All');
+            setSelectedId(found.id);
+            // open editor on small screens
+            if (isMobile) setCompactEditorOpen(true);
+          } else {
+            // If not found yet, poll a few times in case positions load shortly
+            let attempts = 0;
+            const maxAttempts = 5;
+            const tryFind = () => {
+              attempts += 1;
+              const f = positions.find((p) => p.analysisId === aid);
+              if (f) {
+                setTradesCardTab('list');
+                setMarketFilter(f.market ?? 'All');
+                setSelectedId(f.id);
+                if (isMobile) setCompactEditorOpen(true);
+              } else if (attempts < maxAttempts) {
+                setTimeout(tryFind, 150);
+              }
+            };
+            tryFind();
+          }
+        }
+      } catch {
+        /* ignore */
+      }
+    };
+    window.addEventListener('open-trade', handler as EventListener);
+    return () => window.removeEventListener('open-trade', handler as EventListener);
+  }, [positions, isMobile]);
+
   // small visible status panel (debug) — can be removed later
   const repoEnabled = Boolean(repoRef.current);
   // read user setting and env default for debug UI
@@ -392,6 +435,7 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
                 const payload: AnalysisInput = {
                   symbol: input.symbol,
                   notes: input.notes,
+                  market: input.market ?? undefined,
                   timeframes: Array.isArray(input.timeframes)
                     ? input.timeframes.map((tf) => ({
                         timeframe: tf.timeframe,

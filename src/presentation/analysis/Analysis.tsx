@@ -3,7 +3,9 @@ import styles from './Analysis.module.css';
 import { Card } from '@/presentation/shared/components/Card/Card';
 // Editor removed: show list-only UI similar to TradeJournal
 import { AnalysisList, AnalysisSummary } from '@/presentation/analysis/AnalysisList';
+import { MarketFilters } from '@/presentation/trade/components/TradeFilters/TradeFilters';
 import { AnalysisDetail } from '@/presentation/analysis/AnalysisDetail';
+import { ConfirmDialog } from '@/presentation/shared/components/ConfirmDialog/ConfirmDialog';
 import { LocalStorageAnalysisRepository } from '@/infrastructure/analysis/repositories/LocalStorageAnalysisRepository';
 import type { AnalysisDTO as AnalysisDTOType } from '@/domain/analysis/interfaces/AnalysisRepository';
 // Editor types removed
@@ -27,7 +29,10 @@ const repository = new LocalStorageAnalysisRepository();
 
 export function Analysis({ onCreateTradeSuggestion, compactView = false }: AnalysisProps) {
   const [list, setList] = useState<AnalysisSummary[]>([]);
+  const [marketFilter, setMarketFilter] = useState<'All' | 'Crypto' | 'Forex'>('All');
   const [selected, setSelected] = useState<string | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmId, setConfirmId] = useState<string | null>(null);
 
   useEffect(() => {
     // load existing analyses from repo (localStorage)
@@ -36,7 +41,13 @@ export function Analysis({ onCreateTradeSuggestion, compactView = false }: Analy
       const all = await repository.listAll();
       if (!mounted) return;
       setList(
-        all.map((a) => ({ id: a.id, symbol: a.symbol, createdAt: a.createdAt, notes: a.notes }))
+        all.map((a) => ({
+          id: a.id,
+          symbol: a.symbol,
+          createdAt: a.createdAt,
+          notes: a.notes,
+          market: a.market ?? 'All',
+        }))
       );
     })();
     return () => {
@@ -64,6 +75,31 @@ export function Analysis({ onCreateTradeSuggestion, compactView = false }: Analy
     setSelected(id);
   };
 
+  const handleDelete = async (id: string) => {
+    try {
+      await repository.delete(id);
+      const all = await repository.listAll();
+      setList(
+        all.map((a) => ({
+          id: a.id,
+          symbol: a.symbol,
+          createdAt: a.createdAt,
+          notes: a.notes,
+          market: a.market ?? 'All',
+        }))
+      );
+      if (selected === id) setSelected(null);
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.warn('Failed to delete analysis', err);
+    }
+  };
+
+  const requestDeleteFromDetail = (id: string) => {
+    setConfirmId(id);
+    setConfirmOpen(true);
+  };
+
   return (
     <div
       className={compactView ? `${styles.container} ${styles.compact}` : styles.container}
@@ -75,13 +111,46 @@ export function Analysis({ onCreateTradeSuggestion, compactView = false }: Analy
       <div className={styles.grid}>
         <div className={styles.leftColumn}>
           <Card title="Analysen">
-            <AnalysisList items={list} compactView={compactView} selectedId={selected} onSelect={handleOpen} />
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <MarketFilters
+                marketFilter={marketFilter}
+                setMarketFilter={setMarketFilter}
+                tradesCount={list.length}
+              />
+            </div>
+            <AnalysisList
+              items={marketFilter === 'All' ? list : list.filter((l) => l.market === marketFilter)}
+              compactView={compactView}
+              selectedId={selected}
+              onSelect={handleOpen}
+              
+            />
           </Card>
         </div>
 
         <div className={styles.rightColumn}>
           <React.Suspense fallback={<div>Loading...</div>}>
-            {selected ? <DetailLoader id={selected} onCreateTrade={onCreateTradeSuggestion} /> : <div className={styles.noSelection}>Keine Analyse ausgewählt</div>}
+            {selected ? (
+              <>
+                <DetailLoader id={selected} onCreateTrade={onCreateTradeSuggestion} onRequestDelete={requestDeleteFromDetail} />
+                <ConfirmDialog
+                  open={confirmOpen}
+                  title="Delete analysis"
+                  message="Are you sure you want to delete this analysis? This cannot be undone."
+                  confirmLabel="Delete"
+                  cancelLabel="Cancel"
+                  confirmVariant="danger"
+                  onCancel={() => setConfirmOpen(false)}
+                  onConfirm={async () => {
+                    setConfirmOpen(false);
+                    if (confirmId) await handleDelete(confirmId);
+                    setConfirmId(null);
+                  }}
+                />
+              </>
+            ) : (
+              <div className={styles.noSelection}>Keine Analyse ausgewählt</div>
+            )}
           </React.Suspense>
         </div>
       </div>
@@ -92,9 +161,11 @@ export function Analysis({ onCreateTradeSuggestion, compactView = false }: Analy
 function DetailLoader({
   id,
   onCreateTrade,
+  onRequestDelete,
 }: {
   id: string;
   onCreateTrade?: (s: AnalysisSuggestion) => void | Promise<void>;
+  onRequestDelete?: (id: string) => void;
 }) {
   const [analysis, setAnalysis] = useState<AnalysisDTOType | null>(null);
 
@@ -133,6 +204,7 @@ function DetailLoader({
           market: marketGuess,
         });
       }}
+      onRequestDelete={onRequestDelete}
     />
   );
 }

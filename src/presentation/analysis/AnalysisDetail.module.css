@@ -17,7 +17,7 @@
 
 .notes {
   margin-top: 0.5rem;
-  color: var(--color-text, #333);
+  color: var(--color-muted, #9aa0a6);
 }
 
 .timeframes {
@@ -28,9 +28,11 @@
 }
 
 .tf {
-  padding: 0.5rem;
-  border: 1px solid var(--color-border, #eee);
-  border-radius: 6px;
+  padding: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.01), rgba(255, 255, 255, 0.005));
+  color: var(--color-text, #e6edf3);
 }
 
 .tfHeader {
@@ -40,20 +42,52 @@
 }
 
 .link {
-  color: var(--color-primary, #0366d6);
+  color: var(--color-primary, #7c5aff);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.tvIcon {
+  width: 20px;
+  height: 20px;
+  display: inline-block;
+  vertical-align: middle;
+  color: inherit;
 }
 
 .tfNote {
   margin: 0.5rem 0 0 0;
 }
 
-.button {
-  background: var(--color-primary, #0366d6);
-  color: white;
-  border: none;
-  padding: 0.4rem 0.6rem;
-  border-radius: 4px;
-  cursor: pointer;
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.createBtn {
+  padding: 6px 10px;
+}
+
+.openTradeBtn {
+  padding: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  width: 40px;
+  height: 36px;
+}
+
+.openTradeContent {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.openTradeIcon {
+  width: 18px;
+  height: 18px;
+  color: inherit;
 }
 
 .compact {

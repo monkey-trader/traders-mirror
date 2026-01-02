@@ -1,6 +1,7 @@
 export type AnalysisFormValues = {
   symbol: string;
   notes?: string;
+  market?: 'Forex' | 'Crypto';
 };
 
 export function validateAll(values: AnalysisFormValues) {

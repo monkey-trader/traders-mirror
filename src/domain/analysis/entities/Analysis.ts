@@ -10,6 +10,7 @@ export class Analysis {
   constructor(
     public readonly id: string,
     public readonly symbol: string,
+    public readonly market: 'Forex' | 'Crypto' | undefined,
     public readonly createdAt: string,
     public readonly timeframes: Record<Timeframe, TimeframeAnalysis>,
     public readonly notes?: string,

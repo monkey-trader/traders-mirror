@@ -32,6 +32,10 @@ export class InMemoryAnalysisRepository implements AnalysisRepository {
     this.store.clear();
   }
 
+  async delete(id: string): Promise<void> {
+    this.store.delete(id);
+  }
+
   // helper for tests
   seed(items: AnalysisDTO[]) {
     this.store.clear();
