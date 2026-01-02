@@ -46,11 +46,11 @@ export function AnalysisList({
               className={[styles.item, compactView ? styles.compact : '', isSelected ? styles.selected : '']
                 .filter(Boolean)
                 .join(' ')}
-              onClick={() => onSelect && onSelect(it.id)}
+              onClick={() => { if (onSelect) onSelect(it.id) }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
-                  onSelect && onSelect(it.id);
+                  if (onSelect) onSelect(it.id);
                 }
               }}
               tabIndex={0}

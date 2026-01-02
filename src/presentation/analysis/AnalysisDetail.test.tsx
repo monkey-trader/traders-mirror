@@ -2,8 +2,9 @@ import React from 'react'
 import '@testing-library/jest-dom'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { AnalysisDetail } from '@/presentation/analysis/AnalysisDetail'
+import type { AnalysisDTO } from '@/domain/analysis/interfaces/AnalysisRepository'
 
-const makeAnalysis = (overrides = {}) => ({
+const makeAnalysis = (overrides: Partial<AnalysisDTO> = {}): AnalysisDTO => ({
   id: 'a1',
   symbol: 'BTCUSD',
   createdAt: new Date().toISOString(),
