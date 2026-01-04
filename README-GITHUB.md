@@ -166,3 +166,67 @@ gh pr merge <PR_NUMBER> --squash --delete-branch
 ```bash
 gh pr merge <PR_NUMBER> --squash --delete-branch --admin
 ```
+
+## GitHub Actions & GH CLI (useful commands)
+
+Below are concrete `gh` and `git` commands that are useful when inspecting, re-running, or triggering GitHub Actions workflows — examples shown use the repository `monkey-trader/traders-mirror` and assume the `gh` CLI is authenticated and configured.
+
+- List recent workflow runs for the repo:
+```bash
+gh run list --repo monkey-trader/traders-mirror --limit 20
+```
+
+- Show details (metadata) for a specific run (replace `<run-id>`):
+```bash
+gh run view <run-id> --repo monkey-trader/traders-mirror --json databaseId,conclusion,status,event,headBranch,headSha,name,createdAt
+```
+
+- Fetch the full log for a run (or job) to inspect errors:
+```bash
+gh run view <run-id> --repo monkey-trader/traders-mirror --log
+# or view only failed step logs
+gh run view <run-id> --repo monkey-trader/traders-mirror --log-failed
+```
+
+- Re-run a previously completed/failed run:
+```bash
+gh run rerun <run-id> --repo monkey-trader/traders-mirror
+```
+
+- Watch a run until it completes (stream output):
+```bash
+gh run watch <run-id> --repo monkey-trader/traders-mirror
+```
+
+- Trigger a workflow dispatch (run a workflow file) on a specific branch with inputs:
+```bash
+gh workflow run deploy-pages.yml --ref fix-deploy -f source=pages -f source_branch=fix-deploy -f use_artifact=false -f force=false --repo monkey-trader/traders-mirror
+```
+
+- Trigger a workflow by name (example: Lint) on a branch:
+```bash
+gh workflow run Lint --repo monkey-trader/traders-mirror --ref fix-deploy
+```
+
+- List runs for a specific workflow file:
+```bash
+gh run list --workflow=deploy-pages.yml --repo monkey-trader/traders-mirror --limit 10
+```
+
+- Useful git commands executed during deploy or debugging:
+```bash
+# fetch a remote branch and check it out locally
+git fetch origin fix-deploy
+git checkout -B deploy-source origin/fix-deploy
+
+# stage, commit and push local changes
+git add <paths>
+git commit -m "chore: message"
+git push origin fix-deploy
+```
+
+Notes:
+- Use `--repo owner/repo` when running `gh` commands from outside the repository folder.
+- Replace `<run-id>` and branch names with the actual values from your project.
+- Many `gh` commands accept `--json` to extract structured fields useful for automation.
+

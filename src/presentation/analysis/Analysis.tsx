@@ -42,7 +42,10 @@ export function Analysis({ onCreateTradeSuggestion, compactView = false }: Analy
       if (!mounted) return;
       setList(
         all.map((a) => {
-          const marketValue = a.market === 'Forex' || a.market === 'Crypto' ? (a.market as 'Forex' | 'Crypto') : 'All';
+          const marketValue =
+            a.market === 'Forex' || a.market === 'Crypto'
+              ? (a.market as 'Forex' | 'Crypto')
+              : 'All';
           return {
             id: a.id,
             symbol: a.symbol,
@@ -67,7 +70,10 @@ export function Analysis({ onCreateTradeSuggestion, compactView = false }: Analy
         const all = await repository.listAll();
         setList(
           all.map((a) => {
-            const marketValue = a.market === 'Forex' || a.market === 'Crypto' ? (a.market as 'Forex' | 'Crypto') : 'All';
+            const marketValue =
+              a.market === 'Forex' || a.market === 'Crypto'
+                ? (a.market as 'Forex' | 'Crypto')
+                : 'All';
             return {
               id: a.id,
               symbol: a.symbol,
@@ -111,7 +117,10 @@ export function Analysis({ onCreateTradeSuggestion, compactView = false }: Analy
       const all = await repository.listAll();
       setList(
         all.map((a) => {
-          const marketValue = a.market === 'Forex' || a.market === 'Crypto' ? (a.market as 'Forex' | 'Crypto') : 'All';
+          const marketValue =
+            a.market === 'Forex' || a.market === 'Crypto'
+              ? (a.market as 'Forex' | 'Crypto')
+              : 'All';
           return {
             id: a.id,
             symbol: a.symbol,
@@ -159,7 +168,6 @@ export function Analysis({ onCreateTradeSuggestion, compactView = false }: Analy
               compactView={compactView}
               selectedId={selected}
               onSelect={handleOpen}
-              
             />
           </Card>
         </div>
@@ -168,7 +176,11 @@ export function Analysis({ onCreateTradeSuggestion, compactView = false }: Analy
           <React.Suspense fallback={<div>Loading...</div>}>
             {selected ? (
               <>
-                <DetailLoader id={selected} onCreateTrade={onCreateTradeSuggestion} onRequestDelete={requestDeleteFromDetail} />
+                <DetailLoader
+                  id={selected}
+                  onCreateTrade={onCreateTradeSuggestion}
+                  onRequestDelete={requestDeleteFromDetail}
+                />
                 <ConfirmDialog
                   open={confirmOpen}
                   title="Delete analysis"
