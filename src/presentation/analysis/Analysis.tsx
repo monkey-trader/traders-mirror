@@ -44,13 +44,16 @@ export function Analysis({ onCreateTradeSuggestion, compactView = false }: Analy
       const all = await repository.listAll();
       if (!mounted) return;
       setList(
-        all.map((a) => ({
-          id: a.id,
-          symbol: a.symbol,
-          createdAt: a.createdAt,
-          notes: a.notes,
-          market: a.market ?? 'All',
-        }))
+        all.map((a) => {
+          const marketValue = a.market === 'Forex' || a.market === 'Crypto' ? (a.market as 'Forex' | 'Crypto') : 'All';
+          return {
+            id: a.id,
+            symbol: a.symbol,
+            createdAt: a.createdAt,
+            notes: a.notes,
+            market: marketValue,
+          };
+        })
       );
     })();
     return () => {
@@ -66,13 +69,16 @@ export function Analysis({ onCreateTradeSuggestion, compactView = false }: Analy
         // ignore event details; simply reload full list to keep in sync
         const all = await repository.listAll();
         setList(
-          all.map((a) => ({
-            id: a.id,
-            symbol: a.symbol,
-            createdAt: a.createdAt,
-            notes: a.notes,
-            market: a.market ?? 'All',
-          }))
+          all.map((a) => {
+            const marketValue = a.market === 'Forex' || a.market === 'Crypto' ? (a.market as 'Forex' | 'Crypto') : 'All';
+            return {
+              id: a.id,
+              symbol: a.symbol,
+              createdAt: a.createdAt,
+              notes: a.notes,
+              market: marketValue,
+            };
+          })
         );
       } catch {
         /* ignore */
@@ -107,13 +113,16 @@ export function Analysis({ onCreateTradeSuggestion, compactView = false }: Analy
       await repository.delete(id);
       const all = await repository.listAll();
       setList(
-        all.map((a) => ({
-          id: a.id,
-          symbol: a.symbol,
-          createdAt: a.createdAt,
-          notes: a.notes,
-          market: a.market ?? 'All',
-        }))
+        all.map((a) => {
+          const marketValue = a.market === 'Forex' || a.market === 'Crypto' ? (a.market as 'Forex' | 'Crypto') : 'All';
+          return {
+            id: a.id,
+            symbol: a.symbol,
+            createdAt: a.createdAt,
+            notes: a.notes,
+            market: marketValue,
+          };
+        })
       );
       if (selected === id) setSelected(null);
     } catch (err) {
@@ -152,14 +161,17 @@ export function Analysis({ onCreateTradeSuggestion, compactView = false }: Analy
                       try {
                         const tradeRepo = new LocalStorageTradeRepository(undefined, { seedDefaults: false });
                         const trades = await tradeRepo.getAll();
-                        await loadMockAnalyses(repository, trades, async (items) => {
-                          const mapped = (items || []).map((a) => ({
-                            id: a.id,
-                            symbol: a.symbol,
-                            createdAt: a.createdAt,
-                            notes: a.notes,
-                            market: a.market ?? 'All',
-                          }));
+                        await loadMockAnalyses(repository, trades, async (items: AnalysisDTOType[] | undefined) => {
+                          const mapped: AnalysisSummary[] = (items || []).map((a) => {
+                            const marketValue = a.market === 'Forex' || a.market === 'Crypto' ? (a.market as 'Forex' | 'Crypto') : 'All';
+                            return {
+                              id: a.id,
+                              symbol: a.symbol,
+                              createdAt: a.createdAt,
+                              notes: a.notes,
+                              market: marketValue,
+                            };
+                          });
                           setList(mapped);
                         }, tradeRepo);
                       } catch (err) {

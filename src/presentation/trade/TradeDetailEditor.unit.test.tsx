@@ -15,9 +15,10 @@ describe('TradeDetailEditor', () => {
       notes: 'Test notes',
     };
 
-    let received: unknown = null;
+    type PrefillDetail = { tradeId: string; symbol: string; notes?: string; market?: 'Forex' | 'Crypto' | undefined };
+    let received: PrefillDetail | null = null;
     const handler = (e: Event) => {
-      received = (e as CustomEvent).detail as unknown;
+      received = (e as CustomEvent).detail as PrefillDetail;
     };
 
     globalThis.addEventListener('prefill-analysis', handler as EventListener);
@@ -29,10 +30,12 @@ describe('TradeDetailEditor', () => {
 
       // Expect an event to have been dispatched with tradeId and symbol
       expect(received).toBeTruthy();
-      expect(received.tradeId).toBe('t1');
-      expect(received.symbol).toBe('BTCUSD');
-      expect(received.notes).toBe('Test notes');
-      expect(['Forex', 'Crypto', undefined]).toContain(received.market);
+      if (!received) throw new Error('expected received event detail');
+      const r = received as PrefillDetail;
+      expect(r.tradeId).toBe('t1');
+      expect(r.symbol).toBe('BTCUSD');
+      expect(r.notes).toBe('Test notes');
+      expect(['Forex', 'Crypto', undefined]).toContain(r.market);
     } finally {
       globalThis.removeEventListener('prefill-analysis', handler as EventListener);
     }
