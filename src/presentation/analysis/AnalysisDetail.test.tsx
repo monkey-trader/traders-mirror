@@ -4,6 +4,7 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { AnalysisDetail } from '@/presentation/analysis/AnalysisDetail'
 import type { AnalysisDTO } from '@/domain/analysis/interfaces/AnalysisRepository'
+import LocalStorageTradeRepository from '@/infrastructure/trade/repositories/LocalStorageTradeRepository'
 
 const makeAnalysis = (overrides: Partial<AnalysisDTO> = {}): AnalysisDTO => ({
   id: 'a1',
@@ -78,19 +79,11 @@ describe('AnalysisDetail', () => {
     expect(onCreate).toHaveBeenCalledWith(sample.id)
   })
 
-  it('clicking open-trade icon updates hash and dispatches event', () => {
-    vi.useFakeTimers()
-    const spy = vi.spyOn(window, 'dispatchEvent')
+  it('does not show Open trade button when no linked trade exists', () => {
     const sample = makeAnalysis({ symbol: 'XYZ' })
-    const { getByLabelText } = render(<AnalysisDetail analysis={sample} />)
+    const { queryByLabelText } = render(<AnalysisDetail analysis={sample} />)
 
-    const openBtn = getByLabelText(`Open trade for ${sample.symbol}`)
-    fireEvent.click(openBtn)
-
-    expect(window.location.hash).toBe('#/journal')
-
-    vi.runAllTimers()
-    expect(spy).toHaveBeenCalled()
+    expect(queryByLabelText(`Open trade for ${sample.symbol}`)).toBeNull()
   })
 
   it('calls onRequestDelete when Delete button is clicked', () => {

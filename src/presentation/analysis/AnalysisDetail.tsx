@@ -2,6 +2,9 @@ import React from 'react';
 import styles from './AnalysisDetail.module.css';
 import { Button } from '@/presentation/shared/components/Button/Button';
 import { IconButton } from '@/presentation/shared/components/IconButton/IconButton';
+import LocalStorageTradeRepository from '@/infrastructure/trade/repositories/LocalStorageTradeRepository';
+import { TradeFactory } from '@/domain/trade/factories/TradeFactory';
+import { useEffect, useState } from 'react';
 
 type Timeframe = 'monthly' | 'weekly' | 'daily' | '4h' | '2h' | '1h' | '15min';
 
@@ -28,6 +31,26 @@ type Props = {
 };
 
 export function AnalysisDetail({ analysis, compactView = false, onCreateTrade, onRequestDelete }: Props) {
+  const [hasLinkedTrade, setHasLinkedTrade] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const repo = new LocalStorageTradeRepository(undefined, { seedDefaults: false });
+        const trades = await repo.getAll();
+        if (!mounted) return;
+        const found = trades.find((t) => (t as any).analysisId === analysis.id);
+        setHasLinkedTrade(Boolean(found));
+      } catch {
+        // ignore and assume no linked trade
+        if (mounted) setHasLinkedTrade(false);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, [analysis.id]);
   return (
     <div className={styles.container} data-testid="analysis-detail">
       <div className={styles.header}>
@@ -40,12 +63,13 @@ export function AnalysisDetail({ analysis, compactView = false, onCreateTrade, o
           >
             Create Trade
           </Button>
-          <IconButton
-            variant="ghost"
-            color="primary"
-            className={styles.openTradeBtn}
-            ariaLabel={`Open trade for ${analysis.symbol}`}
-            onClick={() => {
+          {hasLinkedTrade ? (
+            <IconButton
+              variant="ghost"
+              color="primary"
+              className={styles.openTradeBtn}
+              ariaLabel={`Open trade for ${analysis.symbol}`}
+              onClick={() => {
                 try {
                   globalThis.location.hash = '#/journal';
                   setTimeout(() => {
@@ -60,13 +84,14 @@ export function AnalysisDetail({ analysis, compactView = false, onCreateTrade, o
                 } catch {
                   /* ignore */
                 }
-            }}
-            style={{ marginLeft: 8 }}
-          >
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-              <path d="M14 3h7v7h-2V6.41l-9.29 9.3-1.42-1.42L17.59 5H14V3zM5 5h6v2H7v10h10v-4h2v6H5V5z" fill="currentColor" />
-            </svg>
-          </IconButton>
+              }}
+              style={{ marginLeft: 8 }}
+            >
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                <path d="M14 3h7v7h-2V6.41l-9.29 9.3-1.42-1.42L17.59 5H14V3zM5 5h6v2H7v10h10v-4h2v6H5V5z" fill="currentColor" />
+              </svg>
+            </IconButton>
+          ) : null}
           <Button
             variant="danger"
             onClick={() => {
