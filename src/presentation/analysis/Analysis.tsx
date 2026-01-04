@@ -56,6 +56,29 @@ export function Analysis({ onCreateTradeSuggestion, compactView = false }: Analy
   }, []);
 
   useEffect(() => {
+    // reload list when analyses change elsewhere in the app
+    const handler = async (e: Event) => {
+      try {
+        // ignore event details; simply reload full list to keep in sync
+        const all = await repository.listAll();
+        setList(
+          all.map((a) => ({
+            id: a.id,
+            symbol: a.symbol,
+            createdAt: a.createdAt,
+            notes: a.notes,
+            market: a.market ?? 'All',
+          }))
+        );
+      } catch {
+        /* ignore */
+      }
+    };
+    globalThis.addEventListener('analyses-updated', handler as EventListener);
+    return () => globalThis.removeEventListener('analyses-updated', handler as EventListener);
+  }, []);
+
+  useEffect(() => {
     // listen for deep-link events (dispatched from trade UI)
     const handler = (e: Event) => {
       try {

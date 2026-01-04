@@ -15,6 +15,13 @@ export class LocalStorageAnalysisRepository implements AnalysisRepository {
       all.push(analysis);
     }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
+    try {
+      globalThis.dispatchEvent(
+        new CustomEvent('analyses-updated', { detail: { type: idx >= 0 ? 'updated' : 'created', id: analysis.id } })
+      );
+    } catch {
+      // ignore dispatch errors in restricted environments
+    }
   }
 
   async getById(id: string): Promise<AnalysisDTO | null> {
@@ -48,5 +55,10 @@ export class LocalStorageAnalysisRepository implements AnalysisRepository {
     const all = await this.listAll();
     const filtered = all.filter((a) => a.id !== id);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
+    try {
+      globalThis.dispatchEvent(new CustomEvent('analyses-updated', { detail: { type: 'deleted', id } }));
+    } catch {
+      // ignore
+    }
   }
 }
