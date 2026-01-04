@@ -8,7 +8,6 @@ import { AnalysisDetail } from '@/presentation/analysis/AnalysisDetail';
 import { ConfirmDialog } from '@/presentation/shared/components/ConfirmDialog/ConfirmDialog';
 import { LocalStorageAnalysisRepository } from '@/infrastructure/analysis/repositories/LocalStorageAnalysisRepository';
 import type { AnalysisDTO as AnalysisDTOType } from '@/domain/analysis/interfaces/AnalysisRepository';
-import { Button } from '@/presentation/shared/components/Button/Button';
 // Editor types removed
 
 export type AnalysisSuggestion = {
