@@ -1,5 +1,34 @@
 // Global Vitest setup for jsdom
 
+// Remove malformed `--localstorage-file` arg from node execArgv to silence warnings
+try {
+  if (typeof process !== 'undefined' && Array.isArray(process.execArgv)) {
+    process.execArgv = process.execArgv.filter(
+      (a) => !(typeof a === 'string' && (a === '--localstorage-file' || a.startsWith('--localstorage-file=')))
+    );
+  }
+} catch (e) {
+  // ignore
+}
+
+// Suppress recurring node warning about malformed --localstorage-file flag
+try {
+  if (typeof process !== 'undefined' && typeof process.emitWarning === 'function') {
+    const _emit = process.emitWarning.bind(process);
+    process.emitWarning = (warning, ...args) => {
+      try {
+        const msg = String(warning || '');
+        if (msg.includes('--localstorage-file')) return;
+      } catch (e) {
+        // ignore
+      }
+      return _emit(warning, ...args);
+    };
+  }
+} catch (e) {
+  // ignore
+}
+
 // Mock ResizeObserver for jsdom
 global.ResizeObserver = class {
   observe() {}
