@@ -8,6 +8,7 @@ import { AnalysisDetail } from '@/presentation/analysis/AnalysisDetail';
 import { ConfirmDialog } from '@/presentation/shared/components/ConfirmDialog/ConfirmDialog';
 import { LocalStorageAnalysisRepository } from '@/infrastructure/analysis/repositories/LocalStorageAnalysisRepository';
 import type { AnalysisDTO as AnalysisDTOType } from '@/domain/analysis/interfaces/AnalysisRepository';
+import { Button } from '@/presentation/shared/components/Button/Button';
 // Editor types removed
 
 export type AnalysisSuggestion = {
@@ -41,13 +42,16 @@ export function Analysis({ onCreateTradeSuggestion, compactView = false }: Analy
       const all = await repository.listAll();
       if (!mounted) return;
       setList(
-        all.map((a) => ({
-          id: a.id,
-          symbol: a.symbol,
-          createdAt: a.createdAt,
-          notes: a.notes,
-          market: a.market ?? 'All',
-        }))
+        all.map((a) => {
+          const marketValue = a.market === 'Forex' || a.market === 'Crypto' ? (a.market as 'Forex' | 'Crypto') : 'All';
+          return {
+            id: a.id,
+            symbol: a.symbol,
+            createdAt: a.createdAt,
+            notes: a.notes,
+            market: marketValue,
+          };
+        })
       );
     })();
     return () => {
@@ -57,18 +61,22 @@ export function Analysis({ onCreateTradeSuggestion, compactView = false }: Analy
 
   useEffect(() => {
     // reload list when analyses change elsewhere in the app
-    const handler = async (e: Event) => {
+    const handler = async (_e: Event) => {
+      void _e;
       try {
         // ignore event details; simply reload full list to keep in sync
         const all = await repository.listAll();
         setList(
-          all.map((a) => ({
-            id: a.id,
-            symbol: a.symbol,
-            createdAt: a.createdAt,
-            notes: a.notes,
-            market: a.market ?? 'All',
-          }))
+          all.map((a) => {
+            const marketValue = a.market === 'Forex' || a.market === 'Crypto' ? (a.market as 'Forex' | 'Crypto') : 'All';
+            return {
+              id: a.id,
+              symbol: a.symbol,
+              createdAt: a.createdAt,
+              notes: a.notes,
+              market: marketValue,
+            };
+          })
         );
       } catch {
         /* ignore */
@@ -103,13 +111,16 @@ export function Analysis({ onCreateTradeSuggestion, compactView = false }: Analy
       await repository.delete(id);
       const all = await repository.listAll();
       setList(
-        all.map((a) => ({
-          id: a.id,
-          symbol: a.symbol,
-          createdAt: a.createdAt,
-          notes: a.notes,
-          market: a.market ?? 'All',
-        }))
+        all.map((a) => {
+          const marketValue = a.market === 'Forex' || a.market === 'Crypto' ? (a.market as 'Forex' | 'Crypto') : 'All';
+          return {
+            id: a.id,
+            symbol: a.symbol,
+            createdAt: a.createdAt,
+            notes: a.notes,
+            market: marketValue,
+          };
+        })
       );
       if (selected === id) setSelected(null);
     } catch (err) {
@@ -135,11 +146,14 @@ export function Analysis({ onCreateTradeSuggestion, compactView = false }: Analy
         <div className={styles.leftColumn}>
           <Card title="Analysen">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <MarketFilters
-                marketFilter={marketFilter}
-                setMarketFilter={setMarketFilter}
-                tradesCount={list.length}
-              />
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <MarketFilters
+                  marketFilter={marketFilter}
+                  setMarketFilter={setMarketFilter}
+                  tradesCount={list.length}
+                />
+                <div />
+              </div>
             </div>
             <AnalysisList
               items={marketFilter === 'All' ? list : list.filter((l) => l.market === marketFilter)}
