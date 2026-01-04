@@ -29,7 +29,12 @@ type Props = {
   onRequestDelete?: (id: string) => void;
 };
 
-export function AnalysisDetail({ analysis, compactView = false, onCreateTrade, onRequestDelete }: Props) {
+export function AnalysisDetail({
+  analysis,
+  compactView = false,
+  onCreateTrade,
+  onRequestDelete,
+}: Props) {
   const [hasLinkedTrade, setHasLinkedTrade] = useState(false);
 
   useEffect(() => {
@@ -39,7 +44,9 @@ export function AnalysisDetail({ analysis, compactView = false, onCreateTrade, o
         const repo = new LocalStorageTradeRepository(undefined, { seedDefaults: false });
         const trades = await repo.getAll();
         if (!mounted) return;
-        const found = trades.find((t) => (t as unknown as { analysisId?: string }).analysisId === analysis.id);
+        const found = trades.find(
+          (t) => (t as unknown as { analysisId?: string }).analysisId === analysis.id
+        );
         setHasLinkedTrade(Boolean(found));
       } catch {
         // ignore and assume no linked trade
@@ -87,7 +94,10 @@ export function AnalysisDetail({ analysis, compactView = false, onCreateTrade, o
               style={{ marginLeft: 8 }}
             >
               <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-                <path d="M14 3h7v7h-2V6.41l-9.29 9.3-1.42-1.42L17.59 5H14V3zM5 5h6v2H7v10h10v-4h2v6H5V5z" fill="currentColor" />
+                <path
+                  d="M14 3h7v7h-2V6.41l-9.29 9.3-1.42-1.42L17.59 5H14V3zM5 5h6v2H7v10h10v-4h2v6H5V5z"
+                  fill="currentColor"
+                />
               </svg>
             </IconButton>
           ) : null}

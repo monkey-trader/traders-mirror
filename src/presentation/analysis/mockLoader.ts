@@ -1,4 +1,7 @@
-import type { AnalysisRepository, AnalysisDTO } from '@/domain/analysis/interfaces/AnalysisRepository';
+import type {
+  AnalysisRepository,
+  AnalysisDTO,
+} from '@/domain/analysis/interfaces/AnalysisRepository';
 import type { Trade } from '@/domain/trade/entities/Trade';
 import type { TradeRepository } from '@/domain/trade/interfaces/TradeRepository';
 import { AnalysisFactory } from '@/domain/analysis/factories/AnalysisFactory';
@@ -30,11 +33,15 @@ export async function loadMockAnalyses(
   } | null;
 
   for (const t of picks) {
-      try {
+    try {
       const tradeAs = t as Trade;
       const symbolCandidate = (tradeAs as unknown as { symbol?: unknown }).symbol;
       let symbolValue = 'UNKNOWN';
-      if (symbolCandidate && typeof symbolCandidate === 'object' && 'value' in (symbolCandidate as Record<string, unknown>)) {
+      if (
+        symbolCandidate &&
+        typeof symbolCandidate === 'object' &&
+        'value' in (symbolCandidate as Record<string, unknown>)
+      ) {
         symbolValue = String((symbolCandidate as Record<string, unknown>).value ?? 'UNKNOWN');
       } else if (typeof symbolCandidate === 'string') {
         symbolValue = symbolCandidate;
@@ -44,7 +51,9 @@ export async function loadMockAnalyses(
         market: (tradeAs as unknown as { market?: string }).market ?? undefined,
         notes: `Mock analysis for ${symbolValue}`,
       };
-      const a = AnalysisFactory.create(input as unknown as Parameters<typeof AnalysisFactory.create>[0]);
+      const a = AnalysisFactory.create(
+        input as unknown as Parameters<typeof AnalysisFactory.create>[0]
+      );
       created.push(a);
       if (repoAny && typeof repoAny.save === 'function') {
         // persist immediately
@@ -58,7 +67,9 @@ export async function loadMockAnalyses(
           // convert existing trade -> DTO -> add analysisId -> create domain Trade -> update
           const dto = TradeFactory.toDTO(t as Trade);
           dto.analysisId = a.id;
-          const updated = TradeFactory.create(dto as unknown as Parameters<typeof TradeFactory.create>[0]);
+          const updated = TradeFactory.create(
+            dto as unknown as Parameters<typeof TradeFactory.create>[0]
+          );
           await tradeRepo.update(updated);
         } catch (err) {
           // eslint-disable-next-line no-console

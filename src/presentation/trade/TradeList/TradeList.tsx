@@ -20,7 +20,15 @@ import btnStyles from '@/presentation/shared/components/Button/Button.module.css
 import { IconButton } from '@/presentation/shared/components/IconButton/IconButton';
 import { PositionCard } from '@/presentation/shared/components/PositionCard/PositionCard';
 
-function AnalysisOpenButton({ analysisId, symbol, extraClass }: { analysisId?: string | null; symbol: string; extraClass?: string }) {
+function AnalysisOpenButton({
+  analysisId,
+  symbol,
+  extraClass,
+}: {
+  analysisId?: string | null;
+  symbol: string;
+  extraClass?: string;
+}) {
   if (!analysisId) return null;
   const className = [btnStyles.button, extraClass || ''].filter(Boolean).join(' ');
   return (
@@ -37,7 +45,9 @@ function AnalysisOpenButton({ analysisId, symbol, extraClass }: { analysisId?: s
           globalThis.location.hash = `#/analysis?id=${encodeURIComponent(analysisId ?? '')}`;
           setTimeout(() => {
             try {
-              globalThis.dispatchEvent(new CustomEvent('open-analysis', { detail: { id: analysisId } }));
+              globalThis.dispatchEvent(
+                new CustomEvent('open-analysis', { detail: { id: analysisId } })
+              );
             } catch {
               /* ignore */
             }
@@ -47,8 +57,16 @@ function AnalysisOpenButton({ analysisId, symbol, extraClass }: { analysisId?: s
         }
       }}
       icon={
-        <svg className={styles.analysisIcon} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-          <path d="M14 3h7v7h-2V6.41l-9.29 9.3-1.42-1.42L17.59 5H14V3zM5 5h6v2H7v10h10v-4h2v6H5V5z" fill="currentColor" />
+        <svg
+          className={styles.analysisIcon}
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden
+        >
+          <path
+            d="M14 3h7v7h-2V6.41l-9.29 9.3-1.42-1.42L17.59 5H14V3zM5 5h6v2H7v10h10v-4h2v6H5V5z"
+            fill="currentColor"
+          />
         </svg>
       }
     />
@@ -102,7 +120,11 @@ export function TradeList({
                 />
                 {t.analysisId ? (
                   <div>
-                    <AnalysisOpenButton analysisId={t.analysisId} symbol={t.symbol} extraClass={styles.analysisBtn} />
+                    <AnalysisOpenButton
+                      analysisId={t.analysisId}
+                      symbol={t.symbol}
+                      extraClass={styles.analysisBtn}
+                    />
                   </div>
                 ) : null}
               </div>
@@ -120,11 +142,11 @@ export function TradeList({
   return (
     <div className={styles.list} role="list">
       {trades.map((t) => {
-      const isSelected = selectedId === t.id;
+        const isSelected = selectedId === t.id;
 
-      // normalize side value to a predictable key and restrict to only 'long' or 'short'
-      const rawSide = (t.side || '').toString().replace(/['"`]/g, '').trim().toLowerCase();
-      const sideKey = rawSide === 'long' || rawSide === 'buy' ? 'long' : 'short';
+        // normalize side value to a predictable key and restrict to only 'long' or 'short'
+        const rawSide = (t.side || '').toString().replace(/['"`]/g, '').trim().toLowerCase();
+        const sideKey = rawSide === 'long' || rawSide === 'buy' ? 'long' : 'short';
 
         const sideClass = sideKey === 'long' ? styles.sideLong : styles.sideShort;
 
@@ -158,11 +180,15 @@ export function TradeList({
               {/* TP1–TP4 werden hier NICHT mehr angezeigt */}
             </div>
             <div className={styles.rowRight}>
-                {t.analysisId ? (
-                  <div style={{ marginRight: 8 }}>
-                    <AnalysisOpenButton analysisId={t.analysisId} symbol={t.symbol} extraClass={styles.analysisBtn} />
-                  </div>
-                ) : null}
+              {t.analysisId ? (
+                <div style={{ marginRight: 8 }}>
+                  <AnalysisOpenButton
+                    analysisId={t.analysisId}
+                    symbol={t.symbol}
+                    extraClass={styles.analysisBtn}
+                  />
+                </div>
+              ) : null}
               <div
                 className={[styles.side, sideClass].join(' ')}
                 aria-label={`Side: ${sideKey}`}

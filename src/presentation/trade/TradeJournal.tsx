@@ -91,9 +91,11 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
   } = useTradesViewModel({ repoRef, analysisService, setLastStatus });
 
   // Prefill state when opening Add Analysis from other parts of the app
-  const [initialAnalysis, setInitialAnalysis] = useState<
-    { symbol?: string; notes?: string; market?: 'Forex' | 'Crypto' } | null
-  >(null);
+  const [initialAnalysis, setInitialAnalysis] = useState<{
+    symbol?: string;
+    notes?: string;
+    market?: 'Forex' | 'Crypto';
+  } | null>(null);
   const [pendingLinkTradeId, setPendingLinkTradeId] = useState<string | null>(null);
 
   useEffect(() => {

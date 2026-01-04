@@ -17,7 +17,9 @@ export class LocalStorageAnalysisRepository implements AnalysisRepository {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
     try {
       globalThis.dispatchEvent(
-        new CustomEvent('analyses-updated', { detail: { type: idx >= 0 ? 'updated' : 'created', id: analysis.id } })
+        new CustomEvent('analyses-updated', {
+          detail: { type: idx >= 0 ? 'updated' : 'created', id: analysis.id },
+        })
       );
     } catch {
       // ignore dispatch errors in restricted environments
@@ -56,7 +58,9 @@ export class LocalStorageAnalysisRepository implements AnalysisRepository {
     const filtered = all.filter((a) => a.id !== id);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
     try {
-      globalThis.dispatchEvent(new CustomEvent('analyses-updated', { detail: { type: 'deleted', id } }));
+      globalThis.dispatchEvent(
+        new CustomEvent('analyses-updated', { detail: { type: 'deleted', id } })
+      );
     } catch {
       // ignore
     }

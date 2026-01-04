@@ -73,11 +73,11 @@
   display: inline-block;
   flex: 0 0 14px;
 
-.analysisBtn {
-  padding: 6px 8px;
-  border-radius: 8px;
-  text-decoration: none;
-}
+  .analysisBtn {
+    padding: 6px 8px;
+    border-radius: 8px;
+    text-decoration: none;
+  }
   color: var(--color-primary); /* use theme primary color */
   opacity: 0.98;
 }
@@ -99,10 +99,10 @@
 }
 
 .analysisBtn:hover {
-  background: linear-gradient(180deg, rgba(37,99,235,0.06), rgba(255,255,255,0.01));
+  background: linear-gradient(180deg, rgba(37, 99, 235, 0.06), rgba(255, 255, 255, 0.01));
   transform: translateY(-2px);
   color: #2563eb;
-  box-shadow: 0 8px 22px rgba(37,99,235,0.08);
+  box-shadow: 0 8px 22px rgba(37, 99, 235, 0.08);
 }
 
 .analysisBtn:active {
