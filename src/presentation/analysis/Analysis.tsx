@@ -40,9 +40,21 @@ export function Analysis({ onCreateTradeSuggestion, compactView = false }: Analy
     (async () => {
       const all = await repository.listAll();
       if (!mounted) return;
+      const toMarketString = (m: unknown) => {
+        if (!m) return '';
+        if (typeof m === 'string') return m;
+        try {
+          const maybe = m as { value?: unknown };
+          if (typeof maybe.value === 'string') return maybe.value;
+        } catch {
+          /* ignore */
+        }
+        return '';
+      };
+
       setList(
         all.map((a) => {
-          const raw = String(a.market ?? '');
+          const raw = String(toMarketString(a.market) ?? '');
           const normalized = raw.trim().toLowerCase();
           const marketValue = normalized === 'forex' ? 'Forex' : normalized === 'crypto' ? 'Crypto' : 'All';
           return {
@@ -67,9 +79,21 @@ export function Analysis({ onCreateTradeSuggestion, compactView = false }: Analy
       try {
         // ignore event details; simply reload full list to keep in sync
         const all = await repository.listAll();
+        const toMarketString = (m: unknown) => {
+          if (!m) return '';
+          if (typeof m === 'string') return m;
+          try {
+            const maybe = m as { value?: unknown };
+            if (typeof maybe.value === 'string') return maybe.value;
+          } catch {
+            /* ignore */
+          }
+          return '';
+        };
+
         setList(
           all.map((a) => {
-            const raw = String(a.market ?? '');
+            const raw = String(toMarketString(a.market) ?? '');
             const normalized = raw.trim().toLowerCase();
             const marketValue = normalized === 'forex' ? 'Forex' : normalized === 'crypto' ? 'Crypto' : 'All';
             return {
@@ -113,20 +137,32 @@ export function Analysis({ onCreateTradeSuggestion, compactView = false }: Analy
     try {
       await repository.delete(id);
       const all = await repository.listAll();
-      setList(
-        all.map((a) => {
-          const raw = String(a.market ?? '');
-          const normalized = raw.trim().toLowerCase();
-          const marketValue = normalized === 'forex' ? 'Forex' : normalized === 'crypto' ? 'Crypto' : 'All';
-          return {
-            id: a.id,
-            symbol: a.symbol,
-            createdAt: a.createdAt,
-            notes: a.notes,
-            market: marketValue,
-          };
-        })
-      );
+        const toMarketString = (m: unknown) => {
+          if (!m) return '';
+          if (typeof m === 'string') return m;
+          try {
+            const maybe = m as { value?: unknown };
+            if (typeof maybe.value === 'string') return maybe.value;
+          } catch {
+            /* ignore */
+          }
+          return '';
+        };
+
+        setList(
+          all.map((a) => {
+            const raw = String(toMarketString(a.market) ?? '');
+            const normalized = raw.trim().toLowerCase();
+            const marketValue = normalized === 'forex' ? 'Forex' : normalized === 'crypto' ? 'Crypto' : 'All';
+            return {
+              id: a.id,
+              symbol: a.symbol,
+              createdAt: a.createdAt,
+              notes: a.notes,
+              market: marketValue,
+            };
+          })
+        );
       if (selected === id) setSelected(null);
     } catch (err) {
       // eslint-disable-next-line no-console
