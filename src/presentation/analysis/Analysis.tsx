@@ -67,8 +67,8 @@ export function Analysis({ onCreateTradeSuggestion, compactView = false }: Analy
         // ignore
       }
     };
-    window.addEventListener('open-analysis', handler as EventListener);
-    return () => window.removeEventListener('open-analysis', handler as EventListener);
+    globalThis.addEventListener('open-analysis', handler as EventListener);
+    return () => globalThis.removeEventListener('open-analysis', handler as EventListener);
   }, []);
 
   const handleOpen = async (id: string) => {

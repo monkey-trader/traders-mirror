@@ -55,8 +55,8 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
         /* ignore */
       }
     };
-    window.addEventListener('storage', handler);
-    return () => window.removeEventListener('storage', handler);
+    globalThis.addEventListener('storage', handler as EventListener);
+    return () => globalThis.removeEventListener('storage', handler as EventListener);
   }, []);
 
   // modal state for loading mock data
@@ -314,14 +314,14 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
         /* ignore */
       }
     };
-    window.addEventListener('open-trade', handler as EventListener);
-    return () => window.removeEventListener('open-trade', handler as EventListener);
+    globalThis.addEventListener('open-trade', handler as EventListener);
+    return () => globalThis.removeEventListener('open-trade', handler as EventListener);
   }, [positions, isMobile]);
 
   // small visible status panel (debug) — can be removed later
   const repoEnabled = Boolean(repoRef.current);
   // read user setting and env default for debug UI
-  const settings = typeof window !== 'undefined' ? loadSettings() : {};
+  const settings = typeof globalThis !== 'undefined' ? loadSettings() : {};
   const debugUiEnabled =
     typeof settings.debugUI === 'boolean'
       ? settings.debugUI

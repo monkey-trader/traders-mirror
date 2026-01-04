@@ -34,10 +34,10 @@ function AnalysisOpenButton({ analysisId, symbol, extraClass }: { analysisId?: s
         e.preventDefault();
         e.stopPropagation();
         try {
-          window.location.hash = `#/analysis?id=${encodeURIComponent(analysisId ?? '')}`;
+          globalThis.location.hash = `#/analysis?id=${encodeURIComponent(analysisId ?? '')}`;
           setTimeout(() => {
             try {
-              window.dispatchEvent(new CustomEvent('open-analysis', { detail: { id: analysisId } }));
+              globalThis.dispatchEvent(new CustomEvent('open-analysis', { detail: { id: analysisId } }));
             } catch {
               /* ignore */
             }

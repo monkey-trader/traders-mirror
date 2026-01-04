@@ -130,14 +130,14 @@ export function TradeDetailEditor({
 
   const openAnalysis = (aid: string) => {
     try {
-      window.location.hash = `#/analysis?id=${encodeURIComponent(aid ?? '')}`;
-      setTimeout(() => {
-        try {
-          window.dispatchEvent(new CustomEvent('open-analysis', { detail: { id: aid } }));
-        } catch {
-          /* ignore */
-        }
-      }, 50);
+      globalThis.location.hash = `#/analysis?id=${encodeURIComponent(aid ?? '')}`;
+          setTimeout(() => {
+            try {
+              globalThis.dispatchEvent(new CustomEvent('open-analysis', { detail: { id: aid } }));
+            } catch {
+              /* ignore */
+            }
+          }, 50);
     } catch {
       // ignore
     }

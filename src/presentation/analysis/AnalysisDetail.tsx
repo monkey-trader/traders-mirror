@@ -46,20 +46,20 @@ export function AnalysisDetail({ analysis, compactView = false, onCreateTrade, o
             className={styles.openTradeBtn}
             ariaLabel={`Open trade for ${analysis.symbol}`}
             onClick={() => {
-              try {
-                window.location.hash = '#/journal';
-                setTimeout(() => {
-                  try {
-                    window.dispatchEvent(
-                      new CustomEvent('open-trade', { detail: { analysisId: analysis.id } })
-                    );
-                  } catch {
-                    /* ignore */
-                  }
-                }, 50);
-              } catch {
-                /* ignore */
-              }
+                try {
+                  globalThis.location.hash = '#/journal';
+                  setTimeout(() => {
+                    try {
+                      globalThis.dispatchEvent(
+                        new CustomEvent('open-trade', { detail: { analysisId: analysis.id } })
+                      );
+                    } catch {
+                      /* ignore */
+                    }
+                  }, 50);
+                } catch {
+                  /* ignore */
+                }
             }}
             style={{ marginLeft: 8 }}
           >
