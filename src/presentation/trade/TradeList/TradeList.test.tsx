@@ -4,6 +4,22 @@ import userEvent from '@testing-library/user-event'
 import { vi, afterEach, describe, it, expect } from 'vitest'
 import { TradeList, type TradeListItem } from './TradeList'
 
+vi.mock('@/presentation/shared/components/IconButton/IconButton', () => ({
+  IconButton: (props: { ariaLabel?: string; onClick?: React.MouseEventHandler<HTMLButtonElement>; title?: string; icon?: React.ReactNode }) => (
+    <button aria-label={props.ariaLabel} onClick={props.onClick} title={props.title}>
+      {props.icon ? 'icon' : 'btn'}
+    </button>
+  ),
+}))
+
+vi.mock('@/presentation/shared/components/PositionCard/PositionCard', () => ({
+  PositionCard: (props: { id: string; symbol: string; onExpand?: (id: string) => void }) => (
+    <button data-testid={`pos-${props.id}`} onClick={() => props.onExpand?.(props.id)}>
+      {props.symbol}
+    </button>
+  ),
+}))
+
 afterEach(() => {
   vi.restoreAllMocks()
 })
@@ -52,7 +68,7 @@ describe('TradeList', () => {
     await waitFor(() => expect(dispatchSpy).toHaveBeenCalled())
     const calledWith = dispatchSpy.mock.calls[0][0]
     expect(calledWith.type).toBe('open-analysis')
-    // @ts-ignore - CustomEvent typing
+    // @ts-expect-error - CustomEvent typing may be narrower in TS lib
     expect(calledWith.detail?.id).toBe('an-123')
   })
 
@@ -113,7 +129,7 @@ describe('TradeList', () => {
       {
         id: 'a1',
         symbol: 'USDCHF',
-        entryDate: '2025-01-02T00:00:00Z',
+        entryDate: '2025-01-02T00:00:00.000Z',
         size: 1,
         price: 1,
         side: 'LONG',

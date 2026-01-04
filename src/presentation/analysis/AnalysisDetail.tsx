@@ -3,7 +3,6 @@ import styles from './AnalysisDetail.module.css';
 import { Button } from '@/presentation/shared/components/Button/Button';
 import { IconButton } from '@/presentation/shared/components/IconButton/IconButton';
 import LocalStorageTradeRepository from '@/infrastructure/trade/repositories/LocalStorageTradeRepository';
-import { TradeFactory } from '@/domain/trade/factories/TradeFactory';
 import { useEffect, useState } from 'react';
 
 type Timeframe = 'monthly' | 'weekly' | 'daily' | '4h' | '2h' | '1h' | '15min';
@@ -40,7 +39,7 @@ export function AnalysisDetail({ analysis, compactView = false, onCreateTrade, o
         const repo = new LocalStorageTradeRepository(undefined, { seedDefaults: false });
         const trades = await repo.getAll();
         if (!mounted) return;
-        const found = trades.find((t) => (t as any).analysisId === analysis.id);
+        const found = trades.find((t) => (t as unknown as { analysisId?: string }).analysisId === analysis.id);
         setHasLinkedTrade(Boolean(found));
       } catch {
         // ignore and assume no linked trade

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, beforeEach } from 'vitest'
 import { LocalStorageAnalysisRepository } from './LocalStorageAnalysisRepository'
 import type { AnalysisDTO } from '@/domain/analysis/interfaces/AnalysisRepository'

@@ -34,7 +34,6 @@ describe('AnalysisList', () => {
     expect(onSelect).toHaveBeenCalled()
 
     // keyboard Enter on second item should call onSelect
-    const secondItem = screen.getByTestId('analysis-item-a2')
     await user.keyboard('{Tab}{Tab}{Enter}')
     // at least assert that onSelect was called multiple times
     expect(onSelect.mock.calls.length).toBeGreaterThanOrEqual(2)

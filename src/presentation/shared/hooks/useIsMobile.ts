@@ -2,17 +2,19 @@ import { useEffect, useState } from 'react';
 
 export function useIsMobile(maxWidth = 480) {
   const [isMobile, setIsMobile] = useState<boolean>(() => {
-    if (typeof globalThis === 'undefined' || typeof (globalThis as any).matchMedia === 'undefined') return false;
+    const g = globalThis as unknown as { matchMedia?: (q: string) => MediaQueryList };
+    if (typeof globalThis === 'undefined' || typeof g.matchMedia === 'undefined') return false;
     try {
-      return (globalThis as any).matchMedia(`(max-width:${maxWidth}px)`).matches;
+      return g.matchMedia?.(`(max-width:${maxWidth}px)`).matches ?? false;
     } catch {
       return false;
     }
   });
 
   useEffect(() => {
-    if (typeof globalThis === 'undefined' || typeof (globalThis as any).matchMedia === 'undefined') return;
-    const mq = (globalThis as any).matchMedia(`(max-width:${maxWidth}px)`);
+    const g = globalThis as unknown as { matchMedia?: (q: string) => MediaQueryList };
+    if (typeof globalThis === 'undefined' || typeof g.matchMedia === 'undefined') return;
+    const mq = g.matchMedia(`(max-width:${maxWidth}px)`);
     const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
     try {
       mq.addEventListener('change', handler);

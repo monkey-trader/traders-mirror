@@ -4,7 +4,6 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { AnalysisDetail } from '@/presentation/analysis/AnalysisDetail'
 import type { AnalysisDTO } from '@/domain/analysis/interfaces/AnalysisRepository'
-import LocalStorageTradeRepository from '@/infrastructure/trade/repositories/LocalStorageTradeRepository'
 
 const makeAnalysis = (overrides: Partial<AnalysisDTO> = {}): AnalysisDTO => ({
   id: 'a1',

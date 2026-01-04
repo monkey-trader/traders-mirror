@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, beforeEach } from 'vitest'
 import { InMemoryAnalysisRepository } from './InMemoryAnalysisRepository'
 import { AnalysisFactory } from '@/domain/analysis/factories/AnalysisFactory'
