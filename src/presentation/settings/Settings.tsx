@@ -100,9 +100,8 @@ function StorageControls() {
       return;
     }
     // typed no-op setter for analysis list updates (used when calling loader/clear from settings)
-    const noopSetAnalyses = (_items: AnalysisDTO[]) => {
+    const noopSetAnalyses: (items: AnalysisDTO[]) => void = () => {
       // intentionally no-op; UI will refresh via storage events
-      return undefined;
     };
 
     try {
@@ -130,7 +129,10 @@ function StorageControls() {
 
         setInfoMessage(`Deleted ${count} stored trade${count === 1 ? '' : 's'}`);
         if (infoTimerRef.current) window.clearTimeout(infoTimerRef.current);
-        infoTimerRef.current = window.setTimeout(() => window.location.reload(), 1200) as unknown as number;
+        infoTimerRef.current = window.setTimeout(
+          () => window.location.reload(),
+          1200
+        ) as unknown as number;
       } else if (confirmAction === 'restore') {
         const count = Array.isArray(COMBINED_MOCK_TRADES) ? COMBINED_MOCK_TRADES.length : 0;
         // persist trades first
@@ -146,7 +148,13 @@ function StorageControls() {
             try {
               const trades = await tradeRepo.getAll();
               // call loader with a typed no-op setter; UI components will refresh via storage events
-              await loadMockAnalyses(analysisRepo, trades, noopSetAnalyses, tradeRepo, Math.min(5, count));
+              await loadMockAnalyses(
+                analysisRepo,
+                trades,
+                noopSetAnalyses,
+                tradeRepo,
+                Math.min(5, count)
+              );
             } catch (err) {
               // eslint-disable-next-line no-console
               console.warn('Failed to seed analyses for restored demo trades', err);
@@ -159,7 +167,10 @@ function StorageControls() {
 
         setInfoMessage(`Loaded ${count} demo trade${count === 1 ? '' : 's'}`);
         if (infoTimerRef.current) window.clearTimeout(infoTimerRef.current);
-        infoTimerRef.current = window.setTimeout(() => window.location.reload(), 1200) as unknown as number;
+        infoTimerRef.current = window.setTimeout(
+          () => window.location.reload(),
+          1200
+        ) as unknown as number;
       }
     } finally {
       setConfirmOpen(false);

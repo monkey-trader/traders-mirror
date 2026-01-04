@@ -15,7 +15,12 @@ describe('TradeDetailEditor', () => {
       notes: 'Test notes',
     };
 
-    type PrefillDetail = { tradeId: string; symbol: string; notes?: string; market?: 'Forex' | 'Crypto' | undefined };
+    type PrefillDetail = {
+      tradeId: string;
+      symbol: string;
+      notes?: string;
+      market?: 'Forex' | 'Crypto' | undefined;
+    };
     let received: PrefillDetail | null = null;
     const handler = (e: Event) => {
       received = (e as CustomEvent).detail as PrefillDetail;
@@ -23,7 +28,11 @@ describe('TradeDetailEditor', () => {
 
     globalThis.addEventListener('prefill-analysis', handler as EventListener);
     try {
-      render(<TradeDetailEditor trade={trade as unknown as import('@/domain/trade/factories/TradeFactory').TradeInput} />);
+      render(
+        <TradeDetailEditor
+          trade={trade as unknown as import('@/domain/trade/factories/TradeFactory').TradeInput}
+        />
+      );
 
       const btn = await screen.findByText('Create Analyse');
       fireEvent.click(btn);

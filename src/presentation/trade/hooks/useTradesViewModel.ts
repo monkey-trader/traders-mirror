@@ -79,7 +79,7 @@ export function useTradesViewModel({
           next = prev.map((p) => (p.id === id ? { ...p, ...normalizedPatch } : p));
           const updated = next.find((t) => t.id === id)!;
           void (async () => {
-              try {
+            try {
               if (!repoRef.current) {
                 console.warn('Repository unavailable');
                 return;

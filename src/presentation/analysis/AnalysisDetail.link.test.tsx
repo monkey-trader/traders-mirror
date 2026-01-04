@@ -59,6 +59,8 @@ describe('AnalysisDetail open-trade link', () => {
 
     render(<AnalysisDetail analysis={sampleAnalysis as any} />);
 
-    await waitFor(() => expect(screen.getByRole('button', { name: /Open trade for BTCUSD/i })).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /Open trade for BTCUSD/i })).toBeTruthy()
+    );
   });
 });

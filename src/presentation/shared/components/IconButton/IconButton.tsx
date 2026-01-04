@@ -31,10 +31,19 @@ export function IconButton({
   const resolvedColor = effectiveColor === 'primary' ? 'var(--color-primary)' : effectiveColor;
 
   // Merge provided style with resolved color so child SVGs using currentColor inherit
-  const mergedStyle = { ...(rest.style as React.CSSProperties), ...(resolvedColor ? { color: resolvedColor } : {}) };
+  const mergedStyle = {
+    ...(rest.style as React.CSSProperties),
+    ...(resolvedColor ? { color: resolvedColor } : {}),
+  };
 
   return (
-    <Button aria-label={ariaLabel} variant={variant} className={`${styles.iconBtn} ${cls}`} {...rest} style={mergedStyle}>
+    <Button
+      aria-label={ariaLabel}
+      variant={variant}
+      className={`${styles.iconBtn} ${cls}`}
+      {...rest}
+      style={mergedStyle}
+    >
       <span className={styles.inner} aria-hidden>
         {icon ?? children}
       </span>

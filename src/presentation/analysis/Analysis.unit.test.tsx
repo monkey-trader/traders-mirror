@@ -28,7 +28,18 @@ vi.mock('@/presentation/analysis/AnalysisDetail', () => ({
   AnalysisDetail: ({ analysis, onCreateTrade, onRequestDelete }: any) => (
     <div>
       <div data-testid="analysis-detail">{analysis ? analysis.symbol : 'no'}</div>
-      <button onClick={() => onCreateTrade && onCreateTrade({ analysisId: analysis.id, symbol: analysis.symbol, price: 0, entryDate: new Date().toISOString(), market: 'Crypto' })}>
+      <button
+        onClick={() =>
+          onCreateTrade &&
+          onCreateTrade({
+            analysisId: analysis.id,
+            symbol: analysis.symbol,
+            price: 0,
+            entryDate: new Date().toISOString(),
+            market: 'Crypto',
+          })
+        }
+      >
         create
       </button>
       <button onClick={() => onRequestDelete && onRequestDelete(analysis.id)}>delete</button>
@@ -73,7 +84,13 @@ describe('Analysis component', () => {
   });
 
   it('responds to open-analysis event and renders detail', async () => {
-    const sample = { id: 'a1', symbol: 'BTCUSD', createdAt: new Date().toISOString(), notes: '', market: 'Crypto' };
+    const sample = {
+      id: 'a1',
+      symbol: 'BTCUSD',
+      createdAt: new Date().toISOString(),
+      notes: '',
+      market: 'Crypto',
+    };
     mockListAll.mockResolvedValue([sample]);
     mockGetById.mockResolvedValue(sample);
 
@@ -87,7 +104,9 @@ describe('Analysis component', () => {
     window.dispatchEvent(new CustomEvent('open-analysis', { detail: { id: 'a1' } }));
 
     // DetailLoader initially shows loading, then our stubbed AnalysisDetail with symbol
-    await waitFor(() => expect(screen.getByTestId('analysis-detail').textContent).toContain('BTCUSD'));
+    await waitFor(() =>
+      expect(screen.getByTestId('analysis-detail').textContent).toContain('BTCUSD')
+    );
 
     // clicking create should call the onCreateTrade handler (no-op in this test)
     fireEvent.click(screen.getByText('create'));
