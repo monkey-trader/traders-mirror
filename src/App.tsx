@@ -24,19 +24,26 @@ function App() {
     return () => window.removeEventListener('hashchange', onHash);
   }, []);
 
+  const isSettings = route.startsWith('#/settings');
+  const isAnalysis = route.startsWith('#/analysis');
+
+  let mainContent: React.ReactNode;
+  if (isSettings) {
+    mainContent = <Settings />;
+  } else if (isAnalysis) {
+    mainContent = <Analysis />;
+  } else {
+    // create repo at composition root and inject into TradeJournal
+    // Do not seed default mock trades for the running app; keep storage empty on first-run
+    const repo = new LocalStorageTradeRepository(undefined, { seedDefaults: false });
+    mainContent = <TradeJournal repo={repo} />;
+  }
+
   return (
     <Layout fullWidth={true}>
       {/* Simple hash-based routing: #/journal, #/analysis, #/settings.
           Support query/hash params like #/analysis?id=... by matching prefix. */}
-      {route.startsWith('#/settings') ? (
-        <Settings />
-      ) : route.startsWith('#/analysis') ? (
-        <Analysis />
-      ) : (
-        // create repo at composition root and inject into TradeJournal
-        // Do not seed default mock trades for the running app; keep storage empty on first-run
-        <TradeJournal repo={new LocalStorageTradeRepository(undefined, { seedDefaults: false })} />
-      )}
+      {mainContent}
     </Layout>
   );
 }
