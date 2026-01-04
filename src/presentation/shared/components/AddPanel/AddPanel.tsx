@@ -10,6 +10,11 @@ type Mode = 'trade' | 'analysis';
 
 type Props = {
   mode: Mode;
+  initialAnalysis?: {
+    symbol?: string;
+    notes?: string;
+    market?: 'Forex' | 'Crypto';
+  };
   // NewTradeForm props
   isMobile?: boolean;
   form?: NewTradeFormState;
@@ -48,13 +53,14 @@ export function AddPanel({
   setMarketFilter,
   // analysis
   onSaveAnalysis,
+  initialAnalysis,
 }: Props) {
   if (mode === 'analysis') {
     return (
       <div data-testid="add-panel-analysis">
         <AddFormCard title="Add Analysis">
           <div style={{ marginTop: 12 }}>
-            <AnalysisEditor onSave={onSaveAnalysis} />
+            <AnalysisEditor initial={initialAnalysis} onSave={onSaveAnalysis} />
           </div>
         </AddFormCard>
       </div>

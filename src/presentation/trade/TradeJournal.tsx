@@ -87,7 +87,35 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
     handleEditorSave,
     undoInfo,
     handleUndo,
+    updateTradeById,
   } = useTradesViewModel({ repoRef, analysisService, setLastStatus });
+
+  // Prefill state when opening Add Analysis from other parts of the app
+  const [initialAnalysis, setInitialAnalysis] = useState<
+    { symbol?: string; notes?: string; market?: 'Forex' | 'Crypto' } | null
+  >(null);
+  const [pendingLinkTradeId, setPendingLinkTradeId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      try {
+        const detail = (e as CustomEvent).detail;
+        if (!detail) return;
+        const ia = {
+          symbol: detail.symbol as string | undefined,
+          notes: detail.notes as string | undefined,
+          market: detail.market as 'Forex' | 'Crypto' | undefined,
+        };
+        setInitialAnalysis(ia);
+        if (detail.tradeId) setPendingLinkTradeId(detail.tradeId as string);
+        setTradesCardTab('analysis');
+      } catch {
+        /* ignore */
+      }
+    };
+    globalThis.addEventListener('prefill-analysis', handler as EventListener);
+    return () => globalThis.removeEventListener('prefill-analysis', handler as EventListener);
+  }, []);
 
   // market and status filters (missing earlier) — restore here
   const [marketFilter, setMarketFilter] = useState<'All' | 'Crypto' | 'Forex'>('All');
@@ -428,6 +456,7 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
             setMarketFilter={(m: string) =>
               setMarketFilter(m === '' ? 'All' : (m as 'All' | 'Crypto' | 'Forex'))
             }
+            initialAnalysis={initialAnalysis ?? undefined}
             onSaveAnalysis={async (
               input: AnalysisFormValues & { timeframes?: TimeframeInput[] }
             ) => {
@@ -444,8 +473,18 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
                       }))
                     : input.timeframes,
                 };
-                await analysisService.createAnalysis(payload);
-                // optionally switch to list and show created analysis later
+                const created = await analysisService.createAnalysis(payload);
+                // if this creation was initiated from a trade detail, link it
+                if (pendingLinkTradeId && updateTradeById) {
+                  try {
+                    updateTradeById(pendingLinkTradeId, { analysisId: created.id });
+                  } catch {
+                    /* ignore linking errors */
+                  }
+                  setPendingLinkTradeId(null);
+                  setInitialAnalysis(null);
+                }
+                // switch to analysis tab to show created analysis
                 setTradesCardTab('analysis');
               } catch (err) {
                 console.warn('Failed to save analysis', err);

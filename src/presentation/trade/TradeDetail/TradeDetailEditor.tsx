@@ -10,6 +10,7 @@ import {
   StatusSelect,
   type StatusValue,
 } from '@/presentation/shared/components/StatusSelect/StatusSelect';
+// no direct analysis factory usage here; creation delegated to TradeJournal via event
 
 export type TradeDetailEditorProps = {
   trade: TradeInput | null;
@@ -29,6 +30,8 @@ export function TradeDetailEditor({
   const [local, setLocal] = useState<TradeInput | null>(trade);
   const [errors, setErrors] = useState<Record<string, string | undefined>>({});
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'failed'>('idle');
+
+  // (No local analysis creation here) — creation is delegated to TradeJournal via event
 
   useEffect(() => {
     setLocal(trade);
@@ -183,6 +186,41 @@ export function TradeDetailEditor({
             />
           </div>
         ) : null}
+          {!local.analysisId ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Button
+                variant="primary"
+                onClick={async () => {
+                  if (!local) return;
+                  try {
+                    // Instead of creating the analysis directly, open the Add Analysis
+                    // panel prefilled so the user can choose market and save there.
+                    const marketValue =
+                      local.market === 'Forex' || local.market === 'Crypto'
+                        ? (local.market as 'Forex' | 'Crypto')
+                        : undefined;
+                    globalThis.dispatchEvent(
+                      new CustomEvent('prefill-analysis', {
+                        detail: {
+                          tradeId: local.id,
+                          symbol: local.symbol,
+                          notes: local.notes,
+                          market: marketValue,
+                        },
+                      })
+                    );
+                    setStatus('idle');
+                  } catch {
+                    setStatus('failed');
+                  }
+                }}
+                className={styles.createBtn}
+                style={{ marginLeft: 8 }}
+              >
+                Create Analyse
+              </Button>
+            </div>
+          ) : null}
         <div className={styles.saveStatus} aria-hidden={status === 'idle'}>
           {status === 'saving'
             ? 'Saving…'
