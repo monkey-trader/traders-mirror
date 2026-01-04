@@ -42,10 +42,9 @@ export function Analysis({ onCreateTradeSuggestion, compactView = false }: Analy
       if (!mounted) return;
       setList(
         all.map((a) => {
-          const marketValue =
-            a.market === 'Forex' || a.market === 'Crypto'
-              ? (a.market as 'Forex' | 'Crypto')
-              : 'All';
+          const raw = String(a.market ?? '');
+          const normalized = raw.trim().toLowerCase();
+          const marketValue = normalized === 'forex' ? 'Forex' : normalized === 'crypto' ? 'Crypto' : 'All';
           return {
             id: a.id,
             symbol: a.symbol,
@@ -70,10 +69,9 @@ export function Analysis({ onCreateTradeSuggestion, compactView = false }: Analy
         const all = await repository.listAll();
         setList(
           all.map((a) => {
-            const marketValue =
-              a.market === 'Forex' || a.market === 'Crypto'
-                ? (a.market as 'Forex' | 'Crypto')
-                : 'All';
+            const raw = String(a.market ?? '');
+            const normalized = raw.trim().toLowerCase();
+            const marketValue = normalized === 'forex' ? 'Forex' : normalized === 'crypto' ? 'Crypto' : 'All';
             return {
               id: a.id,
               symbol: a.symbol,
@@ -117,10 +115,9 @@ export function Analysis({ onCreateTradeSuggestion, compactView = false }: Analy
       const all = await repository.listAll();
       setList(
         all.map((a) => {
-          const marketValue =
-            a.market === 'Forex' || a.market === 'Crypto'
-              ? (a.market as 'Forex' | 'Crypto')
-              : 'All';
+          const raw = String(a.market ?? '');
+          const normalized = raw.trim().toLowerCase();
+          const marketValue = normalized === 'forex' ? 'Forex' : normalized === 'crypto' ? 'Crypto' : 'All';
           return {
             id: a.id,
             symbol: a.symbol,
