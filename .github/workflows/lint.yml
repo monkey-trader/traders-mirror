@@ -6,7 +6,7 @@ on:
 
 jobs:
   lint:
-    if: false
+    if: true
     name: Lint and Format Check
     runs-on: ubuntu-latest
     steps:
