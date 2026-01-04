@@ -3,7 +3,11 @@ import styles from './Settings.module.css';
 import { ThemeSwitcher } from '@/presentation/shared/components/ThemeSwitcher/ThemeSwitcher';
 import { loadSettings, saveSettings } from './settingsStorage';
 import { Button } from '@/presentation/shared/components/Button/Button';
+import { LocalStorageAnalysisRepository } from '@/infrastructure/analysis/repositories/LocalStorageAnalysisRepository';
+import LocalStorageTradeRepository from '@/infrastructure/trade/repositories/LocalStorageTradeRepository';
+import { loadMockAnalyses, clearAnalyses } from '@/presentation/analysis/mockLoader';
 import { ConfirmDialog } from '@/presentation/shared/components/ConfirmDialog/ConfirmDialog';
+import type { AnalysisDTO } from '@/domain/analysis/interfaces/AnalysisRepository';
 import { COMBINED_MOCK_TRADES } from '@/infrastructure/trade/repositories/mockData';
 
 function DebugToggle() {
@@ -95,9 +99,15 @@ function StorageControls() {
       setConfirmOpen(false);
       return;
     }
+    // typed no-op setter for analysis list updates (used when calling loader/clear from settings)
+    const noopSetAnalyses = (_items: AnalysisDTO[]) => {
+      // intentionally no-op; UI will refresh via storage events
+      return undefined;
+    };
+
     try {
       if (confirmAction === 'clear') {
-        // count existing stored trades before clearing
+        // clear stored trades
         const raw = localStorage.getItem('mt_trades_v1');
         let count = 0;
         try {
@@ -107,22 +117,49 @@ function StorageControls() {
           count = 0;
         }
         localStorage.removeItem('mt_trades_v1');
+        // also clear analyses storage via repository + loader helper
+        try {
+          const analysisRepo = new LocalStorageAnalysisRepository();
+          // clearAnalyses expects a setter; provide a typed no-op
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          clearAnalyses(analysisRepo, noopSetAnalyses);
+        } catch (err) {
+          // eslint-disable-next-line no-console
+          console.warn('Failed to clear analyses when deleting demo data', err);
+        }
+
         setInfoMessage(`Deleted ${count} stored trade${count === 1 ? '' : 's'}`);
-        // keep message visible briefly then reload
         if (infoTimerRef.current) window.clearTimeout(infoTimerRef.current);
-        infoTimerRef.current = window.setTimeout(
-          () => window.location.reload(),
-          1200
-        ) as unknown as number;
+        infoTimerRef.current = window.setTimeout(() => window.location.reload(), 1200) as unknown as number;
       } else if (confirmAction === 'restore') {
         const count = Array.isArray(COMBINED_MOCK_TRADES) ? COMBINED_MOCK_TRADES.length : 0;
+        // persist trades first
         localStorage.setItem('mt_trades_v1', JSON.stringify(COMBINED_MOCK_TRADES));
+
+        // then seed analyses based on the restored trades and link them back
+        try {
+          const tradeRepo = new LocalStorageTradeRepository(undefined, { seedDefaults: false });
+          const analysisRepo = new LocalStorageAnalysisRepository();
+          // get domain trades from repo and load mock analyses
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          (async () => {
+            try {
+              const trades = await tradeRepo.getAll();
+              // call loader with a typed no-op setter; UI components will refresh via storage events
+              await loadMockAnalyses(analysisRepo, trades, noopSetAnalyses, tradeRepo, Math.min(5, count));
+            } catch (err) {
+              // eslint-disable-next-line no-console
+              console.warn('Failed to seed analyses for restored demo trades', err);
+            }
+          })();
+        } catch (err) {
+          // eslint-disable-next-line no-console
+          console.warn('Failed to initialize repos for demo data restore', err);
+        }
+
         setInfoMessage(`Loaded ${count} demo trade${count === 1 ? '' : 's'}`);
         if (infoTimerRef.current) window.clearTimeout(infoTimerRef.current);
-        infoTimerRef.current = window.setTimeout(
-          () => window.location.reload(),
-          1200
-        ) as unknown as number;
+        infoTimerRef.current = window.setTimeout(() => window.location.reload(), 1200) as unknown as number;
       }
     } finally {
       setConfirmOpen(false);

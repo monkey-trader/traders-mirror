@@ -9,8 +9,6 @@ import { ConfirmDialog } from '@/presentation/shared/components/ConfirmDialog/Co
 import { LocalStorageAnalysisRepository } from '@/infrastructure/analysis/repositories/LocalStorageAnalysisRepository';
 import type { AnalysisDTO as AnalysisDTOType } from '@/domain/analysis/interfaces/AnalysisRepository';
 import { Button } from '@/presentation/shared/components/Button/Button';
-import LocalStorageTradeRepository from '@/infrastructure/trade/repositories/LocalStorageTradeRepository';
-import { loadMockAnalyses, clearAnalyses } from './mockLoader';
 // Editor types removed
 
 export type AnalysisSuggestion = {
@@ -154,48 +152,7 @@ export function Analysis({ onCreateTradeSuggestion, compactView = false }: Analy
                   setMarketFilter={setMarketFilter}
                   tradesCount={list.length}
                 />
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <Button
-                    variant="ghost"
-                    onClick={async () => {
-                      try {
-                        const tradeRepo = new LocalStorageTradeRepository(undefined, { seedDefaults: false });
-                        const trades = await tradeRepo.getAll();
-                        await loadMockAnalyses(repository, trades, async (items: AnalysisDTOType[] | undefined) => {
-                          const mapped: AnalysisSummary[] = (items || []).map((a) => {
-                            const marketValue = a.market === 'Forex' || a.market === 'Crypto' ? (a.market as 'Forex' | 'Crypto') : 'All';
-                            return {
-                              id: a.id,
-                              symbol: a.symbol,
-                              createdAt: a.createdAt,
-                              notes: a.notes,
-                              market: marketValue,
-                            };
-                          });
-                          setList(mapped);
-                        }, tradeRepo);
-                      } catch (err) {
-                        // eslint-disable-next-line no-console
-                        console.warn('Failed to seed mock analyses', err);
-                      }
-                    }}
-                  >
-                    Seed analyses
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    onClick={async () => {
-                      try {
-                        await clearAnalyses(repository, async () => setList([]));
-                      } catch (err) {
-                        // eslint-disable-next-line no-console
-                        console.warn('Failed to clear analyses', err);
-                      }
-                    }}
-                  >
-                    Clear analyses
-                  </Button>
-                </div>
+                <div />
               </div>
             </div>
             <AnalysisList
