@@ -71,7 +71,9 @@ describe('TradeService', () => {
       side: 'LONG',
       margin: 10,
     };
-    await expect(svc.addTrade(input)).rejects.toThrow('Repository does not implement save or update');
+    await expect(svc.addTrade(input)).rejects.toThrow(
+      'Repository does not implement save or update'
+    );
   });
 
   it('throws on delete when repository lacks delete', async () => {

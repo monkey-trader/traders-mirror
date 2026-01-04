@@ -2,6 +2,7 @@
 export type TradeRow = {
   id: string;
   market: 'Crypto' | 'Forex' | 'All';
+  analysisId?: string;
   symbol: string;
   entryDate: string;
   size: number;

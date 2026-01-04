@@ -15,7 +15,6 @@ describe('Analysis component', () => {
     expect(await screen.findByText(/Keine Analysen vorhanden/i)).toBeInTheDocument();
   });
 
-
   it('shows detail loader when selected is set', async () => {
     // Simulate deep-link event
     render(<Analysis />);

@@ -1,14 +1,20 @@
 import React from 'react';
 import { NewTradeForm } from '@/presentation/trade/components/NewTradeForm/NewTradeForm';
+import AddFormCard from '@/presentation/shared/components/AddFormCard/AddFormCard';
 import { AnalysisEditor } from '@/presentation/analysis/AnalysisEditor';
 import type { NewTradeFormState } from '@/presentation/trade/hooks/useNewTradeForm';
 import type { AnalysisFormValues } from '@/presentation/analysis/validation';
-import type { TimeframeInput } from '@/presentation/analysis/AnalysisEditor';
+import type { TimeframeInput } from '@/presentation/analysis/types';
 
 type Mode = 'trade' | 'analysis';
 
 type Props = {
   mode: Mode;
+  initialAnalysis?: {
+    symbol?: string;
+    notes?: string;
+    market?: 'Forex' | 'Crypto';
+  };
   // NewTradeForm props
   isMobile?: boolean;
   form?: NewTradeFormState;
@@ -24,7 +30,9 @@ type Props = {
   onReset?: () => void;
   setMarketFilter?: (m: string) => void;
   // Analysis handler
-  onSaveAnalysis?: (input: AnalysisFormValues & { timeframes?: TimeframeInput[] }) => Promise<void> | void;
+  onSaveAnalysis?: (
+    input: AnalysisFormValues & { timeframes?: TimeframeInput[] }
+  ) => Promise<void> | void;
 };
 
 export function AddPanel({
@@ -45,12 +53,16 @@ export function AddPanel({
   setMarketFilter,
   // analysis
   onSaveAnalysis,
+  initialAnalysis,
 }: Props) {
   if (mode === 'analysis') {
     return (
       <div data-testid="add-panel-analysis">
-        <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 700 }}>Add Analysis</h3>
-        <AnalysisEditor onSave={onSaveAnalysis} />
+        <AddFormCard title="Add Analysis">
+          <div style={{ marginTop: 12 }}>
+            <AnalysisEditor initial={initialAnalysis} onSave={onSaveAnalysis} />
+          </div>
+        </AddFormCard>
       </div>
     );
   }

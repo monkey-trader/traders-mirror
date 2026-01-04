@@ -1,21 +1,31 @@
-import React from 'react'
-import '@testing-library/jest-dom'
-import { render, screen, fireEvent } from '@testing-library/react'
-import { AnalysisEditor } from '@/presentation/analysis/AnalysisEditor'
+import React from 'react';
+import '@testing-library/jest-dom';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { vi } from 'vitest'
+import { AnalysisEditor } from '@/presentation/analysis/AnalysisEditor';
 
 describe('AnalysisEditor', () => {
-  it('renders form and allows saving', async () => {
-    const onSave = vi.fn().mockResolvedValue(undefined)
-    render(<AnalysisEditor onSave={onSave} />)
+  it('shows validation error when symbol is missing', async () => {
+    const onSave = vi.fn().mockResolvedValue(undefined);
+    render(<AnalysisEditor onSave={onSave} />);
 
-    const symbol = screen.getByLabelText('Symbol') as HTMLInputElement
-    fireEvent.change(symbol, { target: { value: 'ETHUSD' } })
+    // click save without entering symbol
+    fireEvent.click(screen.getByText('Save'))
 
-    const save = screen.getByText('Save')
-    fireEvent.click(save)
+    // validation from validation.ts uses German message
+    await waitFor(() => expect(screen.getByText('Symbol ist erforderlich')).toBeTruthy())
+    expect(onSave).not.toHaveBeenCalled()
+  })
 
-    // onSave should be called with form values
-    expect(onSave).toHaveBeenCalled()
+  it('calls onSave when form valid', async () => {
+    const onSave = vi.fn().mockResolvedValue(undefined);
+    render(<AnalysisEditor onSave={onSave} />);
+
+    const symbol = screen.getByLabelText('Symbol') as HTMLInputElement;
+    fireEvent.change(symbol, { target: { value: 'ETHUSD' } });
+
+    fireEvent.click(screen.getByText('Save'))
+
+    await waitFor(() => expect(onSave).toHaveBeenCalled())
   })
 })
-

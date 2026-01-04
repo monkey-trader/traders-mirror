@@ -97,7 +97,7 @@ describe('TradeDetailEditor', () => {
     await waitFor(() => expect(screen.getByText(/invalid price/i)).toBeTruthy());
   });
 
-  it.skip('does not call onSave when validation errors present', async () => {
+  it('does not call onSave when validation errors present', async () => {
     const onSave = vi.fn(() => Promise.resolve());
     // provide a trade with invalid size to trigger validation error
     const badTrade = { ...exampleTrade, size: 0 };

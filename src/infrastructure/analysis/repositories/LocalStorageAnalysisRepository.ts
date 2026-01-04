@@ -43,4 +43,10 @@ export class LocalStorageAnalysisRepository implements AnalysisRepository {
   async clear(): Promise<void> {
     localStorage.removeItem(STORAGE_KEY);
   }
+
+  async delete(id: string): Promise<void> {
+    const all = await this.listAll();
+    const filtered = all.filter((a) => a.id !== id);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
+  }
 }

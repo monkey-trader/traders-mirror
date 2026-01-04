@@ -1,0 +1,82 @@
+.wizard {
+  display: flex;
+  flex-direction: column;
+}
+
+.pager {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.pagerBtn {
+  background: transparent;
+  border: 1px solid var(--card-border, rgba(0, 0, 0, 0.06));
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.active {
+  background: var(--accent, #eef6ff);
+}
+
+.badge {
+  margin-left: 8px;
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.headerActions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.formRow {
+  margin-bottom: 12px;
+}
+
+.title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.leftActions {
+  display: flex;
+  gap: 8px;
+}
+.rightActions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  background: white;
+}
+.btnGhost {
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: transparent;
+}
+.btnPrimary {
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: var(--accent, #007bff);
+  color: white;
+  border: none;
+}

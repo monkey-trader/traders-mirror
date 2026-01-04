@@ -11,6 +11,7 @@ export type AnalysisDTO = {
   symbol: string;
   createdAt: string;
   updatedAt?: string;
+  market?: 'Forex' | 'Crypto';
   timeframes: Record<Timeframe, TimeframeAnalysisDTO>;
   notes?: string;
 };
@@ -20,5 +21,6 @@ export type AnalysisRepository = {
   getById(id: string): Promise<AnalysisDTO | null>;
   listBySymbol(symbol: string): Promise<AnalysisDTO[]>;
   listAll(): Promise<AnalysisDTO[]>;
+  delete(id: string): Promise<void>;
   clear(): Promise<void>;
 };

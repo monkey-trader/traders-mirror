@@ -1,4 +1,5 @@
 import React from 'react';
+import { Button } from '@/presentation/shared/components/Button/Button';
 import styles from './AnalysisList.module.css';
 
 export type AnalysisSummary = {
@@ -6,6 +7,7 @@ export type AnalysisSummary = {
   symbol: string;
   createdAt: string;
   notes?: string;
+  market?: 'Forex' | 'Crypto' | 'All';
 };
 
 type Props = {
@@ -43,10 +45,16 @@ export function AnalysisList({
               data-testid={`analysis-item-${it.id}`}
               role="listitem"
               aria-pressed={isSelected}
-              className={[styles.item, compactView ? styles.compact : '', isSelected ? styles.selected : '']
+              className={[
+                styles.item,
+                compactView ? styles.compact : '',
+                isSelected ? styles.selected : '',
+              ]
                 .filter(Boolean)
                 .join(' ')}
-              onClick={() => { if (onSelect) onSelect(it.id) }}
+              onClick={() => {
+                if (onSelect) onSelect(it.id);
+              }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
@@ -57,17 +65,20 @@ export function AnalysisList({
             >
               <div className={styles.header}>
                 <strong className={styles.symbol}>{it.symbol}</strong>
-                <button
-                  type="button"
-                  className={styles.openButton}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (onOpen) onOpen(it.id);
-                    if (onSelect) onSelect(it.id);
-                  }}
-                >
-                  Open
-                </button>
+                <div className={styles.headerActions}>
+                  <Button
+                    variant="ghost"
+                    className={styles.actionBtn}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (onOpen) onOpen(it.id);
+                      if (onSelect) onSelect(it.id);
+                    }}
+                  >
+                    Open
+                  </Button>
+                  {/* Delete moved to detail view; row-level delete removed */}
+                </div>
               </div>
               <div className={styles.meta}>
                 <span className={styles.date}>{new Date(it.createdAt).toLocaleString()}</span>

@@ -54,6 +54,61 @@
   gap: 8px;
 }
 
+.analysisBtn {
+  height: 28px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  color: var(--muted);
+}
+
+.analysisContent {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.analysisIcon {
+  width: 14px;
+  height: 14px;
+  display: inline-block;
+  flex: 0 0 14px;
+
+.analysisBtn {
+  padding: 6px 8px;
+  border-radius: 8px;
+  text-decoration: none;
+}
+  color: var(--color-primary); /* use theme primary color */
+  opacity: 0.98;
+}
+
+.analysisLinkIcon {
+  width: 14px;
+  height: 14px;
+  display: inline-block;
+  flex: 0 0 14px;
+  color: var(--color-primary);
+  opacity: 0.98;
+}
+
+.analysisBtn {
+  background: rgba(255, 255, 255, 0.008);
+  border: 1px solid rgba(255, 255, 255, 0.02);
+  color: var(--color-primary);
+  transition: background 120ms ease, transform 120ms ease, box-shadow 120ms ease, color 120ms ease;
+}
+
+.analysisBtn:hover {
+  background: linear-gradient(180deg, rgba(37,99,235,0.06), rgba(255,255,255,0.01));
+  transform: translateY(-2px);
+  color: #2563eb;
+  box-shadow: 0 8px 22px rgba(37,99,235,0.08);
+}
+
+.analysisBtn:active {
+  transform: translateY(0);
+}
+
 .side {
   border-radius: 999px;
   font-weight: 700;
@@ -210,3 +265,5 @@
 .compact .item {
   padding: 6px;
 }
+
+/* Removed hard-coded blue override so theme variable controls analysis icon color. */

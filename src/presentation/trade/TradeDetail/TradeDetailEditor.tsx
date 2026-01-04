@@ -4,11 +4,13 @@ import { validateTrade } from '@/presentation/trade/validation';
 import { mapTradeError } from '@/presentation/trade/errorMapper';
 import styles from './TradeDetailEditor.module.css';
 import { Button } from '@/presentation/shared/components/Button/Button';
+import { IconButton } from '@/presentation/shared/components/IconButton/IconButton';
 import { SideSelect, type SideValue } from '@/presentation/shared/components/SideSelect/SideSelect';
 import {
   StatusSelect,
   type StatusValue,
 } from '@/presentation/shared/components/StatusSelect/StatusSelect';
+// no direct analysis factory usage here; creation delegated to TradeJournal via event
 
 export type TradeDetailEditorProps = {
   trade: TradeInput | null;
@@ -28,6 +30,8 @@ export function TradeDetailEditor({
   const [local, setLocal] = useState<TradeInput | null>(trade);
   const [errors, setErrors] = useState<Record<string, string | undefined>>({});
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'failed'>('idle');
+
+  // (No local analysis creation here) — creation is delegated to TradeJournal via event
 
   useEffect(() => {
     setLocal(trade);
@@ -129,10 +133,27 @@ export function TradeDetailEditor({
 
   const openAnalysis = (aid: string) => {
     try {
-      window.location.hash = '#/analysis';
-      window.dispatchEvent(new CustomEvent('open-analysis', { detail: { id: aid } }));
+      globalThis.location.hash = `#/analysis?id=${encodeURIComponent(aid ?? '')}`;
+          setTimeout(() => {
+            try {
+              globalThis.dispatchEvent(new CustomEvent('open-analysis', { detail: { id: aid } }));
+            } catch {
+              /* ignore */
+            }
+          }, 50);
     } catch {
       // ignore
+    }
+  };
+
+  // Normalize side values coming from stored trades or user input.
+  // Some data sources may include stray quotes or different casing (e.g. "'LONG", "buy").
+  const normalizeSide = (s: unknown): 'LONG' | 'SHORT' => {
+    try {
+      const raw = String(s ?? '').replace(/['"`]/g, '').trim().toLowerCase();
+      return raw === 'long' || raw === 'buy' ? 'LONG' : 'SHORT';
+    } catch {
+      return 'LONG';
     }
   };
 
@@ -144,17 +165,62 @@ export function TradeDetailEditor({
         </div>
         {local.analysisId ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <button
-              type="button"
+            <IconButton
+              ariaLabel="Open analysis"
+              variant="ghost"
+              color="primary"
               onClick={() => openAnalysis(local.analysisId as string)}
               className={styles.analysisLink}
-              aria-label="Open analysis"
               title="Open analysis"
-            >
-              View Analysis
-            </button>
+              icon={
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  className={styles.analysisIcon}
+                  aria-hidden
+                  style={{ width: 18, height: 18 }}
+                >
+                  <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zM9.5 14C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" fill="currentColor" />
+                </svg>
+              }
+            />
           </div>
         ) : null}
+          {!local.analysisId ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Button
+                variant="primary"
+                onClick={async () => {
+                  if (!local) return;
+                  try {
+                    // Instead of creating the analysis directly, open the Add Analysis
+                    // panel prefilled so the user can choose market and save there.
+                    const marketValue =
+                      local.market === 'Forex' || local.market === 'Crypto'
+                        ? (local.market as 'Forex' | 'Crypto')
+                        : undefined;
+                    globalThis.dispatchEvent(
+                      new CustomEvent('prefill-analysis', {
+                        detail: {
+                          tradeId: local.id,
+                          symbol: local.symbol,
+                          notes: local.notes,
+                          market: marketValue,
+                        },
+                      })
+                    );
+                    setStatus('idle');
+                  } catch {
+                    setStatus('failed');
+                  }
+                }}
+                className={styles.createBtn}
+                style={{ marginLeft: 8 }}
+              >
+                Create Analyse
+              </Button>
+            </div>
+          ) : null}
         <div className={styles.saveStatus} aria-hidden={status === 'idle'}>
           {status === 'saving'
             ? 'Saving…'
@@ -212,7 +278,7 @@ export function TradeDetailEditor({
 
         <label className={styles.label}>Side</label>
         <SideSelect
-          value={local.side as SideValue}
+          value={normalizeSide(local.side) as SideValue}
           onChange={(v: SideValue) => fieldChange('side', v)}
           ariaLabel="Trade side"
           showBadge={false}
