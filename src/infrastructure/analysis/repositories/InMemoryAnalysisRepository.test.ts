@@ -2,11 +2,16 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { InMemoryAnalysisRepository } from './InMemoryAnalysisRepository';
 import { AnalysisFactory } from '@/domain/analysis/factories/AnalysisFactory';
-import type { AnalysisDTO } from '@/domain/analysis/interfaces/AnalysisRepository';
+// type AnalysisDTO not required in this test
 
 const unwrap = <T>(v: T | { value: T } | undefined): T | undefined => {
   if (v === undefined || v === null) return v as undefined;
-  return typeof v === 'object' && 'value' in (v as any) ? ((v as any).value as T) : (v as T);
+  if (typeof v === 'object' && v !== null) {
+    const rec = v as Record<string, unknown>;
+    const maybeValue = rec.value;
+    if (typeof maybeValue !== 'undefined') return maybeValue as T;
+  }
+  return v as T;
 };
 
 describe('InMemoryAnalysisRepository', () => {

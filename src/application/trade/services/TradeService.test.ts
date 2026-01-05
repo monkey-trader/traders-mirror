@@ -13,8 +13,18 @@ class MockRepo {
   }
   async update(trade: unknown) {
     const t = trade as TradeInput;
-    const idOf = (x: unknown) =>
-      x && typeof (x as any).id === 'object' ? (x as any).id.value : (x as any).id;
+    const idOf = (x: unknown) => {
+      if (typeof x === 'object' && x !== null) {
+        const rec = x as Record<string, unknown>;
+        const id = rec.id;
+        if (typeof id === 'object' && id !== null) {
+          const idRec = id as Record<string, unknown>;
+          if ('value' in idRec && typeof idRec.value === 'string') return idRec.value;
+        }
+        if (typeof id === 'string') return id;
+      }
+      return undefined;
+    };
     const idx = this.trades.findIndex((x) => idOf(x) === idOf(t));
     if (idx >= 0) this.trades[idx] = t;
   }

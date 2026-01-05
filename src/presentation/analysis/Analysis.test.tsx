@@ -158,8 +158,10 @@ describe('Analysis component', () => {
     };
     vi.spyOn(LocalStorageAnalysisRepository.prototype, 'listAll').mockResolvedValue([
       sample,
-    ] as unknown as any);
-    vi.spyOn(LocalStorageAnalysisRepository.prototype, 'getById').mockResolvedValue(sample as any);
+    ] as AnalysisDTO[]);
+    vi.spyOn(LocalStorageAnalysisRepository.prototype, 'getById').mockResolvedValue(
+      sample as AnalysisDTO
+    );
 
     const AnalysisModule = await import('./Analysis');
     const { container } = render(<AnalysisModule.Analysis />);
