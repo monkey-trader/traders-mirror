@@ -21,5 +21,10 @@
     },
     "types": ["vitest", "vitest/globals", "node"]
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": [
+    "src/**/*.test.*",
+    "src/**/*.spec.*",
+    "src/**/__tests__/**"
+  ]
 }
