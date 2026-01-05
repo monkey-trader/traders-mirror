@@ -2,6 +2,11 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import LocalStorageTradeRepository, { RepoTrade } from './LocalStorageTradeRepository';
 import { TradeFactory } from '@/domain/trade/factories/TradeFactory';
 
+const unwrap = <T>(v: T | { value: T } | undefined): T | undefined => {
+  if (v === undefined || v === null) return v as undefined;
+  return (typeof v === 'object' && 'value' in (v as any)) ? (v as any).value as T : (v as T);
+};
+
 describe('LocalStorageTradeRepository.toRepoTrade conversions', () => {
   let repo: LocalStorageTradeRepository;
 
@@ -38,10 +43,10 @@ describe('LocalStorageTradeRepository.toRepoTrade conversions', () => {
       voLike
     );
 
-    expect(converted.id).toBe('v1');
-    expect(converted.market).toBe('Crypto');
-    expect(converted.symbol).toBe('ETHUSD');
-    expect(converted.entryDate).toBe('2025-12-28T12:00:00Z');
+    expect(unwrap(converted.id)).toBe('v1');
+    expect(unwrap(converted.market)).toBe('Crypto');
+    expect(unwrap(converted.symbol)).toBe('ETHUSD');
+    expect(unwrap(converted.entryDate)).toBe('2025-12-28T12:00:00Z');
     expect(converted.size).toBeCloseTo(0.51);
     expect(converted.price).toBeCloseTo(1800.5);
     expect(converted.side).toBe('SHORT');
@@ -69,10 +74,10 @@ describe('LocalStorageTradeRepository.toRepoTrade conversions', () => {
       prim
     );
 
-    expect(converted.id).toBe('p1');
-    expect(converted.market).toBe('Forex');
-    expect(converted.symbol).toBe('EURUSD');
-    expect(converted.entryDate).toBe('2025-12-27T10:00:00Z');
+    expect(unwrap(converted.id)).toBe('p1');
+    expect(unwrap(converted.market)).toBe('Forex');
+    expect(unwrap(converted.symbol)).toBe('EURUSD');
+    expect(unwrap(converted.entryDate)).toBe('2025-12-27T10:00:00Z');
     expect(converted.size).toBe(1);
     expect(converted.price).toBeCloseTo(1.234);
     expect(converted.side).toBe('LONG');
@@ -82,8 +87,8 @@ describe('LocalStorageTradeRepository.toRepoTrade conversions', () => {
     const converted = (repo as unknown as { toRepoTrade: (o: unknown) => RepoTrade }).toRepoTrade(
       'a-string'
     );
-    expect(converted.id).toBe('unknown');
-    expect(converted.symbol).toBe('UNKNOWN');
+    expect(unwrap(converted.id)).toBe('unknown');
+    expect(unwrap(converted.symbol)).toBe('UNKNOWN');
     expect(converted.size).toBe(0);
     expect(converted.price).toBe(0);
   });
@@ -99,13 +104,13 @@ describe('LocalStorageTradeRepository.toRepoTrade conversions', () => {
 
     await repo.save(trade);
     const all = await repo.getAll();
-    const found = all.find((t) => t.id === 't-save');
+    const found = all.find((t) => unwrap(t.id) === 't-save');
     expect(found).toBeDefined();
     if (found) {
-      expect(found.symbol.value).toBe('BTCUSD');
-      expect(found.price.value).toBe(20000);
-      expect(found.size.value).toBe(1);
-      expect(found.side.value).toBe('LONG');
+      expect(unwrap(found.symbol)).toBe('BTCUSD');
+      expect(unwrap(found.price)).toBe(20000);
+      expect(unwrap(found.size)).toBe(1);
+      expect(unwrap(found.side)).toBe('LONG');
     }
   });
 
@@ -127,7 +132,7 @@ describe('LocalStorageTradeRepository.toRepoTrade conversions', () => {
     const repo2 = new LocalStorageTradeRepository('mt_test_key', { seedDefaults: true });
     return repo2.getAll().then((all) => {
       expect(all.length).toBe(1);
-      expect(all[0].id).toBe('loaded-1');
+      expect(unwrap(all[0].id)).toBe('loaded-1');
     });
   });
 
@@ -142,7 +147,7 @@ describe('LocalStorageTradeRepository.toRepoTrade conversions', () => {
     const some = await repoWithSeed.getAll();
     // default mock trades include t1
     expect(some.length).toBeGreaterThan(0);
-    expect(some[0].id).toBe('t1');
+    expect(unwrap(some[0].id)).toBe('t1');
   });
 
   it('seed([]) is a no-op and seed(trades) prepends and persists', async () => {
@@ -169,7 +174,7 @@ describe('LocalStorageTradeRepository.toRepoTrade conversions', () => {
     repo2.seed([r]);
     const all = await repo2.getAll();
     expect(all.length).toBe(1);
-    expect(all[0].id).toBe('s1');
+    expect(unwrap(all[0].id)).toBe('s1');
   });
 
   it('update replaces an existing trade and save path is used when not found', async () => {
@@ -194,12 +199,12 @@ describe('LocalStorageTradeRepository.toRepoTrade conversions', () => {
     });
     await repo2.update(updated);
     const all = await repo2.getAll();
-    const found = all.find((t) => t.id === 'u1');
+    const found = all.find((t) => unwrap(t.id) === 'u1');
     expect(found).toBeDefined();
     if (found) {
-      expect(found.symbol.value).toBe('UPD');
-      expect(found.size.value).toBe(2);
-      expect(found.price.value).toBe(200);
+      expect(unwrap(found.symbol)).toBe('UPD');
+      expect(unwrap(found.size)).toBe(2);
+      expect(unwrap(found.price)).toBe(200);
     }
 
     // update non-existing should save
@@ -212,16 +217,16 @@ describe('LocalStorageTradeRepository.toRepoTrade conversions', () => {
     });
     await repo2.update(notFound);
     const all2 = await repo2.getAll();
-    expect(all2.find((t) => t.id === 'u2')).toBeDefined();
+    expect(all2.find((t) => unwrap(t.id) === 'u2')).toBeDefined();
   });
 
   it('delete removes a trade by id', async () => {
     const repo2 = new LocalStorageTradeRepository('mt_test_key', { seedDefaults: false });
     const trade = TradeFactory.create({ id: 'd1', symbol: 'DEL', size: 1, price: 1, side: 'LONG' });
     await repo2.save(trade);
-    expect((await repo2.getAll()).find((t) => t.id === 'd1')).toBeDefined();
+    expect((await repo2.getAll()).find((t) => unwrap(t.id) === 'd1')).toBeDefined();
     await repo2.delete('d1');
-    expect((await repo2.getAll()).find((t) => t.id === 'd1')).toBeUndefined();
+    expect((await repo2.getAll()).find((t) => unwrap(t.id) === 'd1')).toBeUndefined();
   });
 
   it('getAll recovers from TradeFactory.create errors for optional fields (e.g. invalid sl) and returns a Trade', async () => {
@@ -241,12 +246,12 @@ describe('LocalStorageTradeRepository.toRepoTrade conversions', () => {
     // directly seed backend storage so that the constructor/getAll path processes it
     repo2.seed([bad]);
     const all = await repo2.getAll();
-    const found = all.find((t) => t.id === 'bad1');
+    const found = all.find((t) => unwrap(t.id) === 'bad1');
     expect(found).toBeDefined();
     if (found) {
-      expect(found.id).toBe('bad1');
+      expect(unwrap(found.id)).toBe('bad1');
       // ensure returned Trade has basic fields and valid VOs
-      expect(found.size.value).toBe(1);
+      expect(unwrap(found.size)).toBe(1);
     }
   });
 
@@ -291,7 +296,7 @@ describe('LocalStorageTradeRepository.toRepoTrade conversions', () => {
     expect(parsed.length).toBeGreaterThan(0);
     const all = await repo3.getAll();
     expect(all.length).toBeGreaterThan(0);
-    expect(all[0].id).toBe('t1');
+    expect(unwrap(all[0].id)).toBe('t1');
   });
 
   it('toRepoTrade handles VO-like with missing entryDate (falls back to now) and primitive side', () => {
@@ -310,8 +315,8 @@ describe('LocalStorageTradeRepository.toRepoTrade conversions', () => {
     const converted = (repo as unknown as { toRepoTrade: (o: unknown) => RepoTrade }).toRepoTrade(
       voLikePartial
     );
-    expect(converted.id).toBe('vp1');
-    expect(converted.symbol).toBe('VP');
+    expect(unwrap(converted.id)).toBe('vp1');
+    expect(unwrap(converted.symbol)).toBe('VP');
     // entryDate fallback should be a valid ISO string
     expect(typeof converted.entryDate).toBe('string');
     expect(isNaN(Date.parse(converted.entryDate))).toBe(false);
@@ -341,7 +346,7 @@ describe('LocalStorageTradeRepository.toRepoTrade conversions', () => {
     const converted = (repo as unknown as { toRepoTrade: (o: unknown) => RepoTrade }).toRepoTrade(
       voLike2
     );
-    expect(converted.id).toBe('v2');
+    expect(unwrap(converted.id)).toBe('v2');
     expect(converted.entryDate).toBe('2025-12-30T00:00:00Z');
     expect(converted.size).toBe(3);
     expect(converted.price).toBe(33);
@@ -361,7 +366,7 @@ describe('LocalStorageTradeRepository.toRepoTrade conversions', () => {
     const converted = (repo as unknown as { toRepoTrade: (o: unknown) => RepoTrade }).toRepoTrade(
       prim2
     );
-    expect(converted.id).toBe('p2');
+    expect(unwrap(converted.id)).toBe('p2');
     expect(converted.side).toBe('LONG'); // default
     expect(converted.status).toBe('OPEN');
     expect(converted.market).toBe('All');
@@ -372,11 +377,11 @@ describe('LocalStorageTradeRepository.toRepoTrade conversions', () => {
     const convertedNull = (
       repo as unknown as { toRepoTrade: (o: unknown) => RepoTrade }
     ).toRepoTrade(null);
-    expect(convertedNull.id).toBe('unknown');
+    expect(unwrap(convertedNull.id)).toBe('unknown');
     const convertedUndef = (
       repo as unknown as { toRepoTrade: (o: unknown) => RepoTrade }
     ).toRepoTrade(undefined);
-    expect(convertedUndef.id).toBe('unknown');
+    expect(unwrap(convertedUndef.id)).toBe('unknown');
   });
 
   it('isObject and looksLikeVOTrade helper branches', () => {
@@ -407,7 +412,7 @@ describe('LocalStorageTradeRepository.toRepoTrade conversions', () => {
       side: 'LONG',
     } as unknown;
     const convertedWeird = helper.toRepoTrade(weird);
-    expect(convertedWeird.symbol).toBe(String((weird as Record<string, unknown>).symbol));
+    expect(unwrap(convertedWeird.symbol)).toBe(String((weird as Record<string, unknown>).symbol));
 
     // seed non-array is no-op
     (repo as unknown as LocalStorageTradeRepository).seed(null as unknown as RepoTrade[]);
@@ -430,8 +435,8 @@ describe('LocalStorageTradeRepository.toRepoTrade conversions', () => {
     const converted = (repo as unknown as { toRepoTrade: (o: unknown) => RepoTrade }).toRepoTrade(
       voEdge
     );
-    expect(converted.id).toBe('edge1');
-    expect(converted.symbol).toBe('EDGE');
+    expect(unwrap(converted.id)).toBe('edge1');
+    expect(unwrap(converted.symbol)).toBe('EDGE');
     // entryDate becomes String(entryDateVO) -> "[object Object]"
     expect(converted.entryDate).toBe(String((voEdge as Record<string, unknown>).entryDate));
     // size/price fallback to Number(o.size as number) which will be NaN for objects

@@ -7,6 +7,8 @@ import { Side } from '../valueObjects/Side';
 import { Market } from '../valueObjects/Market';
 import { Leverage } from '../valueObjects/Leverage';
 import { Margin } from '../valueObjects/Margin';
+import { TradeId } from '../valueObjects/TradeId';
+import { AnalysisId } from '../valueObjects/AnalysisId';
 
 export type TradeInput = {
   id: string;
@@ -33,7 +35,7 @@ export class TradeFactory {
     // If entryDate omitted (e.g. Add form hides it), default to now here in the factory
     const entryDateValue = input.entryDate ?? new Date().toISOString();
     return new Trade(
-      input.id,
+      new TradeId(input.id),
       new TradeSymbol(input.symbol),
       new EntryDate(entryDateValue),
       new Size(input.size),
@@ -49,13 +51,13 @@ export class TradeFactory {
       typeof input.tp4 === 'number' ? new Price(input.tp4) : undefined,
       typeof input.leverage === 'number' ? new Leverage(input.leverage) : undefined,
       typeof input.margin === 'number' ? new Margin(input.margin) : undefined,
-      input.analysisId
+      input.analysisId ? new AnalysisId(input.analysisId) : undefined
     );
   }
 
   static toDTO(trade: Trade): TradeInput {
     return {
-      id: trade.id,
+      id: trade.id.value,
       symbol: trade.symbol.value,
       // For presentation (inputs) provide a value suitable for <input type="datetime-local">
       entryDate: EntryDate.toInputValue(trade.entryDate.value),
@@ -73,7 +75,7 @@ export class TradeFactory {
       tp4: trade.tp4?.value,
       leverage: trade.leverage?.value,
       margin: trade.margin?.value,
-      analysisId: trade.analysisId,
+      analysisId: trade.analysisId?.value,
     };
   }
 }

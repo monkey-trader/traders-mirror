@@ -6,7 +6,7 @@ import { AnalysisDetail } from './AnalysisDetail';
 import LocalStorageTradeRepository from '@/infrastructure/trade/repositories/LocalStorageTradeRepository';
 
 const sampleAnalysis = {
-  id: 'a-123',
+  id: 'A-123',
   symbol: 'BTCUSD',
   createdAt: new Date().toISOString(),
   timeframes: {
@@ -53,7 +53,7 @@ describe('AnalysisDetail open-trade link', () => {
         side: 'LONG',
         status: 'OPEN',
         pnl: 0,
-        analysisId: 'a-123',
+        analysisId: 'A-123',
       },
     ]);
 

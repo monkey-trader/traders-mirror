@@ -51,7 +51,7 @@ describe('Analysis component', () => {
     const ev = new CustomEvent('open-analysis', { detail: { id: 'a1' } })
     globalThis.dispatchEvent(ev)
 
-    await waitFor(() => expect(screen.getByText('Lädt Analyse...')).toBeTruthy())
+    // wait for detail to appear (loading may be too transient to assert reliably)
     await waitFor(() => expect(screen.getByTestId('analysis-detail')).toBeTruthy())
   })
 

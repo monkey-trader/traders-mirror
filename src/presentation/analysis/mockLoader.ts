@@ -54,11 +54,12 @@ export async function loadMockAnalyses(
       const a = AnalysisFactory.create(
         input as unknown as Parameters<typeof AnalysisFactory.create>[0]
       );
-      created.push(a);
+      const aDTO = AnalysisFactory.toDTO(a);
+      created.push(aDTO);
       if (repoAny && typeof repoAny.save === 'function') {
         // persist immediately
         // eslint-disable-next-line @typescript-eslint/await-thenable
-        await repoAny.save(a as AnalysisDTO);
+        await repoAny.save(aDTO);
       }
 
       // link analysis id back to the trade when a tradeRepo is provided
@@ -66,7 +67,7 @@ export async function loadMockAnalyses(
         try {
           // convert existing trade -> DTO -> add analysisId -> create domain Trade -> update
           const dto = TradeFactory.toDTO(t as Trade);
-          dto.analysisId = a.id;
+          dto.analysisId = a.id.value;
           const updated = TradeFactory.create(
             dto as unknown as Parameters<typeof TradeFactory.create>[0]
           );

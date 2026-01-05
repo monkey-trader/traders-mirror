@@ -6,6 +6,8 @@ import {
 import { TradeSymbol } from '@/domain/analysis/valueObjects/TradeSymbol';
 import { EntryDate } from '@/domain/analysis/valueObjects/EntryDate';
 import { TradingViewLink } from '@/domain/analysis/valueObjects/TradingViewLink';
+import { Analysis } from '@/domain/analysis/entities/Analysis';
+import { AnalysisId } from '@/domain/analysis/valueObjects/AnalysisId';
 
 type TimeframeInput = {
   timeframe: Timeframe;
@@ -23,7 +25,7 @@ export type AnalysisInput = {
 };
 
 export class AnalysisFactory {
-  static create(input: AnalysisInput): AnalysisDTO {
+  static create(input: AnalysisInput): Analysis {
     const tradeSymbol =
       input.symbol instanceof TradeSymbol ? input.symbol : new TradeSymbol(input.symbol);
     const createdAt = input.createdAt
@@ -31,7 +33,9 @@ export class AnalysisFactory {
         ? input.createdAt.iso
         : new EntryDate(input.createdAt).iso
       : new EntryDate(new Date()).iso;
-    const id = input.id ?? `analysis-${Math.random().toString(36).substring(2, 9)}`;
+    const id = input.id
+      ? new AnalysisId(input.id)
+      : new AnalysisId(`analysis-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`);
 
     // normalize timeframes to record
     const defaultTimeframes: Timeframe[] = [
@@ -69,16 +73,18 @@ export class AnalysisFactory {
       }
     }
 
-    const analysis: AnalysisDTO = {
-      id,
-      symbol: tradeSymbol.value,
-      market: input.market,
-      createdAt,
-      updatedAt: undefined,
-      timeframes: tfRecord,
-      notes: input.notes,
-    };
+    return new Analysis(id, tradeSymbol, input.market, createdAt, tfRecord, input.notes);
+  }
 
-    return analysis;
+  static toDTO(analysis: Analysis): AnalysisDTO {
+    return {
+      id: analysis.id.value,
+      symbol: analysis.symbol.value,
+      market: analysis.market,
+      createdAt: analysis.createdAt,
+      updatedAt: analysis.updatedAt,
+      timeframes: analysis.timeframes,
+      notes: analysis.notes,
+    };
   }
 }

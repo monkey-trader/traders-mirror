@@ -4,6 +4,11 @@ import { InMemoryAnalysisRepository } from './InMemoryAnalysisRepository';
 import { AnalysisFactory } from '@/domain/analysis/factories/AnalysisFactory';
 import type { AnalysisDTO } from '@/domain/analysis/interfaces/AnalysisRepository';
 
+const unwrap = <T>(v: T | { value: T } | undefined): T | undefined => {
+  if (v === undefined || v === null) return v as undefined;
+  return (typeof v === 'object' && 'value' in (v as any)) ? (v as any).value as T : (v as T);
+};
+
 describe('InMemoryAnalysisRepository', () => {
   let repo: InMemoryAnalysisRepository;
 
@@ -17,10 +22,10 @@ describe('InMemoryAnalysisRepository', () => {
       symbol: 'EURUSD',
       createdAt: new Date().toISOString(),
     });
-    await repo.save(a as unknown as AnalysisDTO);
-    const got = await repo.getById('a1');
+    await repo.save(AnalysisFactory.toDTO(a));
+    const got = await repo.getById(unwrap(a.id) as string);
     expect(got).not.toBeNull();
-    expect(got!.id).toBe('a1');
+    expect(unwrap(got!.id)).toBe('A1');
   });
 
   it('lists by symbol', async () => {
@@ -34,11 +39,11 @@ describe('InMemoryAnalysisRepository', () => {
       symbol: 'BTCUSD',
       createdAt: new Date().toISOString(),
     });
-    await repo.save(a1 as unknown as AnalysisDTO);
-    await repo.save(a2 as unknown as AnalysisDTO);
+    await repo.save(AnalysisFactory.toDTO(a1));
+    await repo.save(AnalysisFactory.toDTO(a2));
     const list = await repo.listBySymbol('EURUSD');
     expect(list.length).toBe(1);
-    expect(list[0].id).toBe('a1');
+    expect(unwrap(list[0].id)).toBe('A1');
   });
 
   it('seed/listAll/delete/clear behave as expected', async () => {
@@ -46,9 +51,9 @@ describe('InMemoryAnalysisRepository', () => {
       { id: 's1', symbol: 'S' },
       { id: 's2', symbol: 'S' },
     ] as any);
-    expect((await repo.listAll()).map((x) => x.id)).toEqual(['s1', 's2']);
+    expect((await repo.listAll()).map((x) => unwrap(x.id))).toEqual(['s1', 's2']);
     await repo.delete('s1');
-    expect((await repo.listAll()).map((x) => x.id)).toEqual(['s2']);
+    expect((await repo.listAll()).map((x) => unwrap(x.id))).toEqual(['s2']);
     await repo.clear();
     expect(await repo.listAll()).toHaveLength(0);
   });

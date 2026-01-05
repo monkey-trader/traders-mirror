@@ -9,6 +9,8 @@ describe('InMemoryTradeRepository', () => {
     repo = new InMemoryTradeRepository();
   });
 
+  const idOf = (v: unknown) => (typeof v === 'object' && v !== null && 'value' in (v as any) ? (v as any).value : v) as string;
+
   it('initializes with default mock trades', async () => {
     const trades = await repo.getAll();
     expect(Array.isArray(trades)).toBe(true);
@@ -38,7 +40,7 @@ describe('InMemoryTradeRepository', () => {
     const t = trades[0];
     const originalPrice = t.price.value;
     const modified = TradeFactory.create({
-      id: t.id,
+      id: idOf(t.id),
       symbol: t.symbol.value,
       entryDate: t.entryDate.value,
       size: t.size.value,
@@ -47,7 +49,7 @@ describe('InMemoryTradeRepository', () => {
     });
     await repo.update(modified);
     const reloaded = await repo.getAll();
-    const updated = reloaded.find((r) => r.id === t.id);
+    const updated = reloaded.find((r) => idOf(r.id) === idOf(t.id));
     expect(updated).toBeDefined();
     expect(updated?.price.value).toBe(originalPrice + 1);
   });
@@ -55,9 +57,9 @@ describe('InMemoryTradeRepository', () => {
   it('deletes an existing trade', async () => {
     const trades = await repo.getAll();
     const t = trades[0];
-    await repo.delete(t.id);
+    await repo.delete(idOf(t.id));
     const after = await repo.getAll();
-    expect(after.find((r) => r.id === t.id)).toBeUndefined();
+    expect(after.find((r) => idOf(r.id) === idOf(t.id))).toBeUndefined();
   });
 
   it('toRepoTrade accepts VO-like objects and primitive shapes', async () => {

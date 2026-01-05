@@ -1,4 +1,6 @@
 import { Timeframe } from '@/domain/analysis/interfaces/AnalysisRepository';
+import { TradeSymbol } from '@/domain/analysis/valueObjects/TradeSymbol';
+import { AnalysisId } from '@/domain/analysis/valueObjects/AnalysisId';
 
 export type TimeframeAnalysis = {
   timeframe: Timeframe;
@@ -8,8 +10,8 @@ export type TimeframeAnalysis = {
 
 export class Analysis {
   constructor(
-    public readonly id: string,
-    public readonly symbol: string,
+    public readonly id: AnalysisId,
+    public readonly symbol: TradeSymbol,
     public readonly market: 'Forex' | 'Crypto' | undefined,
     public readonly createdAt: string,
     public readonly timeframes: Record<Timeframe, TimeframeAnalysis>,
