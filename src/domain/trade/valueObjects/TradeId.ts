@@ -1,3 +1,5 @@
+import { generateId } from '@/domain/shared/generateId';
+
 export class TradeId {
   public readonly value: string;
   constructor(id: string) {
@@ -8,29 +10,23 @@ export class TradeId {
   }
 
   static generate(): string {
-    // Prefer a secure UUID when available
+    // If a native secure UUID is available, return it directly to preserve
+    // the expected UUID format for consumers and tests.
     if (typeof crypto !== 'undefined') {
-      // modern environments provide a cryptographically secure UUID
-      // (Node >= 14.17 / browsers)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const c = crypto as any;
+      // Narrow the global crypto to a minimal typed shape we use here.
+      const c = crypto as unknown as {
+        randomUUID?: () => string;
+        getRandomValues?: (arr: Uint8Array) => void;
+      };
+
       if (typeof c.randomUUID === 'function') {
         return c.randomUUID();
       }
-
-      // Fallback to getRandomValues to produce a hex-based unique suffix
-      if (typeof c.getRandomValues === 'function') {
-        const arr = new Uint8Array(8);
-        c.getRandomValues(arr);
-        const hex = Array.from(arr).map((b: number) => b.toString(16).padStart(2, '0')).join('');
-        return `${Date.now()}-${hex}`;
-      }
     }
 
-    // Last resort: Math.random — not cryptographically secure but acceptable
-    // for non-security identifiers. Sonar warning suppressed by using a
-    // secure API when available above.
-    return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    // Otherwise use the shared generator which may include a prefix and
+    // secure fallback using getRandomValues.
+    return generateId('trade');
   }
 }
 
