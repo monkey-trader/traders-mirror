@@ -24,4 +24,10 @@ describe('Notes Value Object', () => {
     const n = new Notes('note');
     expect(n.toInputValue()).toBe('note');
   });
+  it('fromInputValue and isEmpty behavior', () => {
+    const a = Notes.fromInputValue('a');
+    expect(a.isEmpty()).toBe(false);
+    const empty = Notes.fromInputValue('');
+    expect(empty.isEmpty()).toBe(true);
+  })
 });

@@ -20,4 +20,20 @@ describe('TradeId', () => {
     expect(typeof generated).toBe('string');
     expect(generated.length).toBeGreaterThan(0);
   });
+
+  it('uses crypto.randomUUID when available', () => {
+    const desc = Object.getOwnPropertyDescriptor(globalThis, 'crypto');
+    try {
+      Object.defineProperty(globalThis, 'crypto', {
+        configurable: true,
+        enumerable: true,
+        writable: false,
+        value: { randomUUID: () => 'fixed-uuid' },
+      } as PropertyDescriptor);
+      const id = TradeId.generate();
+      expect(id).toBe('fixed-uuid');
+    } finally {
+      if (desc) Object.defineProperty(globalThis, 'crypto', desc);
+    }
+  });
 });

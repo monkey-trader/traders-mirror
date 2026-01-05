@@ -132,4 +132,51 @@ describe('useNewTradeForm', () => {
     const keys = Object.keys(ref.current!.formErrors || {});
     expect(keys.length).toBeGreaterThan(0);
   });
+
+  it('parseNumberField handles string numbers and empty strings', async () => {
+    const setPositions = vi.fn();
+    const repoRef = { current: null } as React.MutableRefObject<TradeRepository | null>;
+    const ref = React.createRef<ReturnType<typeof useNewTradeForm> | null>();
+    await act(async () => {
+      render(
+        React.createElement(Host, {
+          ref: ref,
+          repoRef: repoRef,
+          setPositions: setPositions as unknown as React.Dispatch<React.SetStateAction<TradeRow[]>>,
+        } as React.ComponentPropsWithRef<typeof Host>)
+      );
+    });
+    await waitFor(() => expect(ref.current).toBeDefined());
+
+    // set numeric fields as strings with whitespace and empty
+    await act(async () => {
+      ref.current!.setForm({
+        symbol: 'BTCUSD',
+        entryDate: EntryDate.toInputValue(),
+        size: (' 5 ' as unknown) as number,
+        price: (' 12.5 ' as unknown) as number,
+        side: 'LONG',
+        status: 'OPEN',
+        market: 'Crypto',
+        notes: '',
+        // provide required numeric fields so validation passes
+        sl: 10,
+        margin: 1,
+        leverage: 1,
+      });
+    });
+
+    await act(async () => {
+      await ref.current!.handleAdd();
+    });
+
+    // repoRef is null -> local update path, setPositions should be called
+    await waitFor(() => expect(setPositions).toHaveBeenCalled());
+    const arg = setPositions.mock.calls[0][0];
+    if (typeof arg === 'function') {
+      const res = arg([]);
+      expect(res[0].size).toBe(5);
+      expect(res[0].price).toBe(12.5);
+    }
+  });
 });

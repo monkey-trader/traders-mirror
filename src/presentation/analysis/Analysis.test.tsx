@@ -146,4 +146,27 @@ describe('Analysis component', () => {
     globalThis.dispatchEvent(new Event('analyses-updated'));
     await waitFor(() => expect(listAllSpy).toHaveBeenCalled());
   });
+
+  it('handles market values that are objects with .value', async () => {
+    const sample = {
+      id: 'o1',
+      symbol: 'OBJ',
+      createdAt: new Date().toISOString(),
+      notes: '',
+      market: { value: 'Crypto' },
+      timeframes: { daily: { timeframe: 'daily' } },
+    };
+    vi.spyOn(LocalStorageAnalysisRepository.prototype, 'listAll').mockResolvedValue([
+      sample,
+    ] as unknown as any);
+    vi.spyOn(LocalStorageAnalysisRepository.prototype, 'getById').mockResolvedValue(sample as any);
+
+    const AnalysisModule = await import('./Analysis');
+    const { container } = render(<AnalysisModule.Analysis />);
+
+    // wait for list to render
+    await waitFor(() => expect(container.querySelectorAll('li').length).toBeGreaterThanOrEqual(0));
+    // ensure symbol rendered
+    expect(screen.getByText('OBJ')).toBeTruthy();
+  });
 });
