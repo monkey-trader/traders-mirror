@@ -5,7 +5,7 @@ module.exports = {
     ecmaVersion: 2020,
     sourceType: 'module',
     ecmaFeatures: { jsx: true },
-    project: ['./tsconfig.eslint.json', './tsconfig.json'],
+    project: ['./tsconfig.eslint.json', './tsconfig.json', './tsconfig.test.json'],
     tsconfigRootDir: __dirname,
     createDefaultProgram: true,
   },
@@ -30,7 +30,7 @@ module.exports.overrides = [
   {
     files: ['**/*.test.ts', '**/*.test.tsx', '**/*.spec.ts', '**/*.spec.tsx'],
     parserOptions: {
-      project: './tsconfig.json',
+      project: './tsconfig.test.json',
       createDefaultProgram: true,
     },
   },

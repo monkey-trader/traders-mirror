@@ -1,6 +1,7 @@
 import React from 'react'
 import { describe, it, beforeEach, expect, vi } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
+import type { AnalysisDTO } from '@/domain/analysis/interfaces/AnalysisRepository'
 import { LocalStorageAnalysisRepository } from '@/infrastructure/analysis/repositories/LocalStorageAnalysisRepository'
 
 describe('Analysis component', () => {
@@ -25,7 +26,8 @@ describe('Analysis component', () => {
 
     rerender(<AnalysisModule.Analysis compactView={true} />)
     const root = container.querySelector('div')
-    expect(root && root.getAttribute('data-compact')).toBe('true')
+    // prefer dataset over getAttribute for data-* access
+    expect(root?.dataset.compact).toBe('true')
   })
 
   it('loads list from repository and opens detail on event', async () => {
@@ -34,12 +36,12 @@ describe('Analysis component', () => {
       symbol: 'BTCUSD',
       createdAt: new Date().toISOString(),
       notes: 'note',
-      market: 'crypto',
+        market: 'Crypto',
       timeframes: { daily: { timeframe: 'daily' } },
     }
 
-    vi.spyOn(LocalStorageAnalysisRepository.prototype, 'listAll').mockResolvedValue([sample])
-    vi.spyOn(LocalStorageAnalysisRepository.prototype, 'getById').mockResolvedValue(sample as unknown)
+      vi.spyOn(LocalStorageAnalysisRepository.prototype, 'listAll').mockResolvedValue([sample] as AnalysisDTO[])
+      vi.spyOn(LocalStorageAnalysisRepository.prototype, 'getById').mockResolvedValue(sample as AnalysisDTO)
 
     const AnalysisModule = await import('./Analysis')
     render(<AnalysisModule.Analysis />)
@@ -59,12 +61,12 @@ describe('Analysis component', () => {
       symbol: 'AAA',
       createdAt: new Date().toISOString(),
       notes: 'note',
-      market: 'crypto',
+        market: 'Crypto',
       timeframes: { daily: { timeframe: 'daily' } },
     }
 
-    const listAllSpy = vi.spyOn(LocalStorageAnalysisRepository.prototype, 'listAll').mockResolvedValue([sample])
-    vi.spyOn(LocalStorageAnalysisRepository.prototype, 'getById').mockResolvedValue(sample as unknown)
+      const listAllSpy = vi.spyOn(LocalStorageAnalysisRepository.prototype, 'listAll').mockResolvedValue([sample] as AnalysisDTO[])
+      vi.spyOn(LocalStorageAnalysisRepository.prototype, 'getById').mockResolvedValue(sample as AnalysisDTO)
     const deleteSpy = vi.spyOn(LocalStorageAnalysisRepository.prototype, 'delete').mockResolvedValue()
 
     const AnalysisModule = await import('./Analysis')
@@ -98,7 +100,7 @@ describe('Analysis component', () => {
       symbol: 'X1',
       createdAt: new Date().toISOString(),
       notes: '',
-      market: 'crypto',
+        market: 'Crypto',
       timeframes: { daily: { timeframe: 'daily' } },
     }
     const b = {
@@ -106,12 +108,12 @@ describe('Analysis component', () => {
       symbol: 'Y2',
       createdAt: new Date().toISOString(),
       notes: '',
-      market: { value: 'Forex' },
+        market: 'Forex',
       timeframes: { daily: { timeframe: 'daily' } },
     }
     const listAllSpy = vi.spyOn(LocalStorageAnalysisRepository.prototype, 'listAll')
-    listAllSpy.mockResolvedValue([a, b])
-    vi.spyOn(LocalStorageAnalysisRepository.prototype, 'getById').mockResolvedValue(a as unknown)
+    listAllSpy.mockResolvedValue([a, b] as AnalysisDTO[])
+    vi.spyOn(LocalStorageAnalysisRepository.prototype, 'getById').mockResolvedValue(a as AnalysisDTO)
 
     const AnalysisModule = await import('./Analysis')
     render(<AnalysisModule.Analysis />)
@@ -126,7 +128,7 @@ describe('Analysis component', () => {
     expect(screen.queryByText('Y2')).toBeNull()
 
     // simulate external analyses-updated event and ensure list reload triggers listAll
-    listAllSpy.mockResolvedValue([b])
+    listAllSpy.mockResolvedValue([b] as AnalysisDTO[])
     globalThis.dispatchEvent(new Event('analyses-updated'))
     await waitFor(() => expect(listAllSpy).toHaveBeenCalled())
   })

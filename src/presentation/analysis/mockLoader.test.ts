@@ -20,7 +20,7 @@ describe('mockLoader', () => {
       listAll: () => Promise<Array<Record<string, unknown>>>
       seed?: () => void
     } = {
-      save: vi.fn(async (a: unknown) => savedLocal.push(a)),
+      save: vi.fn(async (a: unknown) => { savedLocal.push(a); }),
       listAll: vi.fn(async () => [{ id: 'repo-1', symbol: 'X', createdAt: new Date().toISOString(), notes: 'from-repo' }]),
       seed: vi.fn(),
     }

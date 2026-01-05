@@ -11,6 +11,7 @@
     "test": "craco test",
     "test:unit": "vitest",
     "test:ci": "vitest run -c vitest.config.ts --coverage --reporter=dot --reporter=junit --outputFile=vitest-report.xml",
+    "tsc:test": "tsc -p tsconfig.test.json --noEmit",
     "lint": "eslint 'src/**/*.{ts,tsx,js,jsx}' --max-warnings=0 || true",
     "lint:strict": "eslint 'src/**/*.{ts,tsx,js,jsx}' --max-warnings=0",
     "lint:full": "eslint 'src/**/*.{ts,tsx,js,jsx}' --rulesdir tools/eslint-rules --rule 'no-short-vo-names:warn' || true",
