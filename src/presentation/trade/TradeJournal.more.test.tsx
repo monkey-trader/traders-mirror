@@ -110,8 +110,8 @@ describe('TradeJournal additional branches', () => {
     // wait until TradesPanel mock shows the loaded trade count
     await screen.findByText('TradesPanel.count:1');
 
-    // dispatch open-trade with analysisId
-    window.dispatchEvent(new CustomEvent('open-trade', { detail: { analysisId: 'an1' } }));
+    // dispatch open-trade with analysisId (normalized to uppercase by factories)
+    window.dispatchEvent(new CustomEvent('open-trade', { detail: { analysisId: 'AN1' } }));
 
     // TradesPanel mock should show selected id 't1'
     await waitFor(() => expect(screen.getByText('TradesPanel.selected:t1')).toBeTruthy());

@@ -8,6 +8,8 @@ import type { TradeRow } from '@/presentation/trade/types';
 import type { MarketValue } from '@/presentation/shared/components/MarketSelect/MarketSelect';
 import type { TradeRepository } from '@/domain/trade/interfaces/TradeRepository';
 import type { Trade } from '@/domain/trade/entities/Trade';
+import { TradeId } from '@/domain/trade/valueObjects/TradeId';
+import { AnalysisId } from '@/domain/trade/valueObjects/AnalysisId';
 
 export type NewTradeFormState = {
   symbol: string;
@@ -139,10 +141,7 @@ export function useNewTradeForm(options: {
       }
 
       const newTrade: TradeRow = {
-        id:
-          typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
-            ? crypto.randomUUID()
-            : String(Date.now()),
+        id: TradeId.generate(),
         symbol: form.symbol,
         entryDate: form.entryDate,
         size: Number(form.size),
@@ -159,7 +158,7 @@ export function useNewTradeForm(options: {
         leverage: form.leverage,
         status: form.status,
         pnl: 0,
-        ...(form.analysisId ? { analysisId: form.analysisId } : {}),
+        ...(form.analysisId ? { analysisId: new AnalysisId(form.analysisId).value } : {}),
       } as TradeRow;
 
       try {
@@ -179,7 +178,11 @@ export function useNewTradeForm(options: {
 
           if (form.analysisId && analysisService?.linkTradeToAnalysis) {
             try {
-              const link = await analysisService.linkTradeToAnalysis(form.analysisId, newTrade.id);
+              const normalizedAnalysisId = new AnalysisId(form.analysisId).value;
+              const link = await analysisService.linkTradeToAnalysis(
+                normalizedAnalysisId,
+                newTrade.id
+              );
               const backlink = link.backlink;
               const updatedNotes = `${
                 newTrade.notes ? newTrade.notes + '\n' : ''
@@ -187,7 +190,7 @@ export function useNewTradeForm(options: {
               const updatedDomain = TradeFactory.create({
                 ...(newTrade as unknown as TradeInput),
                 notes: updatedNotes,
-                analysisId: form.analysisId,
+                analysisId: normalizedAnalysisId,
               });
               if (repo && typeof repo.update === 'function')
                 await repo.update(updatedDomain as unknown as Trade);

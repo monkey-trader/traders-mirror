@@ -6,16 +6,20 @@ import { Side } from '../valueObjects/Side';
 import { Market } from '../valueObjects/Market';
 import { Leverage } from '../valueObjects/Leverage';
 import { Margin } from '../valueObjects/Margin';
+import { TradeId } from '../valueObjects/TradeId';
+import { AnalysisId } from '../valueObjects/AnalysisId';
+import { Status } from '../valueObjects/Status';
+import { Notes } from '../valueObjects/Notes';
 
 export class Trade {
-  public readonly id: string;
+  public readonly id: TradeId;
   public readonly symbol: TradeSymbol;
   public readonly entryDate: EntryDate;
   public readonly size: Size;
   public readonly price: Price;
   public readonly side: Side;
-  public readonly status?: 'OPEN' | 'CLOSED' | 'FILLED';
-  public readonly notes?: string;
+  public readonly status?: Status;
+  public readonly notes?: Notes;
   public readonly market: Market;
   public readonly sl?: Price;
   public readonly tp1?: Price;
@@ -24,18 +28,18 @@ export class Trade {
   public readonly tp4?: Price;
   public readonly leverage?: Leverage;
   public readonly margin?: Margin;
-  public readonly analysisId?: string; // link to originating Analysis (if any)
+  public readonly analysisId?: AnalysisId; // link to originating Analysis (if any)
 
   constructor(
-    id: string,
+    id: TradeId,
     symbol: TradeSymbol,
     entryDate: EntryDate,
     size: Size,
     price: Price,
     side: Side,
     market: Market,
-    status?: 'OPEN' | 'CLOSED' | 'FILLED',
-    notes?: string,
+    status?: Status,
+    notes?: Notes,
     sl?: Price,
     tp1?: Price,
     tp2?: Price,
@@ -43,7 +47,7 @@ export class Trade {
     tp4?: Price,
     leverage?: Leverage,
     margin?: Margin,
-    analysisId?: string
+    analysisId?: AnalysisId
   ) {
     this.id = id;
     this.symbol = symbol;

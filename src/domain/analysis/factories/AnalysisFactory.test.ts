@@ -4,7 +4,8 @@ import { AnalysisFactory } from './AnalysisFactory';
 describe('AnalysisFactory', () => {
   it('creates an Analysis with default timeframes', () => {
     const a = AnalysisFactory.create({ symbol: 'eurusd' });
-    expect(a.symbol).toBe('EURUSD');
+    const symbol = typeof a.symbol === 'string' ? a.symbol : (a.symbol as { value: string }).value;
+    expect(symbol).toBe('EURUSD');
     expect(a.timeframes).toHaveProperty('monthly');
     expect(a.timeframes).toHaveProperty('15min');
   });
@@ -20,7 +21,8 @@ describe('AnalysisFactory', () => {
         },
       ],
     });
-    expect(a.symbol).toBe('BTCUSD');
+    const symbol2 = typeof a.symbol === 'string' ? a.symbol : (a.symbol as { value: string }).value;
+    expect(symbol2).toBe('BTCUSD');
     expect(a.timeframes.daily.tradingViewLink).toContain('tradingview.com');
     expect(a.timeframes.daily.note).toBe('daily note');
   });

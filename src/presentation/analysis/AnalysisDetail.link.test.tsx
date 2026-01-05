@@ -6,7 +6,7 @@ import { AnalysisDetail } from './AnalysisDetail';
 import LocalStorageTradeRepository from '@/infrastructure/trade/repositories/LocalStorageTradeRepository';
 
 const sampleAnalysis = {
-  id: 'a-123',
+  id: 'A-123',
   symbol: 'BTCUSD',
   createdAt: new Date().toISOString(),
   timeframes: {
@@ -53,7 +53,7 @@ describe('AnalysisDetail open-trade link', () => {
         side: 'LONG',
         status: 'OPEN',
         pnl: 0,
-        analysisId: 'a-123',
+        analysisId: 'A-123',
       },
     ]);
 
@@ -62,5 +62,36 @@ describe('AnalysisDetail open-trade link', () => {
     await waitFor(() =>
       expect(screen.getByRole('button', { name: /Open trade for BTCUSD/i })).toBeTruthy()
     );
+  });
+
+  it('clicking Open trade sets hash and dispatches event', async () => {
+    const repo = new LocalStorageTradeRepository(undefined, { seedDefaults: false });
+    repo.seed([
+      {
+        id: 't-linked',
+        market: 'Crypto',
+        symbol: 'BTCUSD',
+        entryDate: new Date().toISOString(),
+        size: 1,
+        price: 10000,
+        side: 'LONG',
+        status: 'OPEN',
+        pnl: 0,
+        analysisId: 'A-123',
+      },
+    ]);
+
+    const dispatchSpy = vi.spyOn(globalThis, 'dispatchEvent');
+    render(<AnalysisDetail analysis={sampleAnalysis as any} />);
+
+    await waitFor(() => expect(screen.getByRole('button', { name: /Open trade for BTCUSD/i })));
+
+    const btn = screen.getByRole('button', { name: /Open trade for BTCUSD/i });
+    btn.click();
+
+    // allow the setTimeout in handler to run and assert dispatch
+    await waitFor(() => expect(globalThis.location.hash).toBe('#/journal'));
+    await waitFor(() => expect(dispatchSpy).toHaveBeenCalled());
+    dispatchSpy.mockRestore();
   });
 });

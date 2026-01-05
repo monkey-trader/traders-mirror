@@ -5,7 +5,7 @@ import type { TradeInput } from './TradeFactory';
 describe('TradeFactory (factory + toDTO)', () => {
   it('creates a Trade and toDTO returns primitives and formatted entryDate', () => {
     const dto = {
-      id: 't-1',
+      id: ' t-1 ',
       symbol: 'msft',
       entryDate: '2025-12-26T14:30:00Z',
       size: 5,
@@ -24,7 +24,7 @@ describe('TradeFactory (factory + toDTO)', () => {
     const out = TradeFactory.toDTO(trade);
 
     // primitives and normalization
-    expect(out.id).toBe(dto.id);
+    expect(out.id).toBe('t-1');
     expect(out.symbol).toBe('MSFT'); // TradeSymbol uppercases
     // entryDate should be converted to datetime-local format (no seconds)
     expect(typeof out.entryDate).toBe('string');
@@ -38,7 +38,7 @@ describe('TradeFactory (factory + toDTO)', () => {
     expect(out.tp1).toBe(dto.tp1);
     expect(out.leverage).toBe(dto.leverage);
     expect(out.margin).toBe(dto.margin);
-    expect(out.analysisId).toBe(dto.analysisId);
+    expect(out.analysisId).toBe('A-1');
   });
 
   it('defaults entryDate to now when omitted in input', () => {

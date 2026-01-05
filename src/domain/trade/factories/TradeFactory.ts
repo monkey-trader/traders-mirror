@@ -7,6 +7,10 @@ import { Side } from '../valueObjects/Side';
 import { Market } from '../valueObjects/Market';
 import { Leverage } from '../valueObjects/Leverage';
 import { Margin } from '../valueObjects/Margin';
+import { TradeId } from '../valueObjects/TradeId';
+import { AnalysisId } from '../valueObjects/AnalysisId';
+import { Status } from '../valueObjects/Status';
+import { Notes } from '../valueObjects/Notes';
 
 export type TradeInput = {
   id: string;
@@ -33,15 +37,15 @@ export class TradeFactory {
     // If entryDate omitted (e.g. Add form hides it), default to now here in the factory
     const entryDateValue = input.entryDate ?? new Date().toISOString();
     return new Trade(
-      input.id,
+      new TradeId(input.id),
       new TradeSymbol(input.symbol),
       new EntryDate(entryDateValue),
       new Size(input.size),
       new Price(input.price),
       new Side(input.side),
       new Market(input.market ?? 'All'),
-      input.status,
-      input.notes,
+      input.status ? new Status(input.status) : undefined,
+      input.notes ? new Notes(input.notes) : undefined,
       typeof input.sl === 'number' ? new Price(input.sl) : undefined,
       typeof input.tp1 === 'number' ? new Price(input.tp1) : undefined,
       typeof input.tp2 === 'number' ? new Price(input.tp2) : undefined,
@@ -49,13 +53,13 @@ export class TradeFactory {
       typeof input.tp4 === 'number' ? new Price(input.tp4) : undefined,
       typeof input.leverage === 'number' ? new Leverage(input.leverage) : undefined,
       typeof input.margin === 'number' ? new Margin(input.margin) : undefined,
-      input.analysisId
+      input.analysisId ? new AnalysisId(input.analysisId) : undefined
     );
   }
 
   static toDTO(trade: Trade): TradeInput {
     return {
-      id: trade.id,
+      id: trade.id.value,
       symbol: trade.symbol.value,
       // For presentation (inputs) provide a value suitable for <input type="datetime-local">
       entryDate: EntryDate.toInputValue(trade.entryDate.value),
@@ -63,8 +67,8 @@ export class TradeFactory {
       price: trade.price.value,
       side: trade.side.value,
       // Normalize status to a primitive and provide a sensible default to avoid UNKNOWN states in UI
-      status: trade.status ?? 'OPEN',
-      notes: trade.notes,
+      status: trade.status?.value ?? 'OPEN',
+      notes: trade.notes?.value,
       market: trade.market.value,
       sl: trade.sl?.value,
       tp1: trade.tp1?.value,
@@ -73,7 +77,7 @@ export class TradeFactory {
       tp4: trade.tp4?.value,
       leverage: trade.leverage?.value,
       margin: trade.margin?.value,
-      analysisId: trade.analysisId,
+      analysisId: trade.analysisId?.value,
     };
   }
 }

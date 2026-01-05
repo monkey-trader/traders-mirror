@@ -44,9 +44,17 @@ export function AnalysisDetail({
         const repo = new LocalStorageTradeRepository(undefined, { seedDefaults: false });
         const trades = await repo.getAll();
         if (!mounted) return;
-        const found = trades.find(
-          (t) => (t as unknown as { analysisId?: string }).analysisId === analysis.id
-        );
+        const found = trades.find((t) => {
+          const aid = (t as unknown as { analysisId?: unknown }).analysisId;
+          let aidValue: string | undefined;
+          if (typeof aid === 'string') aidValue = aid;
+          else if (aid && typeof aid === 'object') {
+            const maybe = aid as Record<string, unknown>;
+            if (typeof maybe.value === 'string') aidValue = maybe.value as string;
+            else aidValue = undefined;
+          } else aidValue = undefined;
+          return aidValue === analysis.id;
+        });
         setHasLinkedTrade(Boolean(found));
       } catch {
         // ignore and assume no linked trade

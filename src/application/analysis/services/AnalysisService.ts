@@ -6,7 +6,8 @@ export class AnalysisService {
   constructor(private repo: AnalysisRepository) {}
 
   async createAnalysis(input: AnalysisInput) {
-    const analysis: AnalysisDTO = AnalysisFactory.create(input);
+    const analysisEntity = AnalysisFactory.create(input);
+    const analysis: AnalysisDTO = AnalysisFactory.toDTO(analysisEntity);
     await this.repo.save(analysis);
     return analysis;
   }
