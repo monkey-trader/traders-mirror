@@ -1,6 +1,7 @@
 import { Timeframe } from '@/domain/analysis/interfaces/AnalysisRepository';
 import { TradeSymbol } from '@/domain/analysis/valueObjects/TradeSymbol';
 import { AnalysisId } from '@/domain/analysis/valueObjects/AnalysisId';
+import { Notes } from '@/domain/trade/valueObjects/Notes';
 
 export type TimeframeAnalysis = {
   timeframe: Timeframe;
@@ -15,7 +16,7 @@ export class Analysis {
     public readonly market: 'Forex' | 'Crypto' | undefined,
     public readonly createdAt: string,
     public readonly timeframes: Record<Timeframe, TimeframeAnalysis>,
-    public readonly notes?: string,
+    public readonly notes?: Notes,
     public readonly updatedAt?: string
   ) {
     if (!id) throw new Error('Analysis id is required');

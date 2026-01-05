@@ -14,4 +14,3 @@ export class AnalysisIdInvalidError extends Error {
     this.name = 'AnalysisIdInvalidError';
   }
 }
-

@@ -8,6 +8,8 @@ import { Leverage } from '../valueObjects/Leverage';
 import { Margin } from '../valueObjects/Margin';
 import { TradeId } from '../valueObjects/TradeId';
 import { AnalysisId } from '../valueObjects/AnalysisId';
+import { Status } from '../valueObjects/Status';
+import { Notes } from '../valueObjects/Notes';
 
 export class Trade {
   public readonly id: TradeId;
@@ -16,8 +18,8 @@ export class Trade {
   public readonly size: Size;
   public readonly price: Price;
   public readonly side: Side;
-  public readonly status?: 'OPEN' | 'CLOSED' | 'FILLED';
-  public readonly notes?: string;
+  public readonly status?: Status;
+  public readonly notes?: Notes;
   public readonly market: Market;
   public readonly sl?: Price;
   public readonly tp1?: Price;
@@ -36,8 +38,8 @@ export class Trade {
     price: Price,
     side: Side,
     market: Market,
-    status?: 'OPEN' | 'CLOSED' | 'FILLED',
-    notes?: string,
+    status?: Status,
+    notes?: Notes,
     sl?: Price,
     tp1?: Price,
     tp2?: Price,

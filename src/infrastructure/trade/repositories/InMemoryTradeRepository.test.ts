@@ -9,7 +9,8 @@ describe('InMemoryTradeRepository', () => {
     repo = new InMemoryTradeRepository();
   });
 
-  const idOf = (v: unknown) => (typeof v === 'object' && v !== null && 'value' in (v as any) ? (v as any).value : v) as string;
+  const idOf = (v: unknown) =>
+    (typeof v === 'object' && v !== null && 'value' in (v as any) ? (v as any).value : v) as string;
 
   it('initializes with default mock trades', async () => {
     const trades = await repo.getAll();

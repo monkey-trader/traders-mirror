@@ -4,7 +4,7 @@ import { TradeFactory } from '@/domain/trade/factories/TradeFactory';
 
 const unwrap = <T>(v: T | { value: T } | undefined): T | undefined => {
   if (v === undefined || v === null) return v as undefined;
-  return (typeof v === 'object' && 'value' in (v as any)) ? (v as any).value as T : (v as T);
+  return typeof v === 'object' && 'value' in (v as any) ? ((v as any).value as T) : (v as T);
 };
 
 describe('LocalStorageTradeRepository.toRepoTrade conversions', () => {

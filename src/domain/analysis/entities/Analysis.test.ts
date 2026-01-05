@@ -9,13 +9,28 @@ describe('Analysis Entity', () => {
     const full = AnalysisFactory.create({ id: 'a', symbol: 'EURUSD' });
     const newSymbol = new TradeSymbol('EURUSD');
     expect(
-      () => new Analysis(new AnalysisId(''), newSymbol, full.market, full.createdAt, full.timeframes)
+      () =>
+        new Analysis(new AnalysisId(''), newSymbol, full.market, full.createdAt, full.timeframes)
     ).toThrow();
-    expect(() =>
-      new Analysis(new AnalysisId('id1'), new TradeSymbol(''), full.market, full.createdAt, full.timeframes)
+    expect(
+      () =>
+        new Analysis(
+          new AnalysisId('id1'),
+          new TradeSymbol(''),
+          full.market,
+          full.createdAt,
+          full.timeframes
+        )
     ).toThrow();
-    expect(() =>
-      new Analysis(new AnalysisId('id1'), newSymbol, full.market, '' as unknown as string, full.timeframes)
+    expect(
+      () =>
+        new Analysis(
+          new AnalysisId('id1'),
+          newSymbol,
+          full.market,
+          '' as unknown as string,
+          full.timeframes
+        )
     ).toThrow();
   });
 

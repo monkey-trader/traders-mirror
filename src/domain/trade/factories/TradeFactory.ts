@@ -9,6 +9,8 @@ import { Leverage } from '../valueObjects/Leverage';
 import { Margin } from '../valueObjects/Margin';
 import { TradeId } from '../valueObjects/TradeId';
 import { AnalysisId } from '../valueObjects/AnalysisId';
+import { Status } from '../valueObjects/Status';
+import { Notes } from '../valueObjects/Notes';
 
 export type TradeInput = {
   id: string;
@@ -42,8 +44,8 @@ export class TradeFactory {
       new Price(input.price),
       new Side(input.side),
       new Market(input.market ?? 'All'),
-      input.status,
-      input.notes,
+      input.status ? new Status(input.status) : undefined,
+      input.notes ? new Notes(input.notes) : undefined,
       typeof input.sl === 'number' ? new Price(input.sl) : undefined,
       typeof input.tp1 === 'number' ? new Price(input.tp1) : undefined,
       typeof input.tp2 === 'number' ? new Price(input.tp2) : undefined,
@@ -65,8 +67,8 @@ export class TradeFactory {
       price: trade.price.value,
       side: trade.side.value,
       // Normalize status to a primitive and provide a sensible default to avoid UNKNOWN states in UI
-      status: trade.status ?? 'OPEN',
-      notes: trade.notes,
+      status: trade.status?.value ?? 'OPEN',
+      notes: trade.notes?.value,
       market: trade.market.value,
       sl: trade.sl?.value,
       tp1: trade.tp1?.value,

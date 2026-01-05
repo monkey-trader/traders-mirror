@@ -9,7 +9,8 @@ describe('AnalysisService', () => {
     const a = await service.createAnalysis({ symbol: 'ethusd' });
     const got = await repo.getById(a.id);
     expect(got).not.toBeNull();
-    const symbol = typeof got!.symbol === 'string' ? got!.symbol : (got!.symbol as { value: string }).value;
+    const symbol =
+      typeof got!.symbol === 'string' ? got!.symbol : (got!.symbol as { value: string }).value;
     expect(symbol).toBe('ETHUSD');
   });
 

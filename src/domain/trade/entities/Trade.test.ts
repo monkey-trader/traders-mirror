@@ -23,7 +23,7 @@ describe('TradeFactory', () => {
     expect(trade.entryDate.value).toBe('2023-01-01T00:00:00.000Z');
     expect(trade.size.value).toBe(10);
     expect(trade.price.value).toBe(100);
-    expect(trade.notes).toBe('Test');
+    expect(trade.notes?.value).toBe('Test');
     expect(trade.id).toBeInstanceOf(TradeId);
     expect(trade.analysisId).toBeInstanceOf(AnalysisId);
     expect(trade.analysisId?.value).toBe('REF-1');

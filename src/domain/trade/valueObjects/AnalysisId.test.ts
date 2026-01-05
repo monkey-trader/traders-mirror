@@ -15,4 +15,3 @@ describe('AnalysisId', () => {
     expect(() => new AnalysisId(123 as unknown as string)).toThrow(AnalysisIdInvalidError);
   });
 });
-

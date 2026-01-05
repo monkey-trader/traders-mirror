@@ -21,4 +21,3 @@ describe('TradeId', () => {
     expect(generated.length).toBeGreaterThan(0);
   });
 });
-

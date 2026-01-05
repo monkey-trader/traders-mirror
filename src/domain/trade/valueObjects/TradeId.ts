@@ -21,4 +21,3 @@ export class TradeIdInvalidError extends Error {
     this.name = 'TradeIdInvalidError';
   }
 }
-

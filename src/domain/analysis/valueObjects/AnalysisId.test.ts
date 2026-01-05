@@ -11,4 +11,3 @@ describe('analysis/valueObjects/AnalysisId', () => {
     expect(() => new AnalysisId('   ')).toThrow(AnalysisIdInvalidError);
   });
 });
-

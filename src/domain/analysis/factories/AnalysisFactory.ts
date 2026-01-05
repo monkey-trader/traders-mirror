@@ -8,6 +8,7 @@ import { EntryDate } from '@/domain/analysis/valueObjects/EntryDate';
 import { TradingViewLink } from '@/domain/analysis/valueObjects/TradingViewLink';
 import { Analysis } from '@/domain/analysis/entities/Analysis';
 import { AnalysisId } from '@/domain/analysis/valueObjects/AnalysisId';
+import { Notes } from '@/domain/trade/valueObjects/Notes';
 
 type TimeframeInput = {
   timeframe: Timeframe;
@@ -35,7 +36,9 @@ export class AnalysisFactory {
       : new EntryDate(new Date()).iso;
     const id = input.id
       ? new AnalysisId(input.id)
-      : new AnalysisId(`analysis-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`);
+      : new AnalysisId(
+          `analysis-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
+        );
 
     // normalize timeframes to record
     const defaultTimeframes: Timeframe[] = [
@@ -73,7 +76,14 @@ export class AnalysisFactory {
       }
     }
 
-    return new Analysis(id, tradeSymbol, input.market, createdAt, tfRecord, input.notes);
+    return new Analysis(
+      id,
+      tradeSymbol,
+      input.market,
+      createdAt,
+      tfRecord,
+      input.notes ? new Notes(input.notes) : undefined
+    );
   }
 
   static toDTO(analysis: Analysis): AnalysisDTO {
@@ -84,7 +94,7 @@ export class AnalysisFactory {
       createdAt: analysis.createdAt,
       updatedAt: analysis.updatedAt,
       timeframes: analysis.timeframes,
-      notes: analysis.notes,
+      notes: analysis.notes?.value,
     };
   }
 }
