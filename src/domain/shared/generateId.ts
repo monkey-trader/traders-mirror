@@ -10,7 +10,9 @@ export function generateId(prefix = ''): string {
     if (typeof c.getRandomValues === 'function') {
       const arr = new Uint8Array(8);
       c.getRandomValues(arr);
-      const hex = Array.from(arr).map((b: number) => b.toString(16).padStart(2, '0')).join('');
+      const hex = Array.from(arr)
+        .map((b: number) => b.toString(16).padStart(2, '0'))
+        .join('');
       return `${prefix}${prefix ? '-' : ''}${Date.now()}-${hex}`;
     }
   }

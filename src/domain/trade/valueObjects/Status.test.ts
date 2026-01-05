@@ -17,7 +17,7 @@ describe('Status VO', () => {
     expect(() => new Status('bad')).toThrow(StatusInvalidError);
   });
   it('fromInputValue and toInputValue work', () => {
-    const s = Status.fromInputValue('closed')
-    expect(s.toInputValue()).toBe('CLOSED')
-  })
+    const s = Status.fromInputValue('closed');
+    expect(s.toInputValue()).toBe('CLOSED');
+  });
 });

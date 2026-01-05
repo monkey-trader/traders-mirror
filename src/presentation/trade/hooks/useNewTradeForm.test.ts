@@ -153,8 +153,8 @@ describe('useNewTradeForm', () => {
       ref.current!.setForm({
         symbol: 'BTCUSD',
         entryDate: EntryDate.toInputValue(),
-        size: (' 5 ' as unknown) as number,
-        price: (' 12.5 ' as unknown) as number,
+        size: ' 5 ' as unknown as number,
+        price: ' 12.5 ' as unknown as number,
         side: 'LONG',
         status: 'OPEN',
         market: 'Crypto',

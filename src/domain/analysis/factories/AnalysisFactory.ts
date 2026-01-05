@@ -26,17 +26,14 @@ export type AnalysisInput = {
   market?: 'Forex' | 'Crypto';
 };
 
-function buildTimeframeRecord(input?: AnalysisInput['timeframes']): Record<Timeframe, TimeframeAnalysisDTO> {
-  const defaultTimeframes: Timeframe[] = [
-    'monthly',
-    'weekly',
-    'daily',
-    '4h',
-    '2h',
-    '1h',
-    '15min',
-  ];
-  const tfRecord: Record<Timeframe, TimeframeAnalysisDTO> = {} as Record<Timeframe, TimeframeAnalysisDTO>;
+function buildTimeframeRecord(
+  input?: AnalysisInput['timeframes']
+): Record<Timeframe, TimeframeAnalysisDTO> {
+  const defaultTimeframes: Timeframe[] = ['monthly', 'weekly', 'daily', '4h', '2h', '1h', '15min'];
+  const tfRecord: Record<Timeframe, TimeframeAnalysisDTO> = {} as Record<
+    Timeframe,
+    TimeframeAnalysisDTO
+  >;
   defaultTimeframes.forEach((t) => {
     tfRecord[t] = { timeframe: t };
   });
@@ -63,7 +60,8 @@ function buildTimeframeRecord(input?: AnalysisInput['timeframes']): Record<Timef
 }
 
 export function createAnalysis(input: AnalysisInput): Analysis {
-  const tradeSymbol = input.symbol instanceof TradeSymbol ? input.symbol : new TradeSymbol(input.symbol);
+  const tradeSymbol =
+    input.symbol instanceof TradeSymbol ? input.symbol : new TradeSymbol(input.symbol);
   const createdAt = input.createdAt
     ? input.createdAt instanceof EntryDate
       ? input.createdAt.iso
@@ -100,4 +98,3 @@ export const AnalysisFactory = {
   create: createAnalysis,
   toDTO: analysisToDTO,
 };
-

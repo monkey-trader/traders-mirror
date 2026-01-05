@@ -84,7 +84,7 @@ describe('AnalysisDetail open-trade link', () => {
     const dispatchSpy = vi.spyOn(globalThis, 'dispatchEvent');
     render(<AnalysisDetail analysis={sampleAnalysis as any} />);
 
-    await waitFor(() => expect(screen.getByRole('button', { name: /Open trade for BTCUSD/i }))); 
+    await waitFor(() => expect(screen.getByRole('button', { name: /Open trade for BTCUSD/i })));
 
     const btn = screen.getByRole('button', { name: /Open trade for BTCUSD/i });
     btn.click();

@@ -29,5 +29,5 @@ describe('Notes Value Object', () => {
     expect(a.isEmpty()).toBe(false);
     const empty = Notes.fromInputValue('');
     expect(empty.isEmpty()).toBe(true);
-  })
+  });
 });
