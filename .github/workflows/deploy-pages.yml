@@ -90,7 +90,10 @@ jobs:
           else
             echo "No suitable artifact found or artifact disabled — building from source branch"
             # At this point the repository is checked out to the requested branch (deploy-source) if it existed
-            npm ci || npm install
+            # Use `npm install` here instead of `npm ci` so deploy-only runs don't fail
+            # when the lockfile and environment differ (CI environments can have slight
+            # package resolution differences). This is intentional for deploy-only jobs.
+            npm install --no-audit --no-fund
             # Run craco build directly to avoid invoking npm lifecycle scripts
             # (prebuild runs lint/format which can fail in deploy-only contexts).
             npx craco build
