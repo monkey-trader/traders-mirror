@@ -244,6 +244,24 @@ function StorageControls() {
 }
 
 export function Settings({ compactView }: { compactView?: boolean }) {
+  const readEnvString = (key: string): string | undefined => {
+    let viteVal: string | undefined;
+    if (typeof import.meta !== 'undefined') {
+      const envObj = (import.meta as unknown as { env?: Record<string, string | boolean | undefined> }).env;
+      const raw = envObj ? envObj[key] : undefined;
+      if (typeof raw === 'string') viteVal = raw;
+      if (typeof raw === 'boolean') viteVal = raw ? 'true' : 'false';
+    }
+    const craVal = typeof process !== 'undefined' ? process.env?.[key] : undefined;
+    const val = viteVal ?? craVal;
+    return typeof val === 'string' && val.length > 0 ? val : undefined;
+  };
+
+  const buildBranch = readEnvString('VITE_BUILD_BRANCH') || readEnvString('REACT_APP_BUILD_BRANCH');
+  const buildSha = readEnvString('VITE_BUILD_SHA') || readEnvString('REACT_APP_BUILD_SHA');
+  const buildTag = readEnvString('VITE_BUILD_TAG') || readEnvString('REACT_APP_BUILD_TAG');
+  const buildTime = readEnvString('VITE_BUILD_TIME') || readEnvString('REACT_APP_BUILD_TIME');
+
   return (
     <div
       className={compactView ? `${styles.container} ${styles.compact}` : styles.container}
@@ -267,6 +285,29 @@ export function Settings({ compactView }: { compactView?: boolean }) {
         <DebugToggle />
         <MockLoaderToggle />
         <StorageControls />
+      </section>
+
+      <section className={styles.section}>
+        <h3>Build Info</h3>
+        <p className={styles.help}>Metadata about this deployed build.</p>
+        <div className={styles.buildInfo}>
+          <div>
+            <strong>Branch</strong>
+          </div>
+          <div>{buildBranch || 'n/a'}</div>
+          <div>
+            <strong>Commit</strong>
+          </div>
+          <div>{buildSha || 'n/a'}</div>
+          <div>
+            <strong>Tag</strong>
+          </div>
+          <div>{buildTag || 'n/a'}</div>
+          <div>
+            <strong>Built</strong>
+          </div>
+          <div>{buildTime || 'n/a'}</div>
+        </div>
       </section>
     </div>
   );

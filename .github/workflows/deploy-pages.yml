@@ -31,6 +31,31 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: production
+    env:
+      # Prefer repository Variables, fall back to Secrets. Support both CRA and Vite naming.
+      REACT_APP_FIREBASE_API_KEY: ${{ vars.REACT_APP_FIREBASE_API_KEY || secrets.REACT_APP_FIREBASE_API_KEY }}
+      REACT_APP_FIREBASE_AUTH_DOMAIN: ${{ vars.REACT_APP_FIREBASE_AUTH_DOMAIN || secrets.REACT_APP_FIREBASE_AUTH_DOMAIN }}
+      REACT_APP_FIREBASE_PROJECT_ID: ${{ vars.REACT_APP_FIREBASE_PROJECT_ID || secrets.REACT_APP_FIREBASE_PROJECT_ID }}
+      REACT_APP_FIREBASE_STORAGE_BUCKET: ${{ vars.REACT_APP_FIREBASE_STORAGE_BUCKET || secrets.REACT_APP_FIREBASE_STORAGE_BUCKET }}
+      REACT_APP_FIREBASE_MESSAGING_SENDER_ID: ${{ vars.REACT_APP_FIREBASE_MESSAGING_SENDER_ID || secrets.REACT_APP_FIREBASE_MESSAGING_SENDER_ID }}
+      REACT_APP_FIREBASE_APP_ID: ${{ vars.REACT_APP_FIREBASE_APP_ID || secrets.REACT_APP_FIREBASE_APP_ID }}
+
+      VITE_FIREBASE_API_KEY: ${{ vars.VITE_FIREBASE_API_KEY || secrets.VITE_FIREBASE_API_KEY || vars.REACT_APP_FIREBASE_API_KEY || secrets.REACT_APP_FIREBASE_API_KEY }}
+      VITE_FIREBASE_AUTH_DOMAIN: ${{ vars.VITE_FIREBASE_AUTH_DOMAIN || secrets.VITE_FIREBASE_AUTH_DOMAIN || vars.REACT_APP_FIREBASE_AUTH_DOMAIN || secrets.REACT_APP_FIREBASE_AUTH_DOMAIN }}
+      VITE_FIREBASE_PROJECT_ID: ${{ vars.VITE_FIREBASE_PROJECT_ID || secrets.VITE_FIREBASE_PROJECT_ID || vars.REACT_APP_FIREBASE_PROJECT_ID || secrets.REACT_APP_FIREBASE_PROJECT_ID }}
+      VITE_FIREBASE_STORAGE_BUCKET: ${{ vars.VITE_FIREBASE_STORAGE_BUCKET || secrets.VITE_FIREBASE_STORAGE_BUCKET || vars.REACT_APP_FIREBASE_STORAGE_BUCKET || secrets.REACT_APP_FIREBASE_STORAGE_BUCKET }}
+      VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ vars.VITE_FIREBASE_MESSAGING_SENDER_ID || secrets.VITE_FIREBASE_MESSAGING_SENDER_ID || vars.REACT_APP_FIREBASE_MESSAGING_SENDER_ID || secrets.REACT_APP_FIREBASE_MESSAGING_SENDER_ID }}
+      VITE_FIREBASE_APP_ID: ${{ vars.VITE_FIREBASE_APP_ID || secrets.VITE_FIREBASE_APP_ID || vars.REACT_APP_FIREBASE_APP_ID || secrets.REACT_APP_FIREBASE_APP_ID }}
+
+      # Build metadata exported for Settings page
+      REACT_APP_BUILD_BRANCH: ${{ github.event.inputs.source_branch || github.ref_name }}
+      REACT_APP_BUILD_SHA: ${{ github.sha }}
+      REACT_APP_BUILD_TAG: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
+      REACT_APP_BUILD_TIME: ${{ github.run_started_at }}
+      VITE_BUILD_BRANCH: ${{ github.event.inputs.source_branch || github.ref_name }}
+      VITE_BUILD_SHA: ${{ github.sha }}
+      VITE_BUILD_TAG: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
+      VITE_BUILD_TIME: ${{ github.run_started_at }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -53,6 +78,22 @@ jobs:
           else
             echo "Branch $SOURCE_BRANCH not found remotely — staying on current ref"
           fi
+
+      - name: Debug Firebase env presence
+        run: |
+          set -e
+          echo "Checking Firebase env presence (values hidden):"
+          for key in \
+            REACT_APP_FIREBASE_API_KEY REACT_APP_FIREBASE_AUTH_DOMAIN REACT_APP_FIREBASE_PROJECT_ID \
+            REACT_APP_FIREBASE_STORAGE_BUCKET REACT_APP_FIREBASE_MESSAGING_SENDER_ID REACT_APP_FIREBASE_APP_ID \
+            VITE_FIREBASE_API_KEY VITE_FIREBASE_AUTH_DOMAIN VITE_FIREBASE_PROJECT_ID \
+            VITE_FIREBASE_STORAGE_BUCKET VITE_FIREBASE_MESSAGING_SENDER_ID VITE_FIREBASE_APP_ID; do
+            if [ -n "${!key:-}" ]; then
+              echo "$key: set"
+            else
+              echo "$key: MISSING"
+            fi
+          done
 
       - name: Download pages artifact (optional)
         if: ${{ github.event.inputs.use_artifact == 'true' }}
