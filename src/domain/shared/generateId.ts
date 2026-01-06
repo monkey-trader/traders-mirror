@@ -21,9 +21,9 @@ export function generateId(prefix = ''): string {
     }
   }
 
-  // Note: we intentionally avoid `require('crypto')` here to keep this
-  // module friendly for bundlers targeting browser environments. If
-  // `globalThis.crypto` isn't available, we fall back to a non-crypto
+  // Note: we intentionally avoid importing the Node `crypto` module here
+  // so the file stays friendly for bundlers targeting browser environments.
+  // If `globalThis.crypto` isn't available, we fall back to a non-crypto
   // Math.random-based ID. This is acceptable for non-security-sensitive
   // application identifiers used by the UI and tests.
 
