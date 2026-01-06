@@ -91,7 +91,9 @@ jobs:
             echo "No suitable artifact found or artifact disabled — building from source branch"
             # At this point the repository is checked out to the requested branch (deploy-source) if it existed
             npm ci || npm install
-            npm run build
+            # Run craco build directly to avoid invoking npm lifecycle scripts
+            # (prebuild runs lint/format which can fail in deploy-only contexts).
+            npx craco build
             cp -r ./build/* "$TMPDIR"/
           fi
 
