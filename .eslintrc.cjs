@@ -34,4 +34,13 @@ module.exports.overrides = [
       createDefaultProgram: true,
     },
   },
+  // Disable `no-require-imports` for the shared id generator because it
+  // intentionally avoids bundler-specific imports and may contain legacy
+  // patterns that are safe for the browser build.
+  {
+    files: ['src/domain/shared/generateId.ts'],
+    rules: {
+      '@typescript-eslint/no-require-imports': 'off',
+    },
+  },
 ];
