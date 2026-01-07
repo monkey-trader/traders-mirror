@@ -6,6 +6,11 @@ vi.mock('firebase/firestore', () => {
   const mockSetDoc = vi.fn(async () => Promise.resolve());
   const mockGetDocs = vi.fn(async () => Promise.resolve({ docs: [] }));
   const mockDeleteDoc = vi.fn(async () => Promise.resolve());
+  const mockGetDoc = vi.fn(async () => Promise.resolve({
+    exists: () => true,
+    data: () => ({ userId: 'mock-user' }),
+    id: 'mock-id',
+  }));
   const mockDoc = vi.fn((col: unknown, id: string) => ({ id }));
   const collection = (db: unknown, name: string) => ({ _name: name });
   return {
@@ -15,10 +20,16 @@ vi.mock('firebase/firestore', () => {
     setDoc: mockSetDoc,
     getDocs: mockGetDocs,
     deleteDoc: mockDeleteDoc,
+    getDoc: mockGetDoc,
   };
 });
 
 // Import after mocking
+
+vi.mock('@/infrastructure/firebase/firebaseAuth', () => ({
+  getCurrentUser: () => ({ uid: 'mock-user' })
+}));
+
 import FirebaseTradeRepository from './FirebaseTradeRepository';
 import { TradeFactory } from '@/domain/trade/factories/TradeFactory';
 

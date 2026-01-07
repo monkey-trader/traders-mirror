@@ -6,7 +6,8 @@ import { AnalysisList, AnalysisSummary } from '@/presentation/analysis/AnalysisL
 import { MarketFilters } from '@/presentation/trade/components/TradeFilters/TradeFilters';
 import { AnalysisDetail } from '@/presentation/analysis/AnalysisDetail';
 import { ConfirmDialog } from '@/presentation/shared/components/ConfirmDialog/ConfirmDialog';
-import { LocalStorageAnalysisRepository } from '@/infrastructure/analysis/repositories/LocalStorageAnalysisRepository';
+import { createAnalysisRepository } from '@/infrastructure/repositories';
+import { loadSettings } from '@/presentation/settings/settingsStorage';
 import type { AnalysisDTO as AnalysisDTOType } from '@/domain/analysis/interfaces/AnalysisRepository';
 // Editor types removed
 
@@ -25,7 +26,15 @@ export type AnalysisProps = {
   compactView?: boolean;
 };
 
-const repository = new LocalStorageAnalysisRepository();
+// decide whether to use Firebase based on debug UI settings or env
+const settings = typeof globalThis !== 'undefined' ? loadSettings() : {};
+const debugUiEnabled =
+  typeof settings.debugUI === 'boolean'
+    ? settings.debugUI
+    : typeof process !== 'undefined' &&
+      (process.env.REACT_APP_DEBUG_UI === 'true' || process.env.NODE_ENV === 'development');
+
+const repository = createAnalysisRepository(debugUiEnabled);
 
 export function Analysis({ onCreateTradeSuggestion, compactView = false }: AnalysisProps) {
   const [list, setList] = useState<AnalysisSummary[]>([]);

@@ -30,6 +30,7 @@ export type TradeInput = {
   tp4?: number;
   leverage?: number;
   analysisId?: string;
+  userId?: string; // for Firestore security rules
 };
 
 export class TradeFactory {

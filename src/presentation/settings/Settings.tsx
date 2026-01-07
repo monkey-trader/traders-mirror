@@ -3,8 +3,7 @@ import styles from './Settings.module.css';
 import { ThemeSwitcher } from '@/presentation/shared/components/ThemeSwitcher/ThemeSwitcher';
 import { loadSettings, saveSettings } from './settingsStorage';
 import { Button } from '@/presentation/shared/components/Button/Button';
-import { LocalStorageAnalysisRepository } from '@/infrastructure/analysis/repositories/LocalStorageAnalysisRepository';
-import LocalStorageTradeRepository from '@/infrastructure/trade/repositories/LocalStorageTradeRepository';
+import { createAnalysisRepository, createTradeRepository } from '@/infrastructure/repositories';
 import { loadMockAnalyses, clearAnalyses } from '@/presentation/analysis/mockLoader';
 import { ConfirmDialog } from '@/presentation/shared/components/ConfirmDialog/ConfirmDialog';
 import type { AnalysisDTO } from '@/domain/analysis/interfaces/AnalysisRepository';
@@ -118,7 +117,12 @@ function StorageControls() {
         localStorage.removeItem('mt_trades_v1');
         // also clear analyses storage via repository + loader helper
         try {
-          const analysisRepo = new LocalStorageAnalysisRepository();
+          const s = loadSettings();
+          const envDefault =
+            typeof process !== 'undefined' &&
+            (process.env.REACT_APP_DEBUG_UI === 'true' || process.env.NODE_ENV === 'development');
+          const useFirebase = typeof s.debugUI === 'boolean' ? s.debugUI : envDefault;
+          const analysisRepo = createAnalysisRepository(useFirebase);
           // clearAnalyses expects a setter; provide a typed no-op
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           clearAnalyses(analysisRepo, noopSetAnalyses);
@@ -140,8 +144,13 @@ function StorageControls() {
 
         // then seed analyses based on the restored trades and link them back
         try {
-          const tradeRepo = new LocalStorageTradeRepository(undefined, { seedDefaults: false });
-          const analysisRepo = new LocalStorageAnalysisRepository();
+          const s = loadSettings();
+          const envDefault =
+            typeof process !== 'undefined' &&
+            (process.env.REACT_APP_DEBUG_UI === 'true' || process.env.NODE_ENV === 'development');
+          const useFirebase = typeof s.debugUI === 'boolean' ? s.debugUI : envDefault;
+          const tradeRepo = createTradeRepository(useFirebase);
+          const analysisRepo = createAnalysisRepository(useFirebase);
           // get domain trades from repo and load mock analyses
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           (async () => {

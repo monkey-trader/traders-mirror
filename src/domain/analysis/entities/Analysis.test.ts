@@ -47,6 +47,6 @@ describe('Analysis Entity', () => {
     );
     expect(a.id.value).toBe('ID1');
     expect(a.symbol.value).toBe('EURUSD');
-    expect(a.notes).toBe('note');
+    expect(a.notes?.value).toBe('note');
   });
 });

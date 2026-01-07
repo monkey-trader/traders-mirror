@@ -1,17 +1,39 @@
+/**
+ * Remove all undefined fields from an object (shallow).
+ * @param obj The object to clean.
+ * @returns A new object without undefined fields.
+ */
+function removeUndefined<T extends Record<string, unknown>>(obj: T): T {
+  return Object.fromEntries(
+    Object.entries(obj).filter(([, v]) => v !== undefined)
+  ) as T;
+}
 import type { TradeRepository } from '@/domain/trade/interfaces/TradeRepository';
 import { Trade } from '@/domain/trade/entities/Trade';
 import { TradeFactory } from '@/domain/trade/factories/TradeFactory';
 import type { TradeInput } from '@/domain/trade/factories/TradeFactory';
 import { getDb } from '@/infrastructure/firebase/firebaseClient';
+import { getCurrentUser } from '@/infrastructure/firebase/firebaseAuth';
 import type { Firestore } from 'firebase/firestore';
+
+const firebaseDebug = typeof import.meta !== 'undefined' && import.meta.env.VITE_DEBUG_FIREBASE === 'true';
 
 export class FirebaseTradeRepository implements TradeRepository {
 
   async save(trade: Trade): Promise<void> {
     const { collection, doc, setDoc } = await import('firebase/firestore');
-    const dto = TradeFactory.toDTO(trade);
+    let dto = TradeFactory.toDTO(trade);
+    const user = getCurrentUser();
+    if (user && user.uid) {
+      dto.userId = user.uid;
+    }
+    dto = removeUndefined(dto);
     const db: Firestore = await getDb();
     const col = collection(db, 'trades');
+    if (firebaseDebug) {
+      // eslint-disable-next-line no-console
+      console.debug('[Firebase][Trade] save', { id: dto.id });
+    }
     await setDoc(doc(col, dto.id), dto, { merge: true });
   }
 
@@ -19,6 +41,10 @@ export class FirebaseTradeRepository implements TradeRepository {
     const { collection, getDocs } = await import('firebase/firestore');
     const db: Firestore = await getDb();
     const col = collection(db, 'trades');
+    if (firebaseDebug) {
+      // eslint-disable-next-line no-console
+      console.debug('[Firebase][Trade] getAll');
+    }
     const snap = await getDocs(col);
     const trades = snap.docs.map((d) => {
       const data = d.data() as Record<string, unknown>;
@@ -43,7 +69,7 @@ export class FirebaseTradeRepository implements TradeRepository {
       };
       try {
         return TradeFactory.create(input as TradeInput);
-      } catch (err) {
+      } catch {
         // Fallback: create minimal Trade if conversion fails
         const fallback: TradeInput = {
           id: String(d.id),
@@ -59,18 +85,46 @@ export class FirebaseTradeRepository implements TradeRepository {
   }
 
   async update(trade: Trade): Promise<void> {
-    const { collection, doc, setDoc } = await import('firebase/firestore');
-    const dto = TradeFactory.toDTO(trade);
+    const { collection, doc, getDoc, setDoc } = await import('firebase/firestore');
+    let dto = TradeFactory.toDTO(trade);
+    const user = getCurrentUser();
+    if (user && user.uid) {
+      dto.userId = user.uid;
+    }
+    dto = removeUndefined(dto);
     const db: Firestore = await getDb();
     const col = collection(db, 'trades');
-    await setDoc(doc(col, dto.id), dto, { merge: true });
+    // Only allow update if userId matches
+    const ref = doc(col, dto.id);
+    const snap = await getDoc(ref);
+    const data = snap.data() as { userId?: string } | undefined;
+    if (!snap.exists() || !user || !data || data.userId !== user.uid) {
+      throw new Error('Not authorized to update this trade');
+    }
+    if (firebaseDebug) {
+      // eslint-disable-next-line no-console
+      console.debug('[Firebase][Trade] update', { id: dto.id });
+    }
+    await setDoc(ref, dto, { merge: true });
   }
 
   async delete(id: string): Promise<void> {
-    const { collection, doc, deleteDoc } = await import('firebase/firestore');
+    const { collection, doc, getDoc, deleteDoc } = await import('firebase/firestore');
     const db: Firestore = await getDb();
     const col = collection(db, 'trades');
-    await deleteDoc(doc(col, id));
+    const user = getCurrentUser();
+    if (firebaseDebug) {
+      // eslint-disable-next-line no-console
+      console.debug('[Firebase][Trade] delete', { id, userId: user?.uid });
+    }
+    // Only allow delete if userId matches
+    const ref = doc(col, id);
+    const snap = await getDoc(ref);
+    const data = snap.data() as { userId?: string } | undefined;
+    if (!snap.exists() || !user || !data || data.userId !== user.uid) {
+      throw new Error('Not authorized to delete this trade');
+    }
+    await deleteDoc(ref);
   }
 }
 

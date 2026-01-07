@@ -14,6 +14,7 @@ export type AnalysisDTO = {
   market?: 'Forex' | 'Crypto';
   timeframes: Record<Timeframe, TimeframeAnalysisDTO>;
   notes?: string;
+  userId?: string; // for Firestore security rules
 };
 
 export type AnalysisRepository = {

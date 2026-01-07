@@ -33,6 +33,16 @@ jobs:
             npm install --no-audit --no-fund
           fi
 
+      - name: Run lint
+        run: |
+          echo "Running ESLint..."
+          npm run lint:strict
+
+      - name: Type check
+        run: |
+          echo "Running TypeScript check"
+          npm run tsc:test
+
       - name: Run tests (vilest) + coverage
         run: |
           # Prefer unified npm script for CI but fallback to direct npx if script missing

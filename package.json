@@ -4,24 +4,25 @@
   "private": true,
   "homepage": "https://monkey-trader.github.io/traders-mirror",
   "scripts": {
-    "start": "craco start",
-    "dev": "craco start",
-    "build": "craco build",
+    "start": "vite",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
     "prebuild": "npm run format && npm run lint",
-    "test": "craco test",
+    "test": "vitest",
     "test:unit": "vitest",
     "test:ci": "vitest run -c vitest.config.ts --coverage --reporter=dot --reporter=junit --outputFile=vitest-report.xml",
     "tsc:test": "tsc -p tsconfig.test.json --noEmit",
     "lint": "eslint 'src/**/*.{ts,tsx,js,jsx}' --max-warnings=0 || true",
+    "check": "npm run lint && npm run tsc:test && npm run test:ci",
     "lint:strict": "eslint 'src/**/*.{ts,tsx,js,jsx}' --max-warnings=0",
     "lint:full": "eslint 'src/**/*.{ts,tsx,js,jsx}' --rulesdir tools/eslint-rules --rule 'no-short-vo-names:warn' || true",
     "format": "prettier --write 'src/**/*.{ts,tsx,js,jsx,json,css,md}'",
-    "eject": "react-scripts eject",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build",
     "prepare": "husky install",
-    "dev:check": "npm run lint:strict && craco start",
-    "start:check": "npm run lint:strict && craco start",
+    "dev:check": "npm run lint:strict && vite",
+    "start:check": "npm run lint:strict && vite",
     "tools:find-unused-imports": "node tools/find-and-remove-unused-imports.mjs 'src/**/*.{ts,tsx,js,jsx}'",
     "tools:fix-unused-imports": "node tools/find-and-remove-unused-imports.mjs 'src/**/*.{ts,tsx,js,jsx}' --apply",
     "ci:autofix": "node scripts/add-eslint-disable-any.js && npx eslint --fix \"src/**/*.{ts,tsx,js,jsx}\" || true && npx prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\" || true"
@@ -29,11 +30,9 @@
   "dependencies": {
     "firebase": "^12.7.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-scripts": "5.0.1"
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "@craco/craco": "^7.1.0",
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^16.3.1",
     "@testing-library/user-event": "^14.6.1",
@@ -41,6 +40,7 @@
     "@types/react-dom": "18.2.4",
     "@typescript-eslint/eslint-plugin": "^8.50.1",
     "@typescript-eslint/parser": "^8.50.1",
+    "@vitejs/plugin-react": "^5.1.2",
     "@vitest/coverage-v8": "^4.0.16",
     "@vitest/ui": "^4.0.16",
     "caniuse-lite": "^1.0.30001762",
@@ -51,6 +51,7 @@
     "prettier": "^2.0.0",
     "ts-morph": "^27.0.2",
     "typescript": "4.9.5",
+    "vite": "^7.3.1",
     "vitest": "^4.0.16"
   },
   "browserslist": {

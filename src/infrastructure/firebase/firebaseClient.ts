@@ -1,3 +1,10 @@
+// DEBUG: Log all env variables
+// eslint-disable-next-line no-console
+console.log('VITE_FIREBASE_API_KEY:', import.meta.env.VITE_FIREBASE_API_KEY);
+// Export a getter for the initialized Firebase app (for Auth, etc.)
+export function getFirebaseApp() {
+  return initApp();
+}
 import { initializeApp, getApps } from 'firebase/app';
 import type { FirebaseOptions, FirebaseApp } from 'firebase/app';
 import type { Firestore } from 'firebase/firestore';
@@ -14,9 +21,19 @@ const firebaseConfig: FirebaseOptions = {
 let cachedApp: FirebaseApp | null = null;
 let cachedDb: Firestore | null = null;
 
+const firebaseDebug =
+  (typeof import.meta !== 'undefined' && (import.meta.env.VITE_DEBUG_FIREBASE === 'true')) ||
+  (typeof process !== 'undefined' && process.env.REACT_APP_DEBUG_FIREBASE === 'true');
+
 function initApp(): FirebaseApp {
   if (cachedApp) return cachedApp;
-  cachedApp = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+  if (getApps().length) {
+    cachedApp = getApps()[0];
+    if (firebaseDebug) console.debug('[Firebase] using existing initialized app', { projectId: firebaseConfig.projectId });
+  } else {
+    cachedApp = initializeApp(firebaseConfig);
+    if (firebaseDebug) console.debug('[Firebase] initialized app', { projectId: firebaseConfig.projectId });
+  }
   return cachedApp;
 }
 
@@ -25,5 +42,6 @@ export async function getDb(): Promise<Firestore> {
   const app = initApp();
   const { getFirestore } = await import('firebase/firestore');
   cachedDb = getFirestore(app);
+  if (firebaseDebug) console.debug('[Firebase] getDb() created Firestore instance', { projectId: firebaseConfig.projectId });
   return cachedDb;
 }
