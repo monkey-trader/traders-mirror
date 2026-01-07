@@ -244,24 +244,88 @@ function StorageControls() {
 }
 
 export function Settings({ compactView }: { compactView?: boolean }) {
-  const readEnvString = (key: string): string | undefined => {
-    let viteVal: string | undefined;
-    if (typeof import.meta !== 'undefined') {
-      const envObj = (import.meta as unknown as { env?: Record<string, string | boolean | undefined> }).env;
-      const raw = envObj ? envObj[key] : undefined;
-      if (typeof raw === 'string') viteVal = raw;
-      if (typeof raw === 'boolean') viteVal = raw ? 'true' : 'false';
+  const buildInfo = React.useMemo(() => {
+    // Support both CRA and Vite envs; use literal CRA access so bundlers inline correctly.
+    const viteEnv = (
+      typeof import.meta !== 'undefined'
+        ? (import.meta as unknown as { env?: Record<string, string | boolean | undefined> }).env ||
+          {}
+        : {}
+    ) as Record<string, string | boolean | undefined>;
+
+    const viteBranch =
+      typeof viteEnv.VITE_BUILD_BRANCH === 'string' ? viteEnv.VITE_BUILD_BRANCH : undefined;
+    const viteSha = typeof viteEnv.VITE_BUILD_SHA === 'string' ? viteEnv.VITE_BUILD_SHA : undefined;
+    const viteTag = typeof viteEnv.VITE_BUILD_TAG === 'string' ? viteEnv.VITE_BUILD_TAG : undefined;
+    const viteTime =
+      typeof viteEnv.VITE_BUILD_TIME === 'string' ? viteEnv.VITE_BUILD_TIME : undefined;
+
+    const craBranch =
+      (typeof process !== 'undefined' && process.env && process.env.REACT_APP_BUILD_BRANCH) ||
+      undefined;
+    const craSha =
+      (typeof process !== 'undefined' && process.env && process.env.REACT_APP_BUILD_SHA) ||
+      undefined;
+    const craTag =
+      (typeof process !== 'undefined' && process.env && process.env.REACT_APP_BUILD_TAG) ||
+      undefined;
+    const craTime =
+      (typeof process !== 'undefined' && process.env && process.env.REACT_APP_BUILD_TIME) ||
+      undefined;
+
+    let branch = String(viteBranch || craBranch || '');
+    let sha = String(viteSha || craSha || '');
+    let tag = String(viteTag || craTag || '');
+    let time = String(viteTime || craTime || '');
+
+    // Runtime fallback: window.__BUILD_INFO__ injected by CI deploy
+    try {
+      const injected =
+        (typeof window !== 'undefined' && (window as Window).__BUILD_INFO__) || undefined;
+      if (injected) {
+        branch = branch || String(injected.branch || '');
+        sha = sha || String(injected.sha || '');
+        tag = tag || String(injected.tag || '');
+        time = time || String(injected.time || '');
+      }
+    } catch {
+      /* ignore */
     }
-    const craVal = typeof process !== 'undefined' ? process.env?.[key] : undefined;
-    const val = viteVal ?? craVal;
-    return typeof val === 'string' && val.length > 0 ? val : undefined;
-  };
 
-  const buildBranch = readEnvString('VITE_BUILD_BRANCH') || readEnvString('REACT_APP_BUILD_BRANCH');
-  const buildSha = readEnvString('VITE_BUILD_SHA') || readEnvString('REACT_APP_BUILD_SHA');
-  const buildTag = readEnvString('VITE_BUILD_TAG') || readEnvString('REACT_APP_BUILD_TAG');
-  const buildTime = readEnvString('VITE_BUILD_TIME') || readEnvString('REACT_APP_BUILD_TIME');
+    return { branch, sha, tag, time };
+  }, []);
+  const [resolvedBuildInfo, setResolvedBuildInfo] = React.useState(buildInfo);
 
+  // Runtime fetch fallback: attempt to load build-info.json if some fields are missing
+  React.useEffect(() => {
+    const needsFetch = !buildInfo.branch || !buildInfo.sha || !buildInfo.tag || !buildInfo.time;
+    if (!needsFetch) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('build-info.json', { cache: 'no-store' });
+        if (!res.ok) return;
+        const json = (await res.json()) as Partial<{
+          branch: string;
+          sha: string;
+          tag: string;
+          time: string;
+        }>;
+        if (cancelled) return;
+        setResolvedBuildInfo((prev) => ({
+          branch: prev.branch || String(json.branch || ''),
+          sha: prev.sha || String(json.sha || ''),
+          tag: prev.tag || String(json.tag || ''),
+          time: prev.time || String(json.time || ''),
+        }));
+      } catch {
+        // ignore network errors; keep existing values
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [buildInfo.branch, buildInfo.sha, buildInfo.tag, buildInfo.time]);
   return (
     <div
       className={compactView ? `${styles.container} ${styles.compact}` : styles.container}
@@ -290,23 +354,36 @@ export function Settings({ compactView }: { compactView?: boolean }) {
       <section className={styles.section}>
         <h3>Build Info</h3>
         <p className={styles.help}>Metadata about this deployed build.</p>
-        <div className={styles.buildInfo}>
+        <div className={styles.debugRow}>
+          <label className={styles.fieldLabel}>Branch</label>
+          <div>{resolvedBuildInfo.branch || 'n/a'}</div>
+        </div>
+        <div className={styles.debugRow}>
+          <label className={styles.fieldLabel}>Commit</label>
           <div>
-            <strong>Branch</strong>
+            {resolvedBuildInfo.sha ? (
+              <a
+                href={`https://github.com/${
+                  (typeof process !== 'undefined' && process.env.GITHUB_REPOSITORY) ||
+                  'monkey-trader/traders-mirror'
+                }/commit/${resolvedBuildInfo.sha}`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {resolvedBuildInfo.sha.substring(0, 7)}
+              </a>
+            ) : (
+              'n/a'
+            )}
           </div>
-          <div>{buildBranch || 'n/a'}</div>
-          <div>
-            <strong>Commit</strong>
-          </div>
-          <div>{buildSha || 'n/a'}</div>
-          <div>
-            <strong>Tag</strong>
-          </div>
-          <div>{buildTag || 'n/a'}</div>
-          <div>
-            <strong>Built</strong>
-          </div>
-          <div>{buildTime || 'n/a'}</div>
+        </div>
+        <div className={styles.debugRow}>
+          <label className={styles.fieldLabel}>Tag</label>
+          <div>{resolvedBuildInfo.tag || 'n/a'}</div>
+        </div>
+        <div className={styles.debugRow}>
+          <label className={styles.fieldLabel}>Built</label>
+          <div>{resolvedBuildInfo.time || 'n/a'}</div>
         </div>
       </section>
     </div>

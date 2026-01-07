@@ -33,12 +33,27 @@ Testing
 - Add a Vitest test that mounts the component with `compactView={true}` and asserts the compact classnames or expected compact DOM (e.g. stacked cards instead of table rows).
 - Integration tests may pass `forceCompact` props to parent components (e.g., `TradeJournal`) to simulate narrow viewports without mocking ResizeObserver.
 
-Examples
-- `TradeList` supports `compactView` and renders `PositionCard`s in compact mode.
-- `TradeDetailEditor` supports `compactView` to adapt form controls and button styles.
+
+Auth-Komponenten (LoginButton, LogoutButton, ProtectedRoute)
+- Nutzen das zentrale `Button`-Shared-Component für konsistentes Look & Feel und Responsiveness.
+- Die Buttons sind touch-optimiert, verwenden Design-Tokens für Abstände/Farben und passen sich per CSS-Module an schmale Viewports an.
+- Kein separates `compactView`-Prop nötig, da das Button-Component und die Styles bereits mobile-first gestaltet sind.
+- Getestet mit Vitest/Testing Library auf Interaktion und Ladezustände.
+
+Beispiel:
+- `LoginButton` und `LogoutButton` verwenden `<Button variant="primary"|"danger">` und sind auf allen Devices konsistent.
+
+Auth-Komponente: UserBadge
+- Zeigt Avatar (oder Initialen) und den Namen oben rechts in der Header-Leiste.
+- Verwendet Design-Tokens für Abstände/Typografie; Name wird auf kleinen Viewports automatisch ausgeblendet (Platzsparend).
+- Prop `compactView?: boolean` unterstützt kompakte Darstellung, blendet z.B. den Namen aus.
+- Logout-Action ist als sekundärer Button eingebunden und bleibt touch-optimiert.
 
 Docs
 - For each new component add a short `docs/<component>.md` entry describing the compact behavior and which tokens it uses.
+
+Update 09.01.2026
+- `LoginRequired` (presentation/auth): Centered card that uses spacing tokens (`--space-4/5/6`) and adapts paddings on small screens via media query. No `compactView` prop needed as it is inherently minimal and mobile-friendly.
 
 Maintenance
 - Keep this document updated as new tokens or breakpoints are introduced.

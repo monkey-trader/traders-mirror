@@ -1,10 +1,31 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
+// Mock auth provider hook used by UserBadge to avoid provider dependency in this unit,
+// but preserve other exports like AuthProvider via a partial mock.
+vi.mock('@/presentation/auth/AuthProvider', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/presentation/auth/AuthProvider')>();
+  return {
+    ...actual,
+    useAuth: () => ({
+      user: null,
+      loading: false,
+      signIn: vi.fn(),
+      signOut: vi.fn(),
+      clearError: vi.fn(),
+      error: null,
+    }),
+  };
+});
 import { Header } from './Header';
+import { AuthProvider } from '@/presentation/auth/AuthProvider';
 
 describe('Header component', () => {
   it('toggles mobile nav when hamburger clicked and focuses first link', () => {
-    render(<Header />);
+    render(
+      <AuthProvider>
+        <Header />
+      </AuthProvider>
+    );
 
     const btn = screen.getByRole('button', { name: /Open menu/i });
     expect(btn).toBeTruthy();
@@ -31,7 +52,11 @@ describe('Header component', () => {
   });
 
   it('closes mobile nav when backdrop clicked', () => {
-    const { container } = render(<Header />);
+    const { container } = render(
+      <AuthProvider>
+        <Header />
+      </AuthProvider>
+    );
     const btn = screen.getByRole('button', { name: /Open menu/i });
     fireEvent.click(btn);
     const mobileNav = screen.getByRole('menu');
@@ -49,7 +74,11 @@ describe('Header component', () => {
   });
 
   it('locks body scroll while mobile nav open and restores on close', () => {
-    render(<Header />);
+    render(
+      <AuthProvider>
+        <Header />
+      </AuthProvider>
+    );
     const btn = screen.getByRole('button', { name: /Open menu/i });
 
     // open
@@ -63,7 +92,11 @@ describe('Header component', () => {
   });
 
   it('clicking a mobile nav menu item closes the menu and clicking outside closes as well', () => {
-    render(<Header />);
+    render(
+      <AuthProvider>
+        <Header />
+      </AuthProvider>
+    );
     const btn = screen.getByRole('button', { name: /Open menu/i });
     fireEvent.click(btn);
     const mobileNav = screen.getByRole('menu');
@@ -82,7 +115,11 @@ describe('Header component', () => {
   });
 
   it('does not close when clicking inside mobile nav', () => {
-    render(<Header />);
+    render(
+      <AuthProvider>
+        <Header />
+      </AuthProvider>
+    );
     const btn = screen.getByRole('button', { name: /Open menu/i });
     fireEvent.click(btn);
     const mobileNav = screen.getByRole('menu');

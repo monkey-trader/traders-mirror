@@ -3,3 +3,6 @@ src/domain/shared/generateId.ts
 src/presentation/trade/hooks/useNewTradeForm.test.tsx
 src/presentation/trade/hooks/useTradesViewModel.test.tsx
 
+# Ignore Vitest shim used only in CI/test environments
+src/test/vitest-shim.js
+

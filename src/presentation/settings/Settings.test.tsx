@@ -126,6 +126,17 @@ describe('Settings Switch and TradeJournal debug banner', () => {
 });
 
 describe('Settings edge cases', () => {
+  it('renders build info section with placeholders', async () => {
+    render(<Settings />);
+    await screen.findByRole('heading', { name: /Settings/i });
+    // Build Info heading should exist
+    expect(await screen.findByText(/Build Info/i)).toBeTruthy();
+    // Labels should be present even if values are n/a
+    expect(screen.getByText('Branch')).toBeTruthy();
+    expect(screen.getByText('Commit')).toBeTruthy();
+    expect(screen.getByText('Tag')).toBeTruthy();
+    expect(screen.getByText('Built')).toBeTruthy();
+  });
   it('handles corrupted mt_trades_v1 gracefully when clearing', async () => {
     window.localStorage.setItem('mt_trades_v1', 'not-an-array');
     render(<Settings />);
