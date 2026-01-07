@@ -13,6 +13,10 @@
   - Branch-Muster: `feature/<beschreibung>`
 
 - WICHTIG: Führ Commits nur aus, wenn der Benutzer ausdrücklich dazu auffordert. Keine automatischen Commits ohne Bestätigung.
+ - **Package Manager:** Verwende immer `npm` für lokale Entwicklung, Skripte und CI; `pnpm` ist in diesem Projekt nicht erlaubt.
+ - **Linter & Tests vor Start/Commit:** Führe vor jedem Commit und vor dem Starten der Anwendung zwingend den Linter und die Tests aus (`npm run lint` und `npm test`) um sicherzustellen, dass keine Fehler eingebracht werden.
+ - **Linter & Tests vor Start/Commit:** Führe vor jedem Commit und vor dem Starten der Anwendung zwingend den Linter und die Tests aus (`npm run lint` und `npm test`) um sicherzustellen, dass keine Fehler eingebracht werden.
+  - **Neu:** Tests immer zusammen mit dem Linter ausführen — z.B. `npm run lint && npm test` (oder über ein npm-Skript, das beides verbindet), damit Lint-Fehler frühzeitig blockieren.
 - NEU: Vor jedem Commit aktualisiere und generiere bitte zuerst alle betroffenen Dokumentationen und PlantUML-Diagramme (`.puml`), z. B. `docs/*` und `docs/diagrams/*`, damit die committeten Artefakte Dokumentation und Diagramme konsistent halten.
 
 - WICHTIG: Führ Commits nur aus, wenn der Benutzer ausdrücklich dazu auffordert. Keine automatischen Commits ohne Bestätigung.
@@ -60,6 +64,7 @@
 
 ## Coding Standards
 - TypeScript: Strikt, keine Verwendung von `any`.
+ - Keine `any`-Implementierungen: Verwende konkrete Klassen und strikt typisierte Interfaces statt `any`. Der Linter/CI überprüft dies und lehnt `any`-Nutzung in neuen Implementationen ab.
 - React: Funktionale Komponenten, Hooks.
 - Keine Inline-CSS/Styles im JSX! Verwende ausschließlich CSS Modules oder externe Stylesheets.
 - TDD: Tests für Domain- und Application-Layer mit Vitest/Testing Library.
@@ -92,6 +97,10 @@
   - `src/domain/<feature>/entities/<Entity>.test.ts`
   - `src/application/<feature>/services/<Service>.test.ts`
 - Tests müssen alle Validierungs- und Fehlerfälle abdecken.
+
+Zusätzliche Praxis: Tests neben der Implementation (co-located)
+- Tests sollen nach TDD-Prinzip erstellt werden und **neben den Implementierungsdateien** liegen (co-located), nicht in separaten `__tests__`-Ordnern. Das erleichtert Refactoring, Modulentwicklung und hält Implementation und Tests zusammen.
+
 
 ## Vite-Import-Alias
 - Für alle Importe aus dem src-Ordner ist der Vite-Alias `@` zu verwenden, z.B.:

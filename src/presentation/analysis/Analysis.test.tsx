@@ -42,9 +42,9 @@ describe('Analysis component', () => {
 
     vi.spyOn(LocalStorageAnalysisRepository.prototype, 'listAll').mockResolvedValue([
       sample,
-    ] as AnalysisDTO[]);
+    ] as unknown as AnalysisDTO[]);
     vi.spyOn(LocalStorageAnalysisRepository.prototype, 'getById').mockResolvedValue(
-      sample as AnalysisDTO
+      sample as unknown as AnalysisDTO
     );
 
     const AnalysisModule = await import('./Analysis');
@@ -158,9 +158,9 @@ describe('Analysis component', () => {
     };
     vi.spyOn(LocalStorageAnalysisRepository.prototype, 'listAll').mockResolvedValue([
       sample,
-    ] as AnalysisDTO[]);
+    ] as unknown as AnalysisDTO[]);
     vi.spyOn(LocalStorageAnalysisRepository.prototype, 'getById').mockResolvedValue(
-      sample as AnalysisDTO
+      sample as unknown as AnalysisDTO
     );
 
     const AnalysisModule = await import('./Analysis');

@@ -27,6 +27,7 @@
     "ci:autofix": "node scripts/add-eslint-disable-any.js && npx eslint --fix \"src/**/*.{ts,tsx,js,jsx}\" || true && npx prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\" || true"
   },
   "dependencies": {
+    "firebase": "^12.7.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-scripts": "5.0.1"

@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { Analysis } from './Analysis';
 import { AnalysisFactory } from '@/domain/analysis/factories/AnalysisFactory';
+import { Notes } from '@/domain/trade/valueObjects/Notes';
 import { AnalysisId } from '@/domain/analysis/valueObjects/AnalysisId';
 import { TradeSymbol } from '@/domain/analysis/valueObjects/TradeSymbol';
 
@@ -42,7 +43,7 @@ describe('Analysis Entity', () => {
       full.market,
       full.createdAt,
       full.timeframes,
-      'note'
+      new Notes('note')
     );
     expect(a.id.value).toBe('ID1');
     expect(a.symbol.value).toBe('EURUSD');
