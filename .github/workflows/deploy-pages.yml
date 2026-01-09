@@ -14,7 +14,7 @@ on:
       use_artifact:
         description: 'Use previously uploaded artifact if available (true|false)'
         required: false
-        default: 'true'
+        default: 'false'
       force:
         description: 'Force deploy even if no changes (true|false)'
         required: false
