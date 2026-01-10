@@ -6,11 +6,11 @@ Why this exists
 - The repo contains a manual GitHub Actions workflow that builds or uses a CI artifact and pushes the static site to the `gh-pages` branch.
 - Deploys are manual to keep production changes explicit and reviewable.
 
-Quick overview
+ Quick overview
 - Workflow file: `.github/workflows/deploy-pages.yml`
 - Trigger: Manual (Actions UI → Run workflow) or GitHub CLI (`gh workflow run`)
 - Options: choose an artifact (if CI uploaded one) or build from any branch, and optionally force the deploy.
-- Build metadata: The workflow exports branch, commit SHA, tag, and UTC build time into both CRA and Vite envs (`REACT_APP_BUILD_*` and `VITE_BUILD_*`). The postbuild script (`scripts/inject-build-info.mjs`) writes `build/build-info.json` and injects `window.__BUILD_INFO__` into `build/index.html`. The workflow now verifies these artifacts instead of reinjecting them.
+- Build metadata: The workflow exports branch, commit SHA, tag, and UTC build time into both CRA and Vite envs (`REACT_APP_BUILD_*` and `VITE_BUILD_*`). After `craco build`, it explicitly runs the postbuild injector (`node scripts/inject-build-info.mjs`) which writes `build/build-info.json` and injects `window.__BUILD_INFO__` into `build/index.html`. The workflow then verifies these artifacts before pushing.
 
 GUI (Actions UI) — step-by-step
 1. Open the repository on GitHub.
@@ -65,11 +65,14 @@ Notes & guidance
 - Prefer `use_artifact=true` when your CI already builds and uploads artifacts for the branch — this ensures you deploy exactly what CI produced.
 - If you need multiple branch previews, we can update the workflow to deploy into branch-specific subfolders (e.g. `/feature/my-branch/`) instead of the site root; tell me if you want that.
 
-Troubleshooting
+ Troubleshooting
 - No `Deploy Pages (manual)` entry in Actions: confirm `.github/workflows/deploy-pages.yml` exists on the branch you are viewing (workflows live per-branch in GitHub UI).
 - Artifact not found: if `use_artifact=true` but no artifact is downloaded, the workflow will fallback to building from `source_branch`. Check earlier CI runs for the artifact upload.
 - Push rejected: re-run the workflow with `force=true` after confirming you want to overwrite the `gh-pages` branch.
-- Build Info missing on deployed site: ensure the postbuild script ran during the build (`npm run build` triggers `postbuild`). The workflow validates that `index.html` contains `window.__BUILD_INFO__`; if it fails, check the build logs for the injector output and environment variables like `REACT_APP_BUILD_BRANCH`.
+- Build Info missing on deployed site: the workflow runs `node scripts/inject-build-info.mjs` right after `craco build`. If the job fails at the "Build Info not injected" check, open the logs and confirm:
+  - `window.__BUILD_INFO__` is present in `index.html`.
+  - `build-info.json` exists and includes `branch` and `sha`.
+  - Build metadata envs (`REACT_APP_BUILD_*`/`VITE_BUILD_*`) are set (the workflow prints their presence, values are hidden).
 
 Security
 - The workflow runs in the `production` environment; you can add required reviewers in repository -> Settings -> Environments to require an approval before the deploy executes.

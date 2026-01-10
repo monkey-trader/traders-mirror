@@ -197,6 +197,8 @@ jobs:
             # Run craco build directly to avoid invoking npm lifecycle scripts
             # (prebuild runs lint/format which can fail in deploy-only contexts).
             npx craco build
+            # Inject build metadata into index.html and write build-info.json
+            node scripts/inject-build-info.mjs
             cp -r ./build/* "$TMPDIR"/
           fi
 
