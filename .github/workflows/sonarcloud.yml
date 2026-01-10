@@ -42,9 +42,38 @@ jobs:
       - name: Test (Vitest) + Coverage + JUnit
         run: npm run -s test:ci
 
+      - name: Check SonarCloud Automatic Analysis
+        id: auto
+        if: ${{ env.SONAR_TOKEN != '' }}
+        env:
+          SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
+        run: |
+          set -e
+          if [ -f sonar-project.properties ]; then
+            PROJECT_KEY=$(grep -E '^sonar.projectKey=' sonar-project.properties | cut -d'=' -f2 | tr -d '\r')
+          else
+            PROJECT_KEY="monkey-trader_traders-mirror"
+          fi
+          echo "Detected project key: $PROJECT_KEY"
+          echo "project_key=$PROJECT_KEY" >> "$GITHUB_OUTPUT"
+
+          # Query SonarCloud setting for Automatic Analysis; default to false on error
+          STATUS_JSON=$(curl -sS -u "$SONAR_TOKEN:" "https://sonarcloud.io/api/settings/values?component=$PROJECT_KEY&keys=sonar.automaticAnalysis.enabled" || true)
+          # crude extraction of boolean value without jq
+          AUTO=$(echo "$STATUS_JSON" | sed -n 's/.*"value":"\{0,1\}\([^"]*\)\{0,1\}".*/\1/p')
+          if [ -z "$AUTO" ]; then AUTO=false; fi
+          echo "Auto Analysis enabled: $AUTO"
+          echo "auto=$AUTO" >> "$GITHUB_OUTPUT"
+
+      - name: Skip Sonar (Automatic Analysis enabled)
+        if: ${{ env.SONAR_TOKEN != '' && steps.auto.outputs.auto == 'true' }}
+        run: |
+          echo "Skipping CI Sonar scan because SonarCloud Automatic Analysis is enabled for this project."
+          echo "Disable it in SonarCloud > Project > Administration > Analysis Method to use CI-based scanning."
+
       - name: SonarCloud Scan
         # Only run scan when SONAR_TOKEN is present
-        if: ${{ env.SONAR_TOKEN != '' }}
+        if: ${{ env.SONAR_TOKEN != '' && steps.auto.outputs.auto != 'true' }}
         uses: SonarSource/sonarcloud-github-action@e44258b109568baa0df60ed515909fc6c72cba92 # v2
         with:
           projectBaseDir: .
