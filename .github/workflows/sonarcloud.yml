@@ -13,6 +13,9 @@ jobs:
     # Run Sonar only when explicitly enabled via repo variable
     # Note: Avoid referencing `secrets` at job-level to keep workflow_dispatch compatible
     if: ${{ vars.ENABLE_SONAR_CI == 'true' }}
+    env:
+      # Expose token via env so we can reference env in step-level if
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
@@ -41,9 +44,9 @@ jobs:
 
       - name: SonarCloud Scan
         # Only run scan when SONAR_TOKEN is present
-        if: ${{ secrets.SONAR_TOKEN != '' }}
+        if: ${{ env.SONAR_TOKEN != '' }}
         uses: SonarSource/sonarcloud-github-action@e44258b109568baa0df60ed515909fc6c72cba92 # v2
         with:
           projectBaseDir: .
         env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_TOKEN: ${{ env.SONAR_TOKEN }}
