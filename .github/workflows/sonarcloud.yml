@@ -4,18 +4,13 @@ on:
   push:
     branches:
       - main
-      - master
-      - develop
-      - feature/**
-      - auth-integration
-  pull_request:
-    types: [opened, synchronize, reopened]
 
 jobs:
   build-and-analyze:
     name: Build and analyze (SonarCloud)
     runs-on: ubuntu-latest
-    if: ${{ secrets.SONAR_TOKEN != '' }}
+    # Run Sonar only when explicitly enabled and token present
+    if: ${{ vars.ENABLE_SONAR_CI == 'true' && secrets.SONAR_TOKEN != '' }}
     steps:
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
