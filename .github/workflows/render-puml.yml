@@ -105,7 +105,6 @@ jobs:
         if: github.ref != 'refs/heads/main' && steps.check.outputs.skip != 'true'
         uses: peter-evans/create-pull-request@v5
         with:
-          token: ${{ secrets.ACTIONS_PAT || github.token }}
           commit-message: "chore(docs): update generated diagram PNGs"
           branch: "auto/diagrams-generated-${{ github.sha }}"
           title: "chore(docs): update generated diagram PNGs"

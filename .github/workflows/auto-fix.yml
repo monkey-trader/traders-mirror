@@ -51,13 +51,13 @@ jobs:
       - name: Check for changes
         id: git-check
         run: |
+          # Capture changes for artifact purposes
           echo "changed=$(git status --porcelain)" > changed.txt
+          # Emit output using the GITHUB_OUTPUT file (set-output is deprecated)
           if [ -n "$(git status --porcelain)" ]; then
-            echo "has_changes=true" 
-            echo "::set-output name=has_changes::true"
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
           else
-            echo "has_changes=false"
-            echo "::set-output name=has_changes::false"
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Create branch & push
