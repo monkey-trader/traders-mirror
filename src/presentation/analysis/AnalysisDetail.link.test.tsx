@@ -31,6 +31,7 @@ describe('AnalysisDetail open-trade link', () => {
   });
 
   it('does not show Open trade button when no trade exists for analysis', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- autofix: preserve tests that intentionally use any
     render(<AnalysisDetail analysis={sampleAnalysis as any} />);
     // ensure async effect had time to run
     await waitFor(() => {
@@ -57,6 +58,7 @@ describe('AnalysisDetail open-trade link', () => {
       },
     ]);
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- autofix: preserve tests that intentionally use any
     render(<AnalysisDetail analysis={sampleAnalysis as any} />);
 
     await waitFor(() =>
@@ -82,6 +84,7 @@ describe('AnalysisDetail open-trade link', () => {
     ]);
 
     const dispatchSpy = vi.spyOn(globalThis, 'dispatchEvent');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- autofix: preserve tests that intentionally use any
     render(<AnalysisDetail analysis={sampleAnalysis as any} />);
 
     await waitFor(() => expect(screen.getByRole('button', { name: /Open trade for BTCUSD/i })));

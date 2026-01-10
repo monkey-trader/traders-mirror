@@ -1,2 +1,8 @@
-changed= M src/presentation/shared/components/Header/Header.test.tsx
- M src/presentation/trade/TradeJournal.compactActions.test.tsx
+changed= M package-lock.json
+ M src/infrastructure/analysis/repositories/InMemoryAnalysisRepository.test.ts
+ M src/infrastructure/analysis/repositories/LocalStorageAnalysisRepository.test.ts
+ M src/infrastructure/auth/repositories/FirebaseAuthRepository.test.ts
+ M src/presentation/analysis/AnalysisDetail.link.test.tsx
+ M src/presentation/auth/UserBadge.test.tsx
+ M src/presentation/trade/TradeJournal.more.test.tsx
+ M src/presentation/trade/TradeJournal.unit.test.tsx

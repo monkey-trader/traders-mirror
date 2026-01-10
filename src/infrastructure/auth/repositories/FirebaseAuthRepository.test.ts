@@ -102,7 +102,12 @@ describe('FirebaseAuthRepository (env + SDK interactions mocked)', () => {
       received = u;
     });
     // simulate SDK callback
-    hoisted.getOnChangeHandler()({ uid: 'user-xyz', displayName: 'X', email: 'x@y', photoURL: null });
+    hoisted.getOnChangeHandler()({
+      uid: 'user-xyz',
+      displayName: 'X',
+      email: 'x@y',
+      photoURL: null,
+    });
     expect(received?.id).toBe('user-xyz');
     expect(typeof unsub).toBe('function');
   });

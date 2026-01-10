@@ -55,6 +55,7 @@ describe('InMemoryAnalysisRepository', () => {
     repo.seed([
       { id: 's1', symbol: 'S' },
       { id: 's2', symbol: 'S' },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- autofix: preserve tests that intentionally use any
     ] as any);
     expect((await repo.listAll()).map((x) => unwrap(x.id))).toEqual(['s1', 's2']);
     await repo.delete('s1');

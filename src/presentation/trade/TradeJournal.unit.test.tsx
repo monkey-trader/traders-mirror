@@ -35,6 +35,7 @@ describe('TradeJournal (unit)', () => {
   it('shows Load mock data button when settings allow and opens modal on click', async () => {
     window.localStorage.setItem(SETTINGS_KEY, JSON.stringify({ showLoadMockButton: true }));
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- autofix: preserve tests that intentionally use any
     render(<TradeJournal repo={noopRepo as any} />);
 
     const loadButton = await screen.findByText('Load mock data');
@@ -49,6 +50,7 @@ describe('TradeJournal (unit)', () => {
   it('hides Load mock data button when settings disable it', async () => {
     window.localStorage.setItem(SETTINGS_KEY, JSON.stringify({ showLoadMockButton: false }));
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- autofix: preserve tests that intentionally use any
     render(<TradeJournal repo={noopRepo as any} />);
 
     const maybe = screen.queryByText('Load mock data');

@@ -43,7 +43,12 @@ describe('UserBadge (null user and photo avatar)', () => {
     expect(container.firstChild).toBeNull();
   });
   it('renders img when photoURL exists', () => {
-    mockState.user = { id: 'u2', displayName: null, email: 'user@example.com', photoURL: 'http://a' };
+    mockState.user = {
+      id: 'u2',
+      displayName: null,
+      email: 'user@example.com',
+      photoURL: 'http://a',
+    };
     render(<UserBadge />);
     // The image is inside an aria-hidden container; query by alt text
     expect(screen.getByAltText('user@example.com')).toHaveAttribute('src', 'http://a');

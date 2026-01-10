@@ -62,6 +62,7 @@ describe('TradeJournal additional branches', () => {
   });
 
   it('respects forceCompact prop and opens confirm dialog via TradesPanel delete', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- autofix: preserve tests that intentionally use any
     render(<TradeJournal repo={noopRepo as any} forceCompact={true} />);
 
     // TradesPanel mock renders compactGrid value
@@ -73,6 +74,7 @@ describe('TradeJournal additional branches', () => {
   });
 
   it('handles create-trade suggestion from Analysis and switches back to list with market set', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- autofix: preserve tests that intentionally use any
     render(<TradeJournal repo={noopRepo as any} />);
 
     // open Analyse tab via Card tab button labelled 'Analyse'
@@ -105,6 +107,7 @@ describe('TradeJournal additional branches', () => {
       ],
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- autofix: preserve tests that intentionally use any
     render(<TradeJournal repo={repo as any} />);
 
     // wait until TradesPanel mock shows the loaded trade count

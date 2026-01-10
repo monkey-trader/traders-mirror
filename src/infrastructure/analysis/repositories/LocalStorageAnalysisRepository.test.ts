@@ -19,6 +19,7 @@ describe('LocalStorageAnalysisRepository', () => {
 
   it('save persists and getById/listBySymbol work', async () => {
     const a: AnalysisDTO = { id: 'l1', symbol: 'AAA' } as AnalysisDTO;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- autofix: preserve tests that intentionally use any
     await repo.save(a as any);
     const raw = localStorage.getItem(STORAGE_KEY);
     expect(raw).toBeTruthy();
@@ -32,13 +33,17 @@ describe('LocalStorageAnalysisRepository', () => {
 
   it('save updates existing entry', async () => {
     const a = { id: 'l2', symbol: 'S' } as AnalysisDTO;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- autofix: preserve tests that intentionally use any
     await repo.save(a as any);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- autofix: preserve tests that intentionally use any
     await repo.save({ ...a, symbol: 'S2' } as any);
     expect((await repo.listAll())[0].symbol).toBe('S2');
   });
 
   it('delete removes item and clear removes key', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- autofix: preserve tests that intentionally use any
     await repo.save({ id: 'x1', symbol: 'X' } as any);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- autofix: preserve tests that intentionally use any
     await repo.save({ id: 'x2', symbol: 'X' } as any);
     await repo.delete('x1');
     expect((await repo.listAll()).map((x) => x.id)).toEqual(['x2']);
