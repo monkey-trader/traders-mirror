@@ -1,0 +1,41 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs, 8px);
+}
+
+.avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--color-grey-800, #222);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.name {
+  color: var(--text);
+  font-size: var(--font-size-s, 14px);
+  max-width: 160px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.actions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xxs, 6px);
+}
+
+@media (max-width: 600px) {
+  .name {
+    display: none; /* keep header compact on small screens */
+  }
+}

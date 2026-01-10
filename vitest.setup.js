@@ -1,4 +1,24 @@
 // Global Vitest setup for jsdom
+import '@testing-library/jest-dom/vitest';
+
+// Provide Jest-compatible globals for legacy tests
+try {
+  if (typeof globalThis !== 'undefined' && typeof vi !== 'undefined' && !globalThis.jest) {
+    // Map basic APIs used in tests
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    globalThis.jest = vi;
+    // Ensure explicit properties exist (some tools read them directly)
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    globalThis.jest.fn = vi.fn.bind(vi);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    globalThis.jest.mock = vi.mock.bind(vi);
+  }
+} catch (_) {
+  // ignore
+}
 
 // Remove malformed `--localstorage-file` arg from node execArgv to silence warnings
 try {

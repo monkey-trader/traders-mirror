@@ -57,27 +57,73 @@ jobs:
       VITE_BUILD_TAG: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
       VITE_BUILD_TIME: ${{ github.run_started_at }}
     steps:
+      - name: Compute safe ref
+        id: compute_ref
+        run: |
+          set -euo pipefail
+          RAW="${{ github.event.inputs.source_branch || 'main' }}"
+          if [[ "$RAW" =~ ^[A-Za-z0-9._\/-]{1,100}$ ]]; then
+            BR="$RAW"
+          else
+            echo "Invalid branch name; defaulting to main"
+            BR="main"
+          fi
+          if ! git ls-remote --heads "https://github.com/${GITHUB_REPOSITORY}.git" "$BR" | grep -q "$BR"; then
+            echo "Branch '$BR' not found; defaulting to main"
+            BR="main"
+          fi
+          echo "DEPLOY_BRANCH=$BR" >> "$GITHUB_ENV"
+          echo "SAFE_REF=refs/heads/$BR" >> "$GITHUB_ENV"
+
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          # Check out the requested source branch directly to avoid building the wrong ref
+          ref: main
+
+      - name: Switch to deploy branch
+        run: |
+          set -euo pipefail
+          BR="${{ env.DEPLOY_BRANCH }}"
+          if [ "$BR" != "main" ]; then
+            echo "Switching to sanitized branch: $BR"
+            git fetch --depth=1 origin "$BR":"refs/remotes/origin/$BR"
+            git checkout -f "$BR"
+          else
+            echo "Using main branch checkout"
+          fi
 
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          # Align with project engines to avoid unexpected build issues
+          node-version: '18'
 
-      - name: Ensure source branch is available
+      - name: Set build metadata env
         run: |
-          set -e
-          SOURCE_BRANCH="${{ github.event.inputs.source_branch || 'main' }}"
-          echo "Requested source branch: $SOURCE_BRANCH"
-          # fetch remote branch and checkout it so we build from the selected branch if needed
-          git fetch origin "$SOURCE_BRANCH" || true
-          if git rev-parse --verify origin/$SOURCE_BRANCH >/dev/null 2>&1; then
-            git checkout -B deploy-source origin/$SOURCE_BRANCH
-          else
-            echo "Branch $SOURCE_BRANCH not found remotely — staying on current ref"
-          fi
+          set -euo pipefail
+          BRANCH="${{ env.DEPLOY_BRANCH || github.ref_name }}"
+          COMMIT="${{ github.sha }}"
+          TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo '')
+          TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          echo "REACT_APP_BUILD_BRANCH=$BRANCH" >> "$GITHUB_ENV"
+          echo "REACT_APP_BUILD_SHA=$COMMIT" >> "$GITHUB_ENV"
+          echo "REACT_APP_BUILD_TAG=$TAG" >> "$GITHUB_ENV"
+          echo "REACT_APP_BUILD_TIME=$TIME" >> "$GITHUB_ENV"
+          echo "VITE_BUILD_BRANCH=$BRANCH" >> "$GITHUB_ENV"
+          echo "VITE_BUILD_SHA=$COMMIT" >> "$GITHUB_ENV"
+          echo "VITE_BUILD_TAG=$TAG" >> "$GITHUB_ENV"
+          echo "VITE_BUILD_TIME=$TIME" >> "$GITHUB_ENV"
+
+      - name: Debug Firebase env presence
+        run: |
+          set -euo pipefail
+          check() { var="$1"; val="${!var:-}"; if [ -n "$val" ]; then echo "$var: set"; else echo "$var: MISSING"; fi }
+          echo "Checking Firebase environment variables (values not shown):"
+          check REACT_APP_FIREBASE_API_KEY
+          check REACT_APP_FIREBASE_AUTH_DOMAIN
+          check REACT_APP_FIREBASE_PROJECT_ID
+          # Build Info injection is verified after copying build output
 
       - name: Debug Firebase env presence
         run: |
@@ -135,10 +181,42 @@ jobs:
             # when the lockfile and environment differ (CI environments can have slight
             # package resolution differences). This is intentional for deploy-only jobs.
             npm install --no-audit --no-fund
+            # Explicitly export build metadata envs into this step to ensure CRA inlines them
+            BRANCH="${{ env.DEPLOY_BRANCH || github.ref_name }}"
+            COMMIT="${{ github.sha }}"
+            TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo '')
+            TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+            export REACT_APP_BUILD_BRANCH="$BRANCH"
+            export REACT_APP_BUILD_SHA="$COMMIT"
+            export REACT_APP_BUILD_TAG="$TAG"
+            export REACT_APP_BUILD_TIME="$TIME"
+            export VITE_BUILD_BRANCH="$BRANCH"
+            export VITE_BUILD_SHA="$COMMIT"
+            export VITE_BUILD_TAG="$TAG"
+            export VITE_BUILD_TIME="$TIME"
             # Run craco build directly to avoid invoking npm lifecycle scripts
             # (prebuild runs lint/format which can fail in deploy-only contexts).
             npx craco build
             cp -r ./build/* "$TMPDIR"/
+          fi
+
+          # Verify postbuild injection artifacts from scripts/inject-build-info.mjs
+          echo "Verifying Build Info injection in deploy directory"
+          if [ -f "$TMPDIR/index.html" ]; then
+            if grep -q "window.__BUILD_INFO__" "$TMPDIR/index.html"; then
+              echo "Postbuild Build Info injection detected in index.html"
+            else
+              echo "ERROR: Build Info not injected into index.html. Ensure postbuild script runs."
+              exit 1
+            fi
+          else
+            echo "ERROR: index.html missing in deploy directory"
+            exit 1
+          fi
+          if [ -f "$TMPDIR/build-info.json" ]; then
+            echo "build-info.json present"
+          else
+            echo "WARNING: build-info.json missing — runtime fallback may be unavailable"
           fi
 
           cd "$TMPDIR"
@@ -185,6 +263,35 @@ jobs:
               echo "gh workflow run deploy-pages.yml -f source=${{ github.event.inputs.source }} -f source_branch=${{ github.event.inputs.source_branch }} -f use_artifact=${{ github.event.inputs.use_artifact }} -f force=true"
               exit 1
             fi
+          fi
+
+      - name: Health check (Pages)
+        run: |
+          set -euo pipefail
+          OWNER="${GITHUB_REPOSITORY%%/*}"
+          REPO_NAME="${GITHUB_REPOSITORY##*/}"
+          PREVIEW_URL="https://${OWNER}.github.io/${REPO_NAME}/"
+          TARGET_URL="${PREVIEW_URL}build-info.json"
+          echo "Health check: ${TARGET_URL}"
+          # retry for up to ~2 minutes to allow propagation
+          success=0
+          for i in $(seq 1 12); do
+            status=$(curl -s -o /tmp/bi.json -w "%{http_code}" "$TARGET_URL" || true)
+            if [ "$status" = "200" ]; then
+              # basic content validation
+              if grep -q '"branch"' /tmp/bi.json && grep -q '"sha"' /tmp/bi.json; then
+                echo "Health check passed: build-info.json contains branch and sha"
+                success=1
+                break
+              fi
+            fi
+            echo "Attempt $i failed (status=$status). Waiting..."
+            sleep 10
+          done
+          if [ "$success" -ne 1 ]; then
+            echo "ERROR: build-info.json not reachable or invalid after retries"
+            echo "Checked URL: $TARGET_URL"
+            exit 1
           fi
 
       - name: Finish

@@ -1,0 +1,20 @@
+.button {
+  padding: var(--space-xs) var(--space-m);
+  font-size: var(--font-size-m);
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-s);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.button:disabled {
+  background: var(--color-grey-300);
+  cursor: not-allowed;
+}
+@media (max-width: 600px) {
+  .button {
+    width: 100%;
+    font-size: var(--font-size-s);
+  }
+}

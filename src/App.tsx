@@ -4,6 +4,8 @@ import LocalStorageTradeRepository from '@/infrastructure/trade/repositories/Loc
 import { Settings } from '@/presentation/settings/Settings';
 import { Layout } from '@/presentation/shared/components/Layout/Layout';
 import { Analysis } from '@/presentation/analysis/Analysis';
+import { AuthProvider } from '@/presentation/auth/AuthProvider';
+import { ProtectedRoute } from '@/presentation/auth/ProtectedRoute';
 
 function App() {
   useEffect(() => {
@@ -40,11 +42,16 @@ function App() {
   }
 
   return (
-    <Layout fullWidth={true}>
-      {/* Simple hash-based routing: #/journal, #/analysis, #/settings.
-          Support query/hash params like #/analysis?id=... by matching prefix. */}
-      {mainContent}
-    </Layout>
+    <AuthProvider>
+      <ProtectedRoute>
+        <Layout fullWidth={true}>
+          {/* Simple hash-based routing: #/journal, #/analysis, #/settings.
+              Support query/hash params like #/analysis?id=... by matching prefix. */}
+          {mainContent}
+        </Layout>
+      </ProtectedRoute>
+      {/* LoginButton wird von ProtectedRoute angezeigt, wenn nicht eingeloggt */}
+    </AuthProvider>
   );
 }
 

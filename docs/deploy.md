@@ -10,6 +10,7 @@ Quick overview
 - Workflow file: `.github/workflows/deploy-pages.yml`
 - Trigger: Manual (Actions UI → Run workflow) or GitHub CLI (`gh workflow run`)
 - Options: choose an artifact (if CI uploaded one) or build from any branch, and optionally force the deploy.
+- Build metadata: The workflow exports branch, commit SHA, tag, and UTC build time into both CRA and Vite envs (`REACT_APP_BUILD_*` and `VITE_BUILD_*`). The postbuild script (`scripts/inject-build-info.mjs`) writes `build/build-info.json` and injects `window.__BUILD_INFO__` into `build/index.html`. The workflow now verifies these artifacts instead of reinjecting them.
 
 GUI (Actions UI) — step-by-step
 1. Open the repository on GitHub.
@@ -68,9 +69,14 @@ Troubleshooting
 - No `Deploy Pages (manual)` entry in Actions: confirm `.github/workflows/deploy-pages.yml` exists on the branch you are viewing (workflows live per-branch in GitHub UI).
 - Artifact not found: if `use_artifact=true` but no artifact is downloaded, the workflow will fallback to building from `source_branch`. Check earlier CI runs for the artifact upload.
 - Push rejected: re-run the workflow with `force=true` after confirming you want to overwrite the `gh-pages` branch.
+- Build Info missing on deployed site: ensure the postbuild script ran during the build (`npm run build` triggers `postbuild`). The workflow validates that `index.html` contains `window.__BUILD_INFO__`; if it fails, check the build logs for the injector output and environment variables like `REACT_APP_BUILD_BRANCH`.
 
 Security
 - The workflow runs in the `production` environment; you can add required reviewers in repository -> Settings -> Environments to require an approval before the deploy executes.
+
+Hardening (security)
+- The workflow checks out a static `main` ref and then performs a sanitized branch switch to the requested `source_branch`. The branch name is validated against a strict pattern and existence is verified via `git ls-remote` before switching. This mitigates GitHub Actions rule githubactions:S8263 (user-controlled `ref`).
+- Build metadata (`branch`, `sha`, `tag`, `time`) is exported via env and validated postbuild; no shell interpolation of user inputs is performed.
 
 Want me to add a small Actions badge or a link in the repo README to open the workflow directly? I can add a link to the workflow or a small `docs/deploy.md` reference in the main README if you want one-click discoverability in the UI.
 

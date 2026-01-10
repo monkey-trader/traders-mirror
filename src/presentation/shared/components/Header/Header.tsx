@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import styles from './Header.module.css';
+import { UserBadge } from '@/presentation/auth/UserBadge';
 
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -106,7 +107,12 @@ export function Header() {
         </a>
       </div>
 
-      <div className={styles.controls}>{/* Theme toggles moved to Settings page */}</div>
+      <div className={styles.controls}>
+        {/* User avatar/name + logout on the right */}
+        <UserBadge />
+      </div>
     </header>
   );
 }
+
+// Auth controls are provided by UserBadge in this branch.

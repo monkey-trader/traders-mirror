@@ -33,6 +33,14 @@ jobs:
             npm install --no-audit --no-fund
           fi
 
+      - name: Run linter
+        run: |
+          if npm run -s lint --silent; then
+            echo "Linting passed"
+          else
+            echo "Linting failed"; exit 1
+          fi
+
       - name: Run tests (vilest) + coverage
         run: |
           # Prefer unified npm script for CI but fallback to direct npx if script missing

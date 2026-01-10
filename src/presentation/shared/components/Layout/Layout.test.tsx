@@ -1,13 +1,31 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
+// Mock auth provider hook used by UserBadge inside Header, preserving other exports
+vi.mock('@/presentation/auth/AuthProvider', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/presentation/auth/AuthProvider')>();
+  return {
+    ...actual,
+    useAuth: () => ({
+      user: null,
+      loading: false,
+      signIn: vi.fn(),
+      signOut: vi.fn(),
+      clearError: vi.fn(),
+      error: null,
+    }),
+  };
+});
 import { Layout } from './Layout';
+import { AuthProvider } from '@/presentation/auth/AuthProvider';
 
 describe('Layout component', () => {
   it('renders children inside main', () => {
     render(
-      <Layout>
-        <div data-testid="child">Hello</div>
-      </Layout>
+      <AuthProvider>
+        <Layout>
+          <div data-testid="child">Hello</div>
+        </Layout>
+      </AuthProvider>
     );
     const child = screen.getByTestId('child');
     expect(child).toBeTruthy();
@@ -16,9 +34,11 @@ describe('Layout component', () => {
 
   it('applies fullWidth class when fullWidth prop is true', () => {
     const { container } = render(
-      <Layout fullWidth>
-        <div>FW</div>
-      </Layout>
+      <AuthProvider>
+        <Layout fullWidth>
+          <div>FW</div>
+        </Layout>
+      </AuthProvider>
     );
     // .app-container is applied with extra class when fullWidth
     const appContainer = container.querySelector('.app-container');

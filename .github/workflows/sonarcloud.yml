@@ -1,0 +1,43 @@
+name: SonarCloud
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - develop
+      - feature/**
+      - auth-integration
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  build-and-analyze:
+    name: Build and analyze (SonarCloud)
+    runs-on: ubuntu-latest
+    if: ${{ secrets.SONAR_TOKEN != '' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Lint
+        run: npm run -s lint:strict
+
+      - name: Test (Vitest) + Coverage + JUnit
+        run: npm run -s test:ci
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@e44258b109568baa0df60ed515909fc6c72cba92 # v2
+        with:
+          projectBaseDir: .
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
