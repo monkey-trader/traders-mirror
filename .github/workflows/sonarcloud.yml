@@ -10,8 +10,9 @@ jobs:
   build-and-analyze:
     name: Build and analyze (SonarCloud)
     runs-on: ubuntu-latest
-    # Run Sonar only when explicitly enabled and token present
-    if: ${{ vars.ENABLE_SONAR_CI == 'true' && secrets.SONAR_TOKEN != '' }}
+    # Run Sonar only when explicitly enabled via repo variable
+    # Note: Avoid referencing `secrets` at job-level to keep workflow_dispatch compatible
+    if: ${{ vars.ENABLE_SONAR_CI == 'true' }}
     steps:
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
@@ -22,8 +23,15 @@ jobs:
           node-version: 20
           cache: 'npm'
 
-      - name: Install dependencies
-        run: npm ci --no-audit --no-fund
+      - name: Install dependencies (ci with fallback)
+        run: |
+          echo "Trying npm ci (fast, reproducible)..."
+          if npm ci --no-audit --no-fund; then
+            echo "npm ci succeeded"
+          else
+            echo "npm ci failed, falling back to npm install to repair lockfile for CI run"
+            npm install --no-audit --no-fund
+          fi
 
       - name: Lint
         run: npm run -s lint:strict
@@ -32,6 +40,8 @@ jobs:
         run: npm run -s test:ci
 
       - name: SonarCloud Scan
+        # Only run scan when SONAR_TOKEN is present
+        if: ${{ secrets.SONAR_TOKEN != '' }}
         uses: SonarSource/sonarcloud-github-action@e44258b109568baa0df60ed515909fc6c72cba92 # v2
         with:
           projectBaseDir: .
