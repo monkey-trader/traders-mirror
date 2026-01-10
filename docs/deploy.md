@@ -12,6 +12,11 @@ Why this exists
 - Options: choose an artifact (if CI uploaded one) or build from any branch, and optionally force the deploy.
 - Build metadata: The workflow exports branch, commit SHA, tag, and UTC build time into both CRA and Vite envs (`REACT_APP_BUILD_*` and `VITE_BUILD_*`). After `craco build`, it explicitly runs the postbuild injector (`node scripts/inject-build-info.mjs`) which writes `build/build-info.json` and injects `window.__BUILD_INFO__` into `build/index.html`. The workflow then verifies these artifacts before pushing.
 
+ Pipeline simplification (effective 2026-01-10)
+- CI: `.github/workflows/ci.yml` runs lint, tests, coverage on every push and PR.
+- SonarCloud: `.github/workflows/sonarcloud.yml` now runs only on `main` pushes and is gated by `vars.ENABLE_SONAR_CI == 'true'` and `secrets.SONAR_TOKEN`. It will not run on PRs unless explicitly enabled.
+- Lint workflow: The legacy manual `lint.yml` is disabled; CI already covers lint checks. Use the CI status to verify lint.
+
 GUI (Actions UI) — step-by-step
 1. Open the repository on GitHub.
 2. Click the `Actions` tab in the top menu.
@@ -73,6 +78,7 @@ Notes & guidance
   - `window.__BUILD_INFO__` is present in `index.html`.
   - `build-info.json` exists and includes `branch` and `sha`.
   - Build metadata envs (`REACT_APP_BUILD_*`/`VITE_BUILD_*`) are set (the workflow prints their presence, values are hidden).
+ - Sonar not running on your PR: this is expected—analysis is limited to `main` and gated. To enable, set repository variable `ENABLE_SONAR_CI` to `true` and add `SONAR_TOKEN` secret, then push to `main`.
 
 Security
 - The workflow runs in the `production` environment; you can add required reviewers in repository -> Settings -> Environments to require an approval before the deploy executes.
