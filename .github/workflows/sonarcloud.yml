@@ -10,9 +10,9 @@ jobs:
   build-and-analyze:
     name: Build and analyze (SonarCloud)
     runs-on: ubuntu-latest
-    # Run Sonar only when explicitly enabled via repo variable
+    # Run Sonar when manually dispatched OR when explicitly enabled via repo variable
     # Note: Avoid referencing `secrets` at job-level to keep workflow_dispatch compatible
-    if: ${{ vars.ENABLE_SONAR_CI == 'true' }}
+    if: ${{ github.event_name == 'workflow_dispatch' || vars.ENABLE_SONAR_CI == 'true' }}
     env:
       # Expose token via env so we can reference env in step-level if
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
