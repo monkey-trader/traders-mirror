@@ -10,7 +10,8 @@ on:
 
 jobs:
   build-docs:
-    if: false
+    # Manual-only: run only when dispatched
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     # Run the whole job inside the asciidoctor Docker image for reliability
     container:

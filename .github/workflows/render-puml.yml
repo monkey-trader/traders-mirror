@@ -15,7 +15,8 @@ permissions:
 
 jobs:
   render-and-pr:
-    if: false
+    # Manual-only: run only when dispatched
+    if: github.event_name == 'workflow_dispatch'
     name: Render .puml -> PNG and create PR (or push to main)
     runs-on: ubuntu-latest
     steps:
