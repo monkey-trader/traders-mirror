@@ -79,27 +79,20 @@ jobs:
           cp -v docs/build/assets/diagrams/*.png docs/diagrams/ || true
           git status --porcelain || true
 
-      - name: Commit & push generated PNGs directly to main (only on main)
+      - name: Create Pull Request with generated images (main)
         if: github.ref == 'refs/heads/main' && steps.check.outputs.skip != 'true'
-        env:
-          GIT_AUTHOR_NAME: github-actions[bot]
-          GIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
-        run: |
-          # Configure git for commit
-          git config user.name "${GIT_AUTHOR_NAME}"
-          git config user.email "${GIT_AUTHOR_EMAIL}"
-
-          # Add generated images if any
-          git add docs/diagrams/*.png || true
-
-          # If there are changes to commit, commit and push back to main
-          if git diff --cached --quiet; then
-            echo "No generated image changes to commit"
-          else
-            git commit -m "chore(docs): update generated diagram PNGs [auto]"
-            git push origin HEAD:main
-            echo "Pushed generated PNGs to main"
-          fi
+        uses: peter-evans/create-pull-request@v5
+        with:
+          commit-message: "chore(docs): update generated diagram PNGs [auto]"
+          branch: "auto/diagrams-generated-main-${{ github.sha }}"
+          title: "chore(docs): update generated diagram PNGs"
+          body: |
+            This PR updates the generated PNGs for PlantUML diagrams on main.
+            The images are generated automatically from the corresponding `.puml` files.
+          labels: automatic,docs
+          add-paths: |
+            docs/diagrams/**
+          delete-branch: true
 
       - name: Create Pull Request with generated images (fallback for branches)
         if: github.ref != 'refs/heads/main' && steps.check.outputs.skip != 'true'
