@@ -1,0 +1,38 @@
+name: Deploy Firestore Rules (manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      project_id:
+        description: 'Firebase project id'
+        required: false
+        default: 'c3s-monkey-trader'
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy-rules:
+    name: Deploy Firestore security rules
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Firebase CLI
+        run: npm i -g firebase-tools
+
+      - name: Deploy rules
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          PROJECT_ID: ${{ github.event.inputs.project_id || 'c3s-monkey-trader' }}
+        run: |
+          set -euo pipefail
+          if [ -z "${FIREBASE_TOKEN:-}" ]; then
+            echo "ERROR: FIREBASE_TOKEN secret not configured.\n" \
+                 "Generate with 'firebase login:ci' and add as repo secret FIREBASE_TOKEN." >&2
+            exit 1
+          fi
+          # Use firebase.json + firestore.rules in repo
+          firebase deploy --only firestore:rules -P "$PROJECT_ID"
