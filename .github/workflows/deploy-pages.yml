@@ -107,7 +107,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           # Align with project engines to avoid unexpected build issues
-          node-version: '18'
+          node-version: '20'
 
       - name: Set build metadata env
         run: |
