@@ -1,6 +1,6 @@
 {
-  "branch": "main",
-  "sha": "5343af21c72b5b5a110a9b6545715a8cba163708",
+  "branch": "feature/firebase-use-firestore-repos",
+  "sha": "7ca7e97b4d9c20fe27298f7836eb251203997cec",
   "tag": "",
-  "time": "2026-01-12T12:14:28.043Z"
+  "time": "2026-01-12T12:17:44.197Z"
 }
