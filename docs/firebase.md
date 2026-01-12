@@ -108,31 +108,31 @@ VITE_USE_FIREBASE=true
 REACT_APP_USE_FIREBASE=true
 ```
 
-When enabled, the app will sync user-scoped documents in Firestore collections (LocalStorage remains the immediate UI source of truth). The app also treats the presence of Firebase config keys as enabling capability, even if the explicit `USE_FIREBASE` flag is missing:
+When enabled, the app will sync user-scoped documents in per-user subcollections (LocalStorage remains the immediate UI source of truth). The app also treats the presence of Firebase config keys as enabling capability, even if the explicit `USE_FIREBASE` flag is missing.
 
-- `trades/{id}` with a required `userId` field
-- `analyses/{id}` with a required `userId` field
+Collection paths used by the app:
 
-Security Rules example:
+- `users/{uid}/trades/{id}`
+- `users/{uid}/analyses/{id}`
+
+Security Rules (per-user subcollections):
 
 ```
 rules_version = '2';
 service cloud.firestore {
-	match /databases/{database}/documents {
-		match /trades/{tradeId} {
-			allow read: if isOwner(resource.data);
-			allow create: if isOwner(request.resource.data);
-			allow update, delete: if isOwner(resource.data);
-		}
-		match /analyses/{analysisId} {
-			allow read: if isOwner(resource.data);
-			allow create: if isOwner(request.resource.data);
-			allow update, delete: if isOwner(resource.data);
-		}
-		function isOwner(data) {
-			return request.auth != null && data.userId == request.auth.uid;
-		}
-	}
+  match /databases/{database}/documents {
+    match /users/{userId} {
+      // Optional: allow reading the user doc itself
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      match /trades/{docId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+      match /analyses/{docId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+  }
 }
 ```
 
@@ -157,7 +157,27 @@ You can control Firebase sync at runtime via the Settings page.
 	- `Sync: Local` — local-only mode
 	- `Sync: Online` — remote available, no queued items
 	- `Sync: Queued N` — N items waiting to sync
-- Auth: Sign in (Google) to allow per-user reads/writes. Rules require `userId == auth.uid`.
+- Auth: Sign in (Google) to allow per-user reads/writes. Rules authorize by path `users/{uid}`; no `userId` field is required in docs.
 - Code references:
 	- Composition root selection: `src/App.tsx` and `src/presentation/analysis/Analysis.tsx` read env flags and `useCloudSync`.
 	- Firebase init: `src/infrastructure/firebase/client.ts` supports both CRA and Vite env styles.
+
+## Ad Blockers (googleapis)
+
+If you see `ERR_BLOCKED_BY_CLIENT` for `https://firestore.googleapis.com/...`, an ad/tracker blocker (uBlock, Brave, etc.) is blocking Firestore requests.
+
+- Allowlist your app origin (e.g., `monkey-trader.github.io`) or `googleapis.com` in the blocker.
+- Reload the page after allowlisting.
+
+## Deploying Rules
+
+You can paste the rules above into Firebase Console → Firestore Database → Rules and publish. Alternatively, with Firebase CLI:
+
+```bash
+npm i -g firebase-tools
+firebase login
+firebase init firestore   # select your project, choose existing, use ./firestore.rules
+firebase deploy --only firestore:rules
+```
+
+This repo includes a sample rules file at `firestore.rules` you can use during `firebase init`.
