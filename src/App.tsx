@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { TradeJournal } from '@/presentation/trade/TradeJournal';
-import LocalStorageTradeRepository from '@/infrastructure/trade/repositories/LocalStorageTradeRepository';
 import FirebaseTradeRepository from '@/infrastructure/trade/repositories/FirebaseTradeRepository';
+import HybridTradeRepository from '@/infrastructure/trade/repositories/HybridTradeRepository';
 import { Settings } from '@/presentation/settings/Settings';
 import { Layout } from '@/presentation/shared/components/Layout/Layout';
 import { Analysis } from '@/presentation/analysis/Analysis';
@@ -20,11 +20,21 @@ function App() {
   }, []);
 
   const [route, setRoute] = useState(() => window.location.hash || '#/journal');
+  // Re-create repositories when settings change (e.g., Cloud Sync toggle)
+  const [repoVersion, setRepoVersion] = useState(0);
 
   useEffect(() => {
     const onHash = () => setRoute(window.location.hash || '#/journal');
     window.addEventListener('hashchange', onHash);
-    return () => window.removeEventListener('hashchange', onHash);
+    const onSettingsChanged = () => setRepoVersion((v) => v + 1);
+    globalThis.addEventListener('settings-changed', onSettingsChanged as EventListener);
+    // Storage changes (e.g., manual edits) can also affect settings
+    globalThis.addEventListener('storage', onSettingsChanged as EventListener);
+    return () => {
+      window.removeEventListener('hashchange', onHash);
+      globalThis.removeEventListener('settings-changed', onSettingsChanged as EventListener);
+      globalThis.removeEventListener('storage', onSettingsChanged as EventListener);
+    };
   }, []);
 
   const isSettings = route.startsWith('#/settings');
@@ -48,10 +58,28 @@ function App() {
       if (typeof raw === 'string') return raw.toLowerCase() === 'true';
       return false;
     })();
+    const userPrefUseCloud = (() => {
+      try {
+        const raw = localStorage.getItem('mt_user_settings_v1');
+        if (!raw) return undefined;
+        const parsed = JSON.parse(raw) as { useCloudSync?: boolean };
+        return typeof parsed.useCloudSync === 'boolean' ? parsed.useCloudSync : undefined;
+      } catch {
+        return undefined;
+      }
+    })();
+    const effectiveUseFirebase = useFirebase && (userPrefUseCloud !== false);
 
-    const repo = useFirebase
-      ? new FirebaseTradeRepository()
-      : new LocalStorageTradeRepository(undefined, { seedDefaults: false });
+    // Offline-first: Local as source of truth, sync to Firebase when enabled
+    const repo = (() => {
+      void repoVersion; // reference to ensure re-computation when settings change
+      if (effectiveUseFirebase) {
+        const remote = new FirebaseTradeRepository();
+        return new HybridTradeRepository({ remote });
+      }
+      // No remote configured: behave like pure LocalStorage
+      return new HybridTradeRepository();
+    })();
     mainContent = <TradeJournal repo={repo} />;
   }
 

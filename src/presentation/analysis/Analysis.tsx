@@ -6,8 +6,8 @@ import { AnalysisList, AnalysisSummary } from '@/presentation/analysis/AnalysisL
 import { MarketFilters } from '@/presentation/trade/components/TradeFilters/TradeFilters';
 import { AnalysisDetail } from '@/presentation/analysis/AnalysisDetail';
 import { ConfirmDialog } from '@/presentation/shared/components/ConfirmDialog/ConfirmDialog';
-import { LocalStorageAnalysisRepository } from '@/infrastructure/analysis/repositories/LocalStorageAnalysisRepository';
 import { FirebaseAnalysisRepository } from '@/infrastructure/analysis/repositories/FirebaseAnalysisRepository';
+import HybridAnalysisRepository from '@/infrastructure/analysis/repositories/HybridAnalysisRepository';
 import type { AnalysisDTO as AnalysisDTOType } from '@/domain/analysis/interfaces/AnalysisRepository';
 // Editor types removed
 
@@ -37,9 +37,25 @@ const useFirebase = (() => {
   return false;
 })();
 
-const repository = useFirebase && process.env.NODE_ENV !== 'test'
-  ? new FirebaseAnalysisRepository()
-  : new LocalStorageAnalysisRepository();
+const userPrefUseCloud = (() => {
+  try {
+    const raw = localStorage.getItem('mt_user_settings_v1');
+    if (!raw) return undefined;
+    const parsed = JSON.parse(raw) as { useCloudSync?: boolean };
+    return typeof parsed.useCloudSync === 'boolean' ? parsed.useCloudSync : undefined;
+  } catch {
+    return undefined;
+  }
+})();
+const effectiveUseFirebase = useFirebase && (userPrefUseCloud !== false);
+
+const repository = (() => {
+  if (effectiveUseFirebase && process.env.NODE_ENV !== 'test') {
+    const remote = new FirebaseAnalysisRepository();
+    return new HybridAnalysisRepository({ remote });
+  }
+  return new HybridAnalysisRepository();
+})();
 
 export function Analysis({ onCreateTradeSuggestion, compactView = false }: AnalysisProps) {
   const [list, setList] = useState<AnalysisSummary[]>([]);

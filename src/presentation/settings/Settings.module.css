@@ -107,6 +107,37 @@
   align-items: start;
 }
 
+.toggleRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.stateText {
+  font-weight: 700;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border, rgba(255, 255, 255, 0.08));
+}
+.stateOn {
+  color: var(--color-success, #34d399);
+  border-color: var(--color-success, #34d399);
+}
+.stateOff {
+  color: var(--muted);
+}
+
+.syncRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.syncHelp {
+  color: var(--muted);
+  font-size: 12px;
+}
+
 .debugBtn {
   padding: 8px 12px;
   border-radius: 999px;

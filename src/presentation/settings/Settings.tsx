@@ -9,6 +9,8 @@ import { loadMockAnalyses, clearAnalyses } from '@/presentation/analysis/mockLoa
 import { ConfirmDialog } from '@/presentation/shared/components/ConfirmDialog/ConfirmDialog';
 import type { AnalysisDTO } from '@/domain/analysis/interfaces/AnalysisRepository';
 import { COMBINED_MOCK_TRADES } from '@/infrastructure/trade/repositories/mockData';
+import { RepoSyncStatus } from '@/presentation/shared/components/RepoSyncStatus/RepoSyncStatus';
+import { Switch } from '@/presentation/shared/components/Switch/Switch';
 
 function DebugToggle() {
   const [enabled, setEnabled] = React.useState<boolean>(() => {
@@ -79,6 +81,65 @@ function MockLoaderToggle() {
         Show or hide the "Load mock data" control in the Trading Journal. Stored in browser
         settings.
       </p>
+    </div>
+  );
+}
+
+function CloudSyncToggle() {
+  const remoteCapable = (() => {
+    const viteFlag = (import.meta as unknown as { env?: Record<string, unknown> }).env?.[
+      'VITE_USE_FIREBASE'
+    ];
+    const craFlag = (process.env as Record<string, string | undefined>).REACT_APP_USE_FIREBASE;
+    const raw = (viteFlag as string | boolean | undefined) ?? craFlag;
+    if (typeof raw === 'boolean') return raw;
+    if (typeof raw === 'string') return raw.toLowerCase() === 'true';
+    return false;
+  })();
+
+  const [enabled, setEnabled] = React.useState<boolean>(() => {
+    const s = loadSettings();
+    // default: if remote is capable via env, enable unless user opted out
+    if (!remoteCapable) return false;
+    return typeof s.useCloudSync === 'boolean' ? s.useCloudSync : true;
+  });
+
+  const onToggle = (v: boolean) => {
+    setEnabled(v);
+    const s = loadSettings();
+    saveSettings({ ...s, useCloudSync: v });
+    try {
+      globalThis.dispatchEvent(
+        new CustomEvent('settings-changed', { detail: { useCloudSync: v } })
+      );
+    } catch {
+      /* ignore */
+    }
+  };
+
+  const stateLabel = remoteCapable ? (enabled ? 'Enabled' : 'Disabled') : 'Unavailable';
+  const stateClass = remoteCapable ? (enabled ? styles.stateOn : styles.stateOff) : styles.stateOff;
+
+  return (
+    <div className={styles.debugRow}>
+      <label className={styles.fieldLabel}>Cloud Sync (Firebase)</label>
+      <div className={styles.toggleRow}>
+        <Switch
+          checked={enabled && remoteCapable}
+          onChange={onToggle}
+          ariaLabel="Toggle cloud sync"
+          disabled={!remoteCapable}
+        />
+        <span className={`${styles.stateText} ${stateClass}`}>{stateLabel}</span>
+      </div>
+      <p className={styles.help}>
+        Uses local storage offline-first and syncs to Firebase when enabled. Preference is saved
+        to your browser. If disabled, the app stays local-only.
+      </p>
+      <div className={styles.syncRow}>
+        <RepoSyncStatus compactView />
+        <span className={styles.syncHelp}>Current sync status</span>
+      </div>
     </div>
   );
 }
@@ -347,6 +408,7 @@ export function Settings({ compactView }: { compactView?: boolean }) {
       <section className={styles.section}>
         <h3>Debug</h3>
         <DebugToggle />
+        <CloudSyncToggle />
         <MockLoaderToggle />
         <StorageControls />
       </section>

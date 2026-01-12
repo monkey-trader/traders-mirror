@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import styles from './Header.module.css';
 import { UserBadge } from '@/presentation/auth/UserBadge';
+import { RepoSyncStatus } from '@/presentation/shared/components/RepoSyncStatus/RepoSyncStatus';
 
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -108,7 +109,8 @@ export function Header() {
       </div>
 
       <div className={styles.controls}>
-        {/* User avatar/name + logout on the right */}
+        {/* Sync status indicator + User avatar/name */}
+        <RepoSyncStatus />
         <UserBadge />
       </div>
     </header>

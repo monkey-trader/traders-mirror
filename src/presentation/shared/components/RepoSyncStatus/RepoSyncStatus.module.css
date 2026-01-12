@@ -1,0 +1,28 @@
+.chip {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  line-height: 18px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-muted);
+}
+
+.compact {
+  padding: 1px 6px;
+  font-size: 11px;
+}
+
+.chipLocal {
+  color: var(--color-text-muted);
+}
+
+.chipOnline {
+  color: var(--color-success);
+  border-color: var(--color-success);
+}
+
+.chipQueued {
+  color: var(--color-warning);
+  border-color: var(--color-warning);
+}

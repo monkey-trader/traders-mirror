@@ -34,8 +34,9 @@ export class FirebaseAnalysisRepository implements AnalysisRepository {
     if (!snap.exists()) return null;
     const data = snap.data() as RepoAnalysis;
     if (data.userId !== uid) return null;
-    const { userId: _userId, ...dto } = data;
-    return dto;
+    const dto = { ...data } as Omit<RepoAnalysis, 'userId'>;
+    delete (dto as { userId?: string }).userId;
+    return dto as AnalysisDTO;
   }
 
   async listBySymbol(symbol: string): Promise<AnalysisDTO[]> {
@@ -45,8 +46,10 @@ export class FirebaseAnalysisRepository implements AnalysisRepository {
     const q = query(collection(db, 'analyses'), where('userId', '==', uid), where('symbol', '==', symbol));
     const snap = await getDocs(q);
     return snap.docs.map((d) => {
-      const { userId: _userId, ...dto } = d.data() as RepoAnalysis;
-      return dto;
+      const src = d.data() as RepoAnalysis;
+      const dto = { ...src } as Omit<RepoAnalysis, 'userId'>;
+      delete (dto as { userId?: string }).userId;
+      return dto as AnalysisDTO;
     });
   }
 
@@ -57,8 +60,10 @@ export class FirebaseAnalysisRepository implements AnalysisRepository {
     const q = query(collection(db, 'analyses'), where('userId', '==', uid));
     const snap = await getDocs(q);
     return snap.docs.map((d) => {
-      const { userId: _userId, ...dto } = d.data() as RepoAnalysis;
-      return dto;
+      const src = d.data() as RepoAnalysis;
+      const dto = { ...src } as Omit<RepoAnalysis, 'userId'>;
+      delete (dto as { userId?: string }).userId;
+      return dto as AnalysisDTO;
     });
   }
 

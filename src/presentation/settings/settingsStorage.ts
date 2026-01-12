@@ -4,6 +4,7 @@ export const SETTINGS_KEY = 'mt_user_settings_v1';
 export type UserSettings = {
   debugUI?: boolean;
   showLoadMockButton?: boolean;
+  useCloudSync?: boolean;
 };
 
 export function loadSettings(): UserSettings {

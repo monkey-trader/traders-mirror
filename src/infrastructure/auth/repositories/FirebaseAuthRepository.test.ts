@@ -42,8 +42,14 @@ vi.mock('firebase/auth', () => ({
   browserLocalPersistence: hoisted.mockBrowserLocalPersistence,
 }));
 
+// Shared ensureFirebase also initializes Firestore; provide a minimal mock to avoid SDK internals
+vi.mock('firebase/firestore', () => ({
+  getFirestore: vi.fn(() => ({ db: true })),
+}));
+
 // Import after mocks so repository uses the mocked SDK
 import { FirebaseAuthRepository } from './FirebaseAuthRepository';
+import { __resetFirebaseForTests } from '@/infrastructure/firebase/client';
 
 const saveEnv = { ...process.env };
 
@@ -55,6 +61,7 @@ beforeEach(() => {
     }
   }
   vi.resetModules();
+  __resetFirebaseForTests();
   hoisted.mockInitializeApp.mockClear();
   hoisted.mockGetAuth.mockClear();
   hoisted.mockSignInWithPopup.mockClear();
