@@ -6,9 +6,10 @@ export type SwitchProps = {
   id?: string;
   label?: string;
   ariaLabel?: string;
+  disabled?: boolean;
 };
 
-export function Switch({ checked, onChange, id, label, ariaLabel }: SwitchProps) {
+export function Switch({ checked, onChange, id, label, ariaLabel, disabled }: SwitchProps) {
   return (
     <div className={styles.wrapper}>
       {label && (
@@ -21,9 +22,12 @@ export function Switch({ checked, onChange, id, label, ariaLabel }: SwitchProps)
         role="switch"
         aria-checked={checked}
         aria-label={ariaLabel}
-        className={`${styles.switch} ${checked ? styles.on : styles.off}`}
-        onClick={() => onChange(!checked)}
+        className={`${styles.switch} ${checked ? styles.on : styles.off} ${
+          disabled ? styles.disabled : ''
+        }`}
+        onClick={() => !disabled && onChange(!checked)}
         type="button"
+        disabled={disabled}
       >
         <span className={styles.knob} aria-hidden />
       </button>

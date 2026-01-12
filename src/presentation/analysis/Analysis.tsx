@@ -6,7 +6,8 @@ import { AnalysisList, AnalysisSummary } from '@/presentation/analysis/AnalysisL
 import { MarketFilters } from '@/presentation/trade/components/TradeFilters/TradeFilters';
 import { AnalysisDetail } from '@/presentation/analysis/AnalysisDetail';
 import { ConfirmDialog } from '@/presentation/shared/components/ConfirmDialog/ConfirmDialog';
-import { LocalStorageAnalysisRepository } from '@/infrastructure/analysis/repositories/LocalStorageAnalysisRepository';
+import { FirebaseAnalysisRepository } from '@/infrastructure/analysis/repositories/FirebaseAnalysisRepository';
+import HybridAnalysisRepository from '@/infrastructure/analysis/repositories/HybridAnalysisRepository';
 import type { AnalysisDTO as AnalysisDTOType } from '@/domain/analysis/interfaces/AnalysisRepository';
 // Editor types removed
 
@@ -25,7 +26,36 @@ export type AnalysisProps = {
   compactView?: boolean;
 };
 
-const repository = new LocalStorageAnalysisRepository();
+const useFirebase = (() => {
+  const viteFlag = (import.meta as unknown as { env?: Record<string, unknown> }).env?.[
+    'VITE_USE_FIREBASE'
+  ];
+  const craFlag = (process.env as Record<string, string | undefined>).REACT_APP_USE_FIREBASE;
+  const raw = (viteFlag as string | boolean | undefined) ?? craFlag;
+  if (typeof raw === 'boolean') return raw;
+  if (typeof raw === 'string') return raw.toLowerCase() === 'true';
+  return false;
+})();
+
+const userPrefUseCloud = (() => {
+  try {
+    const raw = localStorage.getItem('mt_user_settings_v1');
+    if (!raw) return undefined;
+    const parsed = JSON.parse(raw) as { useCloudSync?: boolean };
+    return typeof parsed.useCloudSync === 'boolean' ? parsed.useCloudSync : undefined;
+  } catch {
+    return undefined;
+  }
+})();
+const effectiveUseFirebase = useFirebase && userPrefUseCloud !== false;
+
+const repository = (() => {
+  if (effectiveUseFirebase && process.env.NODE_ENV !== 'test') {
+    const remote = new FirebaseAnalysisRepository();
+    return new HybridAnalysisRepository({ remote });
+  }
+  return new HybridAnalysisRepository();
+})();
 
 export function Analysis({ onCreateTradeSuggestion, compactView = false }: AnalysisProps) {
   const [list, setList] = useState<AnalysisSummary[]>([]);

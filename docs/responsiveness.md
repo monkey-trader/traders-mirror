@@ -52,6 +52,9 @@ Auth-Komponente: UserBadge
 Docs
 - For each new component add a short `docs/<component>.md` entry describing the compact behavior and which tokens it uses.
 
+Update 12.01.2026
+- `RepoSyncStatus` (presentation/shared): Small header badge that summarizes sync state (Local/Online/Queued). Uses color tokens and supports `compactView` to reduce padding/font-size for narrow headers. Tested with Vitest for compact styles and event-driven label changes.
+
 Update 09.01.2026
 - `LoginRequired` (presentation/auth): Centered card that uses spacing tokens (`--space-4/5/6`) and adapts paddings on small screens via media query. No `compactView` prop needed as it is inherently minimal and mobile-friendly.
 

@@ -73,8 +73,111 @@ Use the manual workflow described in `docs/deploy.md` (Actions → Deploy Pages 
 After deploy, your app is available at:
 - `https://monkey-trader.github.io/traders-mirror/`
 
+To enable Cloud Sync capability in the deployed build, set the workflow input `use_firebase` to `true` when triggering the deploy:
+
+- Actions → Deploy Pages (manual) → set `use_firebase: true`.
+- Ensure repository Variables or Secrets provide the Firebase config keys (CRA or Vite style are both supported by the workflow):
+	- CRA: `REACT_APP_FIREBASE_API_KEY`, `REACT_APP_FIREBASE_AUTH_DOMAIN`, `REACT_APP_FIREBASE_PROJECT_ID`, `REACT_APP_FIREBASE_STORAGE_BUCKET`, `REACT_APP_FIREBASE_MESSAGING_SENDER_ID`, `REACT_APP_FIREBASE_APP_ID`
+	- Vite: `VITE_FIREBASE_API_KEY`, `VITE_FIREBASE_AUTH_DOMAIN`, `VITE_FIREBASE_PROJECT_ID`, `VITE_FIREBASE_STORAGE_BUCKET`, `VITE_FIREBASE_MESSAGING_SENDER_ID`, `VITE_FIREBASE_APP_ID`
+
+The workflow wires `use_firebase` into both `REACT_APP_USE_FIREBASE` and `VITE_USE_FIREBASE` so the Settings toggle becomes available after deploy (provided the config keys are set).
+
 ## Troubleshooting
 - "Firebase config missing env vars": Ensure `.env.local` (dev) or GitHub Variables (CI) are set.
 - "Popup blocked": Allow popups for your dev page/domain.
 - "auth/operation-not-allowed": Enable Google provider under Authentication → Sign-in method.
 - Stuck on Loading: Check the browser console for `AuthProviderError` messages.
+
+## Firestore Repositories (Trades & Analyses)
+
+This project includes Firestore-backed repositories in the Infrastructure layer:
+
+- `src/infrastructure/trade/repositories/FirebaseTradeRepository.ts`
+- `src/infrastructure/analysis/repositories/FirebaseAnalysisRepository.ts`
+
+Two modes are supported:
+
+- Offline-first (default): LocalStorage as primary store with background sync to Firestore when online/authenticated.
+- Local-only: No Firebase configured, everything stays in LocalStorage.
+
+Enable Firestore sync via environment flag (or by presence of config):
+
+```
+VITE_USE_FIREBASE=true
+# or CRA style
+REACT_APP_USE_FIREBASE=true
+```
+
+When enabled, the app will sync user-scoped documents in per-user subcollections (LocalStorage remains the immediate UI source of truth). The app also treats the presence of Firebase config keys as enabling capability, even if the explicit `USE_FIREBASE` flag is missing.
+
+Collection paths used by the app:
+
+- `users/{uid}/trades/{id}`
+- `users/{uid}/analyses/{id}`
+
+Security Rules (per-user subcollections):
+
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId} {
+      // Optional: allow reading the user doc itself
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      match /trades/{docId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+      match /analyses/{docId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+  }
+}
+```
+
+Notes:
+- UI reads from LocalStorage; writes are persisted locally first and then synced to Firestore.
+- If offline or unauthenticated, changes queue in an outbox and sync automatically when you come back online.
+- Tests and local development default to LocalStorage-only unless `USE_FIREBASE` is enabled.
+- In test runs (`NODE_ENV=test`), Firestore adapters are disabled to keep deterministic tests.
+
+## Cloud Sync Toggle (Settings)
+
+You can control Firebase sync at runtime via the Settings page.
+
+- Availability: The toggle becomes available when either an env flag enables Firebase capability or when Firebase config keys are present.
+	- Preferred: provide the Firebase config variables (`*_API_KEY`, `*_AUTH_DOMAIN`, `*_PROJECT_ID`, `*_STORAGE_BUCKET`, `*_MESSAGING_SENDER_ID`, `*_APP_ID`). If these exist, capability is enabled by default.
+	- Optional flags: `VITE_USE_FIREBASE=true` (Vite) or `REACT_APP_USE_FIREBASE=true` (CRA). These explicitly enable capability when config keys are also present.
+	- Without config, the toggle shows "Unavailable" and the app stays local-only.
+- Preference: The switch persists `useCloudSync` in `localStorage` (`mt_user_settings_v1`).
+	- Enabled → Hybrid repositories attach Firestore and sync in the background.
+	- Disabled → Hybrid repositories run local-only even if env flags are present.
+- Status: The header shows a small badge (RepoSyncStatus) summarizing state:
+	- `Sync: Local` — local-only mode
+	- `Sync: Online` — remote available, no queued items
+	- `Sync: Queued N` — N items waiting to sync
+- Auth: Sign in (Google) to allow per-user reads/writes. Rules authorize by path `users/{uid}`; no `userId` field is required in docs.
+- Code references:
+	- Composition root selection: `src/App.tsx` and `src/presentation/analysis/Analysis.tsx` read env flags and `useCloudSync`.
+	- Firebase init: `src/infrastructure/firebase/client.ts` supports both CRA and Vite env styles.
+
+## Ad Blockers (googleapis)
+
+If you see `ERR_BLOCKED_BY_CLIENT` for `https://firestore.googleapis.com/...`, an ad/tracker blocker (uBlock, Brave, etc.) is blocking Firestore requests.
+
+- Allowlist your app origin (e.g., `monkey-trader.github.io`) or `googleapis.com` in the blocker.
+- Reload the page after allowlisting.
+
+## Deploying Rules
+
+You can paste the rules above into Firebase Console → Firestore Database → Rules and publish. Alternatively, with Firebase CLI:
+
+```bash
+npm i -g firebase-tools
+firebase login
+firebase init firestore   # select your project, choose existing, use ./firestore.rules
+firebase deploy --only firestore:rules
+```
+
+This repo includes a sample rules file at `firestore.rules` you can use during `firebase init`.

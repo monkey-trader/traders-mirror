@@ -26,9 +26,24 @@ import { useTradesViewModel } from './hooks/useTradesViewModel';
 
 // Analysis link helpers
 import { LocalStorageAnalysisRepository } from '@/infrastructure/analysis/repositories/LocalStorageAnalysisRepository';
+import { FirebaseAnalysisRepository } from '@/infrastructure/analysis/repositories/FirebaseAnalysisRepository';
 import { AnalysisService } from '@/application/analysis/services/AnalysisService';
 
-const analysisRepo = new LocalStorageAnalysisRepository();
+const useFirebase = (() => {
+  const viteFlag = (import.meta as unknown as { env?: Record<string, unknown> }).env?.[
+    'VITE_USE_FIREBASE'
+  ];
+  const craFlag = (process.env as Record<string, string | undefined>).REACT_APP_USE_FIREBASE;
+  const raw = (viteFlag as string | boolean | undefined) ?? craFlag;
+  if (typeof raw === 'boolean') return raw;
+  if (typeof raw === 'string') return raw.toLowerCase() === 'true';
+  return false;
+})();
+
+const analysisRepo =
+  useFirebase && process.env.NODE_ENV !== 'test'
+    ? new FirebaseAnalysisRepository()
+    : new LocalStorageAnalysisRepository();
 const analysisService = new AnalysisService(analysisRepo);
 
 type TradeJournalProps = { repo?: TradeRepository; forceCompact?: boolean };
