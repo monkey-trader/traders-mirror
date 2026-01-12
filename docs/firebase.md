@@ -78,3 +78,50 @@ After deploy, your app is available at:
 - "Popup blocked": Allow popups for your dev page/domain.
 - "auth/operation-not-allowed": Enable Google provider under Authentication → Sign-in method.
 - Stuck on Loading: Check the browser console for `AuthProviderError` messages.
+
+## Firestore Repositories (Trades & Analyses)
+
+This project includes Firestore-backed repositories in the Infrastructure layer:
+
+- `src/infrastructure/trade/repositories/FirebaseTradeRepository.ts`
+- `src/infrastructure/analysis/repositories/FirebaseAnalysisRepository.ts`
+
+Enable them via environment flag:
+
+```
+VITE_USE_FIREBASE=true
+# or CRA style
+REACT_APP_USE_FIREBASE=true
+```
+
+When enabled, the app will read/write user-scoped documents in Firestore collections:
+
+- `trades/{id}` with a required `userId` field
+- `analyses/{id}` with a required `userId` field
+
+Security Rules example:
+
+```
+rules_version = '2';
+service cloud.firestore {
+	match /databases/{database}/documents {
+		match /trades/{tradeId} {
+			allow read: if isOwner(resource.data);
+			allow create: if isOwner(request.resource.data);
+			allow update, delete: if isOwner(resource.data);
+		}
+		match /analyses/{analysisId} {
+			allow read: if isOwner(resource.data);
+			allow create: if isOwner(request.resource.data);
+			allow update, delete: if isOwner(resource.data);
+		}
+		function isOwner(data) {
+			return request.auth != null && data.userId == request.auth.uid;
+		}
+	}
+}
+```
+
+Notes:
+- Tests and local development default to LocalStorage repositories.
+- In test runs (`NODE_ENV=test`), Firestore adapters are disabled to keep deterministic tests.

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { TradeJournal } from '@/presentation/trade/TradeJournal';
 import LocalStorageTradeRepository from '@/infrastructure/trade/repositories/LocalStorageTradeRepository';
+import FirebaseTradeRepository from '@/infrastructure/trade/repositories/FirebaseTradeRepository';
 import { Settings } from '@/presentation/settings/Settings';
 import { Layout } from '@/presentation/shared/components/Layout/Layout';
 import { Analysis } from '@/presentation/analysis/Analysis';
@@ -36,8 +37,21 @@ function App() {
     mainContent = <Analysis />;
   } else {
     // create repo at composition root and inject into TradeJournal
-    // Do not seed default mock trades for the running app; keep storage empty on first-run
-    const repo = new LocalStorageTradeRepository(undefined, { seedDefaults: false });
+    // Choose Firebase or LocalStorage based on env flag
+    const useFirebase = (() => {
+      const viteFlag = (import.meta as unknown as { env?: Record<string, unknown> }).env?.[
+        'VITE_USE_FIREBASE'
+      ];
+      const craFlag = (process.env as Record<string, string | undefined>).REACT_APP_USE_FIREBASE;
+      const raw = (viteFlag as string | boolean | undefined) ?? craFlag;
+      if (typeof raw === 'boolean') return raw;
+      if (typeof raw === 'string') return raw.toLowerCase() === 'true';
+      return false;
+    })();
+
+    const repo = useFirebase
+      ? new FirebaseTradeRepository()
+      : new LocalStorageTradeRepository(undefined, { seedDefaults: false });
     mainContent = <TradeJournal repo={repo} />;
   }
 
