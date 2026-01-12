@@ -1,6 +1,6 @@
 import { initializeApp, type FirebaseApp } from 'firebase/app';
 import { getAuth, type Auth, setPersistence, browserLocalPersistence } from 'firebase/auth';
-import { getFirestore, type Firestore } from 'firebase/firestore';
+import { getFirestore, initializeFirestore, type Firestore } from 'firebase/firestore';
 
 let firebaseApp: FirebaseApp | null = null;
 let firebaseAuth: Auth | null = null;
@@ -59,7 +59,17 @@ export function ensureFirebase(): { app: FirebaseApp; auth: Auth; db: Firestore 
     } catch {
       /* ignore persistence errors (e.g., in non-browser test environments) */
     }
-    firestore = getFirestore(firebaseApp);
+    // Use initializeFirestore with network settings that are more resilient to
+    // ad/tracker blockers (auto-detected long polling and fetch-based streams).
+    // If initializeFirestore is not available or fails, fall back to getFirestore.
+    try {
+      firestore = initializeFirestore(firebaseApp, {
+        experimentalAutoDetectLongPolling: true,
+        useFetchStreams: true,
+      });
+    } catch {
+      firestore = getFirestore(firebaseApp);
+    }
   }
   return { app: firebaseApp!, auth: firebaseAuth!, db: firestore! };
 }
