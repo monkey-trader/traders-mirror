@@ -54,7 +54,11 @@ function App() {
       const craFlag = (process.env as Record<string, string | undefined>).REACT_APP_USE_FIREBASE;
       const raw = (viteFlag as string | boolean | undefined) ?? craFlag;
       const explicitToggle =
-        typeof raw === 'boolean' ? raw : typeof raw === 'string' ? raw.toLowerCase() === 'true' : false;
+        typeof raw === 'boolean'
+          ? raw
+          : typeof raw === 'string'
+          ? raw.toLowerCase() === 'true'
+          : false;
       // If Firebase config keys exist, default to using Firebase even if toggle is missing
       const hasFirebaseConfig = Boolean(
         (env['VITE_FIREBASE_API_KEY'] as string | undefined) ||
@@ -72,7 +76,7 @@ function App() {
         return undefined;
       }
     })();
-    const effectiveUseFirebase = useFirebase && (userPrefUseCloud !== false);
+    const effectiveUseFirebase = useFirebase && userPrefUseCloud !== false;
 
     // Offline-first: Local as source of truth, sync to Firebase when enabled
     const repo = (() => {

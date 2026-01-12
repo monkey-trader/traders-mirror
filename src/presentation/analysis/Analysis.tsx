@@ -47,7 +47,7 @@ const userPrefUseCloud = (() => {
     return undefined;
   }
 })();
-const effectiveUseFirebase = useFirebase && (userPrefUseCloud !== false);
+const effectiveUseFirebase = useFirebase && userPrefUseCloud !== false;
 
 const repository = (() => {
   if (effectiveUseFirebase && process.env.NODE_ENV !== 'test') {

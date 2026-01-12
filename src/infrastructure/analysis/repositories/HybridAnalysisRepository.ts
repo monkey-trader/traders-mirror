@@ -5,9 +5,7 @@ import type {
 import { LocalStorageAnalysisRepository } from '@/infrastructure/analysis/repositories/LocalStorageAnalysisRepository';
 import { FirebaseAnalysisRepository } from '@/infrastructure/analysis/repositories/FirebaseAnalysisRepository';
 
-type OutboxItem =
-  | { op: 'save'; dto: AnalysisDTO }
-  | { op: 'delete'; id: string };
+type OutboxItem = { op: 'save'; dto: AnalysisDTO } | { op: 'delete'; id: string };
 
 const OUTBOX_KEY = 'analysis_outbox_v1';
 
@@ -37,6 +35,8 @@ export class HybridAnalysisRepository implements AnalysisRepository {
   constructor(options?: { remote?: FirebaseAnalysisRepository }) {
     this.remote = options?.remote;
     if (this.remote) {
+      // eslint-disable-next-line no-console
+      console.info('[HybridRepo:Analysis] remote configured: online mode');
       try {
         queueMicrotask(() => {
           try {
@@ -45,9 +45,13 @@ export class HybridAnalysisRepository implements AnalysisRepository {
                 detail: { feature: 'analysis', status: 'online' },
               })
             );
-          } catch {/* ignore */}
+          } catch {
+            /* ignore */
+          }
         });
-      } catch {/* ignore */}
+      } catch {
+        /* ignore */
+      }
       if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
         window.addEventListener('online', () => {
           void this.flushOutbox();
@@ -66,30 +70,130 @@ export class HybridAnalysisRepository implements AnalysisRepository {
                 detail: { feature: 'analysis', status: 'local' },
               })
             );
-          } catch {/* ignore */}
+          } catch {
+            /* ignore */
+          }
         });
-      } catch {/* ignore */}
+      } catch {
+        /* ignore */
+      }
     }
   }
 
   async save(analysis: AnalysisDTO): Promise<void> {
+    // Remote-first write; on failure, persist locally and queue
+    if (this.remote) {
+      try {
+        // eslint-disable-next-line no-console
+        console.info('[HybridRepo:Analysis] save: remote first', analysis.id);
+        await this.remote.save(analysis);
+        await this.local.save(analysis);
+        // eslint-disable-next-line no-console
+        console.info('[HybridRepo:Analysis] save: mirrored to local', analysis.id);
+        try {
+          globalThis.dispatchEvent(
+            new CustomEvent('repo-sync-status', {
+              detail: { feature: 'analysis', status: 'online' },
+            })
+          );
+        } catch {
+          /* ignore */
+        }
+        return;
+      } catch {
+        // fall through to local + outbox
+        // eslint-disable-next-line no-console
+        console.warn('[HybridRepo:Analysis] save: remote failed, queueing', analysis.id);
+      }
+    }
     await this.local.save(analysis);
     await this.trySync({ op: 'save', dto: analysis });
   }
 
   async getById(id: string): Promise<AnalysisDTO | null> {
+    if (this.remote) {
+      try {
+        // eslint-disable-next-line no-console
+        console.info('[HybridRepo:Analysis] getById: try remote first', id);
+        const dto = await this.remote.getById(id);
+        if (dto) await this.local.save(dto);
+        return dto;
+      } catch {
+        // ignore and fall back
+        // eslint-disable-next-line no-console
+        console.warn('[HybridRepo:Analysis] getById: remote failed, using local', id);
+      }
+    }
     return this.local.getById(id);
   }
 
   async listBySymbol(symbol: string): Promise<AnalysisDTO[]> {
+    if (this.remote) {
+      try {
+        // eslint-disable-next-line no-console
+        console.info('[HybridRepo:Analysis] listBySymbol: try remote first', symbol);
+        const list = await this.remote.listBySymbol(symbol);
+        if (Array.isArray(list) && list.length) {
+          for (const a of list) await this.local.save(a);
+        }
+        // eslint-disable-next-line no-console
+        console.info('[HybridRepo:Analysis] listBySymbol: remote returned', list.length);
+        return list;
+      } catch {
+        // fall back
+        // eslint-disable-next-line no-console
+        console.warn('[HybridRepo:Analysis] listBySymbol: remote failed, using local');
+      }
+    }
     return this.local.listBySymbol(symbol);
   }
 
   async listAll(): Promise<AnalysisDTO[]> {
+    if (this.remote) {
+      try {
+        // eslint-disable-next-line no-console
+        console.info('[HybridRepo:Analysis] listAll: try remote first');
+        const list = await this.remote.listAll();
+        if (Array.isArray(list) && list.length) {
+          for (const a of list) await this.local.save(a);
+        }
+        // eslint-disable-next-line no-console
+        console.info('[HybridRepo:Analysis] listAll: remote returned', list.length);
+        return list;
+      } catch {
+        // fall back
+        // eslint-disable-next-line no-console
+        console.warn('[HybridRepo:Analysis] listAll: remote failed, using local');
+      }
+    }
     return this.local.listAll();
   }
 
   async delete(id: string): Promise<void> {
+    if (this.remote) {
+      try {
+        // eslint-disable-next-line no-console
+        console.info('[HybridRepo:Analysis] delete: remote first', id);
+        await this.remote.delete(id);
+        await this.local.delete(id);
+        // eslint-disable-next-line no-console
+        console.info('[HybridRepo:Analysis] delete: mirrored to local', id);
+        try {
+          globalThis.dispatchEvent(
+            new CustomEvent('repo-sync-status', {
+              detail: { feature: 'analysis', status: 'online' },
+            })
+          );
+        } catch {
+          /* ignore */
+        }
+        return;
+      } catch {
+        // fall back
+        // eslint-disable-next-line no-console
+        console.warn('[HybridRepo:Analysis] delete: remote failed, queueing', id);
+      }
+    }
     await this.local.delete(id);
     await this.trySync({ op: 'delete', id });
   }
@@ -103,8 +207,12 @@ export class HybridAnalysisRepository implements AnalysisRepository {
     if (!this.remote) return;
     try {
       if (item.op === 'delete') {
+        // eslint-disable-next-line no-console
+        console.info('[HybridRepo:Analysis] trySync: delete', item.id);
         await this.remote.delete(item.id);
       } else {
+        // eslint-disable-next-line no-console
+        console.info('[HybridRepo:Analysis] trySync: save', item.dto.id);
         await this.remote.save(item.dto);
       }
       try {
@@ -120,6 +228,8 @@ export class HybridAnalysisRepository implements AnalysisRepository {
       const q = loadOutbox();
       q.push(item);
       saveOutbox(q);
+      // eslint-disable-next-line no-console
+      console.warn('[HybridRepo:Analysis] trySync: queued (size=', q.length, ')');
       try {
         globalThis.dispatchEvent(
           new CustomEvent('repo-sync-status', {
@@ -136,6 +246,8 @@ export class HybridAnalysisRepository implements AnalysisRepository {
     if (!this.remote) return;
     const queue = loadOutbox();
     if (!queue.length) return;
+    // eslint-disable-next-line no-console
+    console.info('[HybridRepo:Analysis] flushOutbox: attempting', queue.length, 'items');
     const remain: OutboxItem[] = [];
     for (const item of queue) {
       try {
@@ -149,6 +261,8 @@ export class HybridAnalysisRepository implements AnalysisRepository {
       }
     }
     saveOutbox(remain);
+    // eslint-disable-next-line no-console
+    console.info('[HybridRepo:Analysis] flushOutbox: remaining', remain.length);
     try {
       globalThis.dispatchEvent(
         new CustomEvent('repo-sync-status', {

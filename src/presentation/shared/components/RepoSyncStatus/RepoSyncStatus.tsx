@@ -9,7 +9,9 @@ type RepoSyncEventDetail = {
   queuedCount?: number;
 };
 
-function pickOverallStatus(statuses: Record<string, { status: SyncStatus; queuedCount?: number }>): {
+function pickOverallStatus(
+  statuses: Record<string, { status: SyncStatus; queuedCount?: number }>
+): {
   status: SyncStatus;
   queuedCount?: number;
 } {
@@ -31,7 +33,9 @@ function pickOverallStatus(statuses: Record<string, { status: SyncStatus; queued
 export type RepoSyncStatusProps = { compactView?: boolean };
 
 export function RepoSyncStatus({ compactView }: RepoSyncStatusProps) {
-  const [statuses, setStatuses] = useState<Record<string, { status: SyncStatus; queuedCount?: number }>>({});
+  const [statuses, setStatuses] = useState<
+    Record<string, { status: SyncStatus; queuedCount?: number }>
+  >({});
   const overall = pickOverallStatus(statuses);
 
   useEffect(() => {
@@ -47,20 +51,26 @@ export function RepoSyncStatus({ compactView }: RepoSyncStatusProps) {
     };
   }, []);
 
-  const label = overall.status === 'queued'
-    ? `Sync: Queued ${overall.queuedCount ?? ''}`.trim()
-    : overall.status === 'online'
-    ? 'Sync: Online'
-    : 'Sync: Local';
+  const label =
+    overall.status === 'queued'
+      ? `Sync: Queued ${overall.queuedCount ?? ''}`.trim()
+      : overall.status === 'online'
+      ? 'Sync: Online'
+      : 'Sync: Local';
 
   const base = compactView ? `${styles.chip} ${styles.compact}` : styles.chip;
-  const cls = overall.status === 'queued'
-    ? `${base} ${styles.chipQueued}`
-    : overall.status === 'online'
-    ? `${base} ${styles.chipOnline}`
-    : `${base} ${styles.chipLocal}`;
+  const cls =
+    overall.status === 'queued'
+      ? `${base} ${styles.chipQueued}`
+      : overall.status === 'online'
+      ? `${base} ${styles.chipOnline}`
+      : `${base} ${styles.chipLocal}`;
 
-  return <span className={cls} aria-live="polite">{label}</span>;
+  return (
+    <span className={cls} aria-live="polite">
+      {label}
+    </span>
+  );
 }
 
 export default RepoSyncStatus;

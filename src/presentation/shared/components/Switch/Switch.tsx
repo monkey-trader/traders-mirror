@@ -22,7 +22,9 @@ export function Switch({ checked, onChange, id, label, ariaLabel, disabled }: Sw
         role="switch"
         aria-checked={checked}
         aria-label={ariaLabel}
-        className={`${styles.switch} ${checked ? styles.on : styles.off} ${disabled ? styles.disabled : ''}`}
+        className={`${styles.switch} ${checked ? styles.on : styles.off} ${
+          disabled ? styles.disabled : ''
+        }`}
         onClick={() => !disabled && onChange(!checked)}
         type="button"
         disabled={disabled}

@@ -8,9 +8,7 @@ let firestore: Firestore | null = null;
 
 function readEnv(name: string): string | undefined {
   // Support CRA-style FIREBASE prefix and Vite FIREBASE prefix
-  const cra = (process.env as Record<string, string | undefined>)[
-    `REACT_APP_FIREBASE_${name}`
-  ];
+  const cra = (process.env as Record<string, string | undefined>)[`REACT_APP_FIREBASE_${name}`];
   // In unit tests (NODE_ENV==='test'), ignore import.meta.env to allow tests to fully control env via process.env
   const isTest = (process.env as Record<string, string | undefined>).NODE_ENV === 'test';
   const vite = isTest

@@ -92,7 +92,11 @@ function CloudSyncToggle() {
     const craFlag = (process.env as Record<string, string | undefined>).REACT_APP_USE_FIREBASE;
     const raw = (viteFlag as string | boolean | undefined) ?? craFlag;
     const explicitToggle =
-      typeof raw === 'boolean' ? raw : typeof raw === 'string' ? raw.toLowerCase() === 'true' : false;
+      typeof raw === 'boolean'
+        ? raw
+        : typeof raw === 'string'
+        ? raw.toLowerCase() === 'true'
+        : false;
 
     // Also consider capability "on" when Firebase config keys are present
     const hasFirebaseConfig = Boolean(
@@ -139,8 +143,8 @@ function CloudSyncToggle() {
         <span className={`${styles.stateText} ${stateClass}`}>{stateLabel}</span>
       </div>
       <p className={styles.help}>
-        Uses local storage offline-first and syncs to Firebase when enabled. Preference is saved
-        to your browser. If disabled, the app stays local-only.
+        Uses local storage offline-first and syncs to Firebase when enabled. Preference is saved to
+        your browser. If disabled, the app stays local-only.
       </p>
       <div className={styles.syncRow}>
         <RepoSyncStatus compactView />

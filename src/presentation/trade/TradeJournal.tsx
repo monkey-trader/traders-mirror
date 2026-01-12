@@ -40,9 +40,10 @@ const useFirebase = (() => {
   return false;
 })();
 
-const analysisRepo = useFirebase && process.env.NODE_ENV !== 'test'
-  ? new FirebaseAnalysisRepository()
-  : new LocalStorageAnalysisRepository();
+const analysisRepo =
+  useFirebase && process.env.NODE_ENV !== 'test'
+    ? new FirebaseAnalysisRepository()
+    : new LocalStorageAnalysisRepository();
 const analysisService = new AnalysisService(analysisRepo);
 
 type TradeJournalProps = { repo?: TradeRepository; forceCompact?: boolean };
