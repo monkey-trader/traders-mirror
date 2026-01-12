@@ -49,14 +49,18 @@ function App() {
     // create repo at composition root and inject into TradeJournal
     // Choose Firebase or LocalStorage based on env flag
     const useFirebase = (() => {
-      const viteFlag = (import.meta as unknown as { env?: Record<string, unknown> }).env?.[
-        'VITE_USE_FIREBASE'
-      ];
+      const env = (import.meta as unknown as { env?: Record<string, unknown> }).env ?? {};
+      const viteFlag = env['VITE_USE_FIREBASE'];
       const craFlag = (process.env as Record<string, string | undefined>).REACT_APP_USE_FIREBASE;
       const raw = (viteFlag as string | boolean | undefined) ?? craFlag;
-      if (typeof raw === 'boolean') return raw;
-      if (typeof raw === 'string') return raw.toLowerCase() === 'true';
-      return false;
+      const explicitToggle =
+        typeof raw === 'boolean' ? raw : typeof raw === 'string' ? raw.toLowerCase() === 'true' : false;
+      // If Firebase config keys exist, default to using Firebase even if toggle is missing
+      const hasFirebaseConfig = Boolean(
+        (env['VITE_FIREBASE_API_KEY'] as string | undefined) ||
+          (process.env as Record<string, string | undefined>).REACT_APP_FIREBASE_API_KEY
+      );
+      return explicitToggle || hasFirebaseConfig;
     })();
     const userPrefUseCloud = (() => {
       try {

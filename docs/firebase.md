@@ -100,7 +100,7 @@ Two modes are supported:
 - Offline-first (default): LocalStorage as primary store with background sync to Firestore when online/authenticated.
 - Local-only: No Firebase configured, everything stays in LocalStorage.
 
-Enable Firestore sync via environment flag:
+Enable Firestore sync via environment flag (or by presence of config):
 
 ```
 VITE_USE_FIREBASE=true
@@ -108,7 +108,7 @@ VITE_USE_FIREBASE=true
 REACT_APP_USE_FIREBASE=true
 ```
 
-When enabled, the app will sync user-scoped documents in Firestore collections (LocalStorage remains the immediate UI source of truth):
+When enabled, the app will sync user-scoped documents in Firestore collections (LocalStorage remains the immediate UI source of truth). The app also treats the presence of Firebase config keys as enabling capability, even if the explicit `USE_FIREBASE` flag is missing:
 
 - `trades/{id}` with a required `userId` field
 - `analyses/{id}` with a required `userId` field
@@ -146,11 +146,10 @@ Notes:
 
 You can control Firebase sync at runtime via the Settings page.
 
-- Availability: The toggle appears as "Enabled/Disabled" only when an env flag enables Firebase capability.
-	- Vite: set `VITE_USE_FIREBASE=true`
-	- CRA: set `REACT_APP_USE_FIREBASE=true`
-	- Provide the Firebase config variables (`*_API_KEY`, `*_AUTH_DOMAIN`, `*_PROJECT_ID`, `*_STORAGE_BUCKET`, `*_MESSAGING_SENDER_ID`, `*_APP_ID`).
-	- Without these, the toggle shows "Unavailable" and the app stays local-only.
+- Availability: The toggle becomes available when either an env flag enables Firebase capability or when Firebase config keys are present.
+	- Preferred: provide the Firebase config variables (`*_API_KEY`, `*_AUTH_DOMAIN`, `*_PROJECT_ID`, `*_STORAGE_BUCKET`, `*_MESSAGING_SENDER_ID`, `*_APP_ID`). If these exist, capability is enabled by default.
+	- Optional flags: `VITE_USE_FIREBASE=true` (Vite) or `REACT_APP_USE_FIREBASE=true` (CRA). These explicitly enable capability when config keys are also present.
+	- Without config, the toggle shows "Unavailable" and the app stays local-only.
 - Preference: The switch persists `useCloudSync` in `localStorage` (`mt_user_settings_v1`).
 	- Enabled → Hybrid repositories attach Firestore and sync in the background.
 	- Disabled → Hybrid repositories run local-only even if env flags are present.
