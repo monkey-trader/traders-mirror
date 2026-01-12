@@ -181,3 +181,24 @@ firebase deploy --only firestore:rules
 ```
 
 This repo includes a sample rules file at `firestore.rules` you can use during `firebase init`.
+
+### Deploying Rules via GitHub Actions (recommended for CI)
+
+This repo provides a manual workflow to deploy Firestore rules from the repository:
+
+- Workflow: `.github/workflows/deploy-firestore-rules.yml`
+- It uses the `firebase.json` and `firestore.rules` in the repo.
+
+Setup once:
+- Generate a CI token locally: `firebase login:ci` and copy the token.
+- Add a repository Secret named `FIREBASE_TOKEN` with that token.
+
+Run the workflow (from Actions UI) with the default project `c3s-monkey-trader` or override `project_id` as needed. You can also trigger via CLI:
+
+```bash
+gh workflow run deploy-firestore-rules.yml -f project_id=c3s-monkey-trader
+```
+
+Notes:
+- The token only grants the deploy permissions of your Firebase account; rotate it if leaked.
+- Ensure your Firebase project has Firestore enabled.
