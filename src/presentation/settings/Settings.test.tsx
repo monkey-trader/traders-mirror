@@ -41,8 +41,8 @@ beforeEach(() => {
 describe('Settings Switch and TradeJournal debug banner', () => {
   it('toggles debug UI in localStorage and TradeJournal shows debug banner', async () => {
     render(<Settings />);
-    // find the switch by role
-    const switchBtn = (await screen.findByRole('switch')) as HTMLElement;
+    // find the debug UI switch by accessible label
+    const switchBtn = (await screen.findByLabelText('Toggle debug UI')) as HTMLElement;
     expect(switchBtn).toBeTruthy();
 
     // click to enable

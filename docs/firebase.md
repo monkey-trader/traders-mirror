@@ -73,6 +73,15 @@ Use the manual workflow described in `docs/deploy.md` (Actions → Deploy Pages 
 After deploy, your app is available at:
 - `https://monkey-trader.github.io/traders-mirror/`
 
+To enable Cloud Sync capability in the deployed build, set the workflow input `use_firebase` to `true` when triggering the deploy:
+
+- Actions → Deploy Pages (manual) → set `use_firebase: true`.
+- Ensure repository Variables or Secrets provide the Firebase config keys (CRA or Vite style are both supported by the workflow):
+	- CRA: `REACT_APP_FIREBASE_API_KEY`, `REACT_APP_FIREBASE_AUTH_DOMAIN`, `REACT_APP_FIREBASE_PROJECT_ID`, `REACT_APP_FIREBASE_STORAGE_BUCKET`, `REACT_APP_FIREBASE_MESSAGING_SENDER_ID`, `REACT_APP_FIREBASE_APP_ID`
+	- Vite: `VITE_FIREBASE_API_KEY`, `VITE_FIREBASE_AUTH_DOMAIN`, `VITE_FIREBASE_PROJECT_ID`, `VITE_FIREBASE_STORAGE_BUCKET`, `VITE_FIREBASE_MESSAGING_SENDER_ID`, `VITE_FIREBASE_APP_ID`
+
+The workflow wires `use_firebase` into both `REACT_APP_USE_FIREBASE` and `VITE_USE_FIREBASE` so the Settings toggle becomes available after deploy (provided the config keys are set).
+
 ## Troubleshooting
 - "Firebase config missing env vars": Ensure `.env.local` (dev) or GitHub Variables (CI) are set.
 - "Popup blocked": Allow popups for your dev page/domain.
@@ -86,7 +95,12 @@ This project includes Firestore-backed repositories in the Infrastructure layer:
 - `src/infrastructure/trade/repositories/FirebaseTradeRepository.ts`
 - `src/infrastructure/analysis/repositories/FirebaseAnalysisRepository.ts`
 
-Enable them via environment flag:
+Two modes are supported:
+
+- Offline-first (default): LocalStorage as primary store with background sync to Firestore when online/authenticated.
+- Local-only: No Firebase configured, everything stays in LocalStorage.
+
+Enable Firestore sync via environment flag:
 
 ```
 VITE_USE_FIREBASE=true
@@ -94,7 +108,7 @@ VITE_USE_FIREBASE=true
 REACT_APP_USE_FIREBASE=true
 ```
 
-When enabled, the app will read/write user-scoped documents in Firestore collections:
+When enabled, the app will sync user-scoped documents in Firestore collections (LocalStorage remains the immediate UI source of truth):
 
 - `trades/{id}` with a required `userId` field
 - `analyses/{id}` with a required `userId` field
@@ -123,5 +137,28 @@ service cloud.firestore {
 ```
 
 Notes:
-- Tests and local development default to LocalStorage repositories.
+- UI reads from LocalStorage; writes are persisted locally first and then synced to Firestore.
+- If offline or unauthenticated, changes queue in an outbox and sync automatically when you come back online.
+- Tests and local development default to LocalStorage-only unless `USE_FIREBASE` is enabled.
 - In test runs (`NODE_ENV=test`), Firestore adapters are disabled to keep deterministic tests.
+
+## Cloud Sync Toggle (Settings)
+
+You can control Firebase sync at runtime via the Settings page.
+
+- Availability: The toggle appears as "Enabled/Disabled" only when an env flag enables Firebase capability.
+	- Vite: set `VITE_USE_FIREBASE=true`
+	- CRA: set `REACT_APP_USE_FIREBASE=true`
+	- Provide the Firebase config variables (`*_API_KEY`, `*_AUTH_DOMAIN`, `*_PROJECT_ID`, `*_STORAGE_BUCKET`, `*_MESSAGING_SENDER_ID`, `*_APP_ID`).
+	- Without these, the toggle shows "Unavailable" and the app stays local-only.
+- Preference: The switch persists `useCloudSync` in `localStorage` (`mt_user_settings_v1`).
+	- Enabled → Hybrid repositories attach Firestore and sync in the background.
+	- Disabled → Hybrid repositories run local-only even if env flags are present.
+- Status: The header shows a small badge (RepoSyncStatus) summarizing state:
+	- `Sync: Local` — local-only mode
+	- `Sync: Online` — remote available, no queued items
+	- `Sync: Queued N` — N items waiting to sync
+- Auth: Sign in (Google) to allow per-user reads/writes. Rules require `userId == auth.uid`.
+- Code references:
+	- Composition root selection: `src/App.tsx` and `src/presentation/analysis/Analysis.tsx` read env flags and `useCloudSync`.
+	- Firebase init: `src/infrastructure/firebase/client.ts` supports both CRA and Vite env styles.

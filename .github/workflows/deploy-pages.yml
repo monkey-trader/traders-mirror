@@ -19,6 +19,10 @@ on:
         description: 'Force deploy even if no changes (true|false)'
         required: false
         default: 'false'
+      use_firebase:
+        description: 'Enable Firebase Cloud Sync capability (true|false)'
+        required: false
+        default: 'true'
 
 permissions:
   contents: write
@@ -41,7 +45,7 @@ jobs:
       REACT_APP_FIREBASE_APP_ID: ${{ vars.REACT_APP_FIREBASE_APP_ID || secrets.REACT_APP_FIREBASE_APP_ID }}
 
       # Toggle using Firebase-backed repositories in the app (optional; defaults to LocalStorage when unset)
-      REACT_APP_USE_FIREBASE: ${{ vars.REACT_APP_USE_FIREBASE || secrets.REACT_APP_USE_FIREBASE }}
+      REACT_APP_USE_FIREBASE: ${{ vars.REACT_APP_USE_FIREBASE || secrets.REACT_APP_USE_FIREBASE || (github.event.inputs.use_firebase == 'true' && 'true') }}
 
       VITE_FIREBASE_API_KEY: ${{ vars.VITE_FIREBASE_API_KEY || secrets.VITE_FIREBASE_API_KEY || vars.REACT_APP_FIREBASE_API_KEY || secrets.REACT_APP_FIREBASE_API_KEY }}
       VITE_FIREBASE_AUTH_DOMAIN: ${{ vars.VITE_FIREBASE_AUTH_DOMAIN || secrets.VITE_FIREBASE_AUTH_DOMAIN || vars.REACT_APP_FIREBASE_AUTH_DOMAIN || secrets.REACT_APP_FIREBASE_AUTH_DOMAIN }}
@@ -51,7 +55,7 @@ jobs:
       VITE_FIREBASE_APP_ID: ${{ vars.VITE_FIREBASE_APP_ID || secrets.VITE_FIREBASE_APP_ID || vars.REACT_APP_FIREBASE_APP_ID || secrets.REACT_APP_FIREBASE_APP_ID }}
 
       # Same toggle for Vite-style builds
-      VITE_USE_FIREBASE: ${{ vars.VITE_USE_FIREBASE || secrets.VITE_USE_FIREBASE || vars.REACT_APP_USE_FIREBASE || secrets.REACT_APP_USE_FIREBASE }}
+      VITE_USE_FIREBASE: ${{ vars.VITE_USE_FIREBASE || secrets.VITE_USE_FIREBASE || vars.REACT_APP_USE_FIREBASE || secrets.REACT_APP_USE_FIREBASE || (github.event.inputs.use_firebase == 'true' && 'true') }}
 
       # Build metadata exported for Settings page
       REACT_APP_BUILD_BRANCH: ${{ github.event.inputs.source_branch || github.ref_name }}
