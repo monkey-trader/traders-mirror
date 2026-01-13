@@ -30,16 +30,35 @@ jobs:
       - name: Install Firebase CLI
         run: npm i -g firebase-tools
 
-      - name: Deploy Firestore rules via CLI
+      - name: Write service account key (if provided)
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          set -euo pipefail
+          if [ -n "${FIREBASE_SERVICE_ACCOUNT:-}" ]; then
+            echo "Service account secret present; writing to temp file"
+            SA_JSON="$RUNNER_TEMP/firebase-sa.json"
+            printf "%s" "$FIREBASE_SERVICE_ACCOUNT" > "$SA_JSON"
+            echo "GOOGLE_APPLICATION_CREDENTIALS=$SA_JSON" >> $GITHUB_ENV
+          else
+            echo "No service account provided; will use FIREBASE_TOKEN if available"
+          fi
+
+      - name: Deploy Firestore rules via CLI (SA or Token)
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
         run: |
           set -euo pipefail
-          if [ -z "${FIREBASE_TOKEN:-}" ]; then
-            echo "ERROR: FIREBASE_TOKEN secret not configured. Generate with 'firebase login:ci' and add as repo secret FIREBASE_TOKEN." >&2
+          if [ -n "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]; then
+            echo "Using GOOGLE_APPLICATION_CREDENTIALS for auth"
+            firebase deploy --only firestore:rules -P "$FIREBASE_PROJECT_ID"
+          elif [ -n "${FIREBASE_TOKEN:-}" ]; then
+            echo "Using FIREBASE_TOKEN for auth"
+            firebase deploy --only firestore:rules -P "$FIREBASE_PROJECT_ID"
+          else
+            echo "ERROR: No auth configured. Provide FIREBASE_SERVICE_ACCOUNT or FIREBASE_TOKEN secrets." >&2
             exit 1
           fi
-          firebase deploy --only firestore:rules -P "$FIREBASE_PROJECT_ID"
 
       - name: Finish
         run: echo "Firestore rules deployed to ${FIREBASE_PROJECT_ID}"
