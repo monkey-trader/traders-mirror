@@ -79,6 +79,7 @@ Notes & guidance
   - `build-info.json` exists and includes `branch` and `sha`.
   - Build metadata envs (`REACT_APP_BUILD_*`/`VITE_BUILD_*`) are set (the workflow prints their presence, values are hidden).
  - Sonar not running on your PR: this is expected—analysis is limited to `main` and gated. To enable, set repository variable `ENABLE_SONAR_CI` to `true` and add `SONAR_TOKEN` secret, then push to `main`.
+  - Firestore requests blocked in browser: if your console shows `net::ERR_BLOCKED_BY_CLIENT` on `google.firestore.../channel` (common with ad/tracker blockers or strict privacy settings), note that the app forces Firestore long polling on Pages (`REACT_APP_FIRESTORE_FORCE_LONG_POLLING=true` / `VITE_FIRESTORE_FORCE_LONG_POLLING=true`) to avoid WebChannel usage. If you still see errors, whitelist the site in your blocker or try in a clean/private window.
 
 Security
 - The workflow runs in the `production` environment; you can add required reviewers in repository -> Settings -> Environments to require an approval before the deploy executes.

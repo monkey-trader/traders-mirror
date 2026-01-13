@@ -57,6 +57,10 @@ jobs:
       # Same toggle for Vite-style builds — always enabled for Pages deploys
       VITE_USE_FIREBASE: true
 
+      # Force Firestore long polling on Pages to avoid ad/tracker blockers
+      REACT_APP_FIRESTORE_FORCE_LONG_POLLING: true
+      VITE_FIRESTORE_FORCE_LONG_POLLING: true
+
       # Build metadata exported for Settings page
       REACT_APP_BUILD_BRANCH: ${{ github.event.inputs.source_branch || github.ref_name }}
       REACT_APP_BUILD_SHA: ${{ github.sha }}

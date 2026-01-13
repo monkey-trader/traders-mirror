@@ -19,6 +19,16 @@ function readEnv(name: string): string | undefined {
   return cra ?? vite;
 }
 
+function readEnvBool(name: string, fallback: boolean): boolean {
+  const raw = readEnv(name);
+  if (typeof raw === 'string') {
+    const v = raw.trim().toLowerCase();
+    if (v === 'true') return true;
+    if (v === 'false') return false;
+  }
+  return fallback;
+}
+
 export function ensureFirebase(): { app: FirebaseApp; auth: Auth; db: Firestore } {
   if (!firebaseApp) {
     const apiKey = readEnv('API_KEY');
@@ -60,11 +70,13 @@ export function ensureFirebase(): { app: FirebaseApp; auth: Auth; db: Firestore 
       /* ignore persistence errors (e.g., in non-browser test environments) */
     }
     // Use initializeFirestore with network settings that are more resilient to
-    // ad/tracker blockers (auto-detected long polling).
+    // ad/tracker blockers (auto-detected long polling, with optional forced long polling).
     // If initializeFirestore is not available or fails, fall back to getFirestore.
     try {
+      const forceLongPolling = readEnvBool('FIRESTORE_FORCE_LONG_POLLING', true);
       firestore = initializeFirestore(firebaseApp, {
         experimentalAutoDetectLongPolling: true,
+        experimentalForceLongPolling: forceLongPolling,
       });
     } catch {
       firestore = getFirestore(firebaseApp);
