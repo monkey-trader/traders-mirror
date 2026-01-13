@@ -22,10 +22,22 @@ export class FirebaseAnalysisRepository implements AnalysisRepository {
     const uid = getCurrentUserId();
     if (!uid) throw new Error('Not authenticated');
     const data: RepoAnalysis = { ...analysis, userId: uid };
-    // Firestore does not allow `undefined` values. Strip them out.
-    const sanitized = Object.fromEntries(
-      Object.entries(data).filter(([, v]) => v !== undefined)
-    ) as RepoAnalysis;
+    // Firestore does not allow `undefined` values — strip them out recursively.
+    const stripUndefinedDeep = (value: unknown): unknown => {
+      if (Array.isArray(value)) {
+        return value.map((v) => stripUndefinedDeep(v));
+      }
+      if (value && typeof value === 'object') {
+        const out: Record<string, unknown> = {};
+        for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+          const sv = stripUndefinedDeep(v);
+          if (sv !== undefined) out[k] = sv;
+        }
+        return out;
+      }
+      return value === undefined ? undefined : value;
+    };
+    const sanitized = stripUndefinedDeep(data) as RepoAnalysis;
     // eslint-disable-next-line no-console
     console.info('[FirebaseRepo:Analysis] save', analysis.id, 'symbol=', analysis.symbol);
     await setDoc(doc(db, 'users', uid, 'analyses', analysis.id), sanitized);

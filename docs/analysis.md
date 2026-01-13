@@ -167,6 +167,13 @@ Docs & Diagrams
   - Components: AnalysisService, AnalysisRepository, TradeService
   - Sequence: CreateAnalysis -> createTradeFromAnalysis -> TradeRepository.save (backlink)
 
+Firestore Write Sanitization
+
+- Hintergrund: Firestore akzeptiert keine `undefined`-Werte an beliebiger Tiefe (auch in verschachtelten Objekten/Arrays).
+- Umsetzung: Der Firebase-Repository für Analysen entfernt vor `setDoc` rekursiv alle `undefined`-Werte (Deep-Sanitization), z. B. bei `timeframes.monthly.note`.
+- Effekt: Laufzeitfehler wie „Unsupported field value: undefined“ werden vermieden, wenn optionale Felder leer bleiben.
+- Architektur-Impact: Keine API-Änderung. Domain-Validierung bleibt bestehen; der Infrastruktur-Adapter sorgt für Firestore-Kompatibilität.
+
 Next Steps / Vorschlag für Vorgehen (Optionen)
 
 1) Domain-first (Empfohlen)
