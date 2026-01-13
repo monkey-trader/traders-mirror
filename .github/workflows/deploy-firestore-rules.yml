@@ -28,7 +28,7 @@ jobs:
           echo "Using project: $FIREBASE_PROJECT_ID"
 
       - name: Deploy Firestore rules
-        uses: w9jds/firebase-action@v13
+        uses: w9jds/firebase-action@v12
         with:
           args: deploy --only firestore:rules --project ${FIREBASE_PROJECT_ID}
         env:
