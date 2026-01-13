@@ -27,13 +27,19 @@ jobs:
           fi
           echo "Using project: $FIREBASE_PROJECT_ID"
 
-      - name: Deploy Firestore rules
-        uses: w9jds/firebase-action@v12
-        with:
-          args: deploy --only firestore:rules --project ${FIREBASE_PROJECT_ID}
+      - name: Install Firebase CLI
+        run: npm i -g firebase-tools
+
+      - name: Deploy Firestore rules via CLI
         env:
-          GCP_SA_KEY: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-          PROJECT_ID: ${{ env.FIREBASE_PROJECT_ID }}
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${FIREBASE_TOKEN:-}" ]; then
+            echo "ERROR: FIREBASE_TOKEN secret not configured. Generate with 'firebase login:ci' and add as repo secret FIREBASE_TOKEN." >&2
+            exit 1
+          fi
+          firebase deploy --only firestore:rules -P "$FIREBASE_PROJECT_ID"
 
       - name: Finish
         run: echo "Firestore rules deployed to ${FIREBASE_PROJECT_ID}"
