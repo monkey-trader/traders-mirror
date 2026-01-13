@@ -60,12 +60,11 @@ export function ensureFirebase(): { app: FirebaseApp; auth: Auth; db: Firestore 
       /* ignore persistence errors (e.g., in non-browser test environments) */
     }
     // Use initializeFirestore with network settings that are more resilient to
-    // ad/tracker blockers (auto-detected long polling and fetch-based streams).
+    // ad/tracker blockers (auto-detected long polling).
     // If initializeFirestore is not available or fails, fall back to getFirestore.
     try {
       firestore = initializeFirestore(firebaseApp, {
         experimentalAutoDetectLongPolling: true,
-        useFetchStreams: true,
       });
     } catch {
       firestore = getFirestore(firebaseApp);
