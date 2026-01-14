@@ -21,6 +21,66 @@
 
 - WICHTIG: Führ Commits nur aus, wenn der Benutzer ausdrücklich dazu auffordert. Keine automatischen Commits ohne Bestätigung.
 
+## CI/CD – Deployments via `gh` CLI
+
+Manuelle Deployments (GitHub Pages & Firestore Rules) können per GitHub CLI (`gh`) ausgelöst werden. Voraussetzungen: `gh` ist installiert und authentifiziert (`gh auth login`).
+
+### GitHub Pages Deployment
+
+- Standard-Deploy des aktuellen `main`-Stands:
+
+```bash
+gh workflow run deploy-pages.yml
+```
+
+- Optional mit Parametern:
+
+```bash
+gh workflow run deploy-pages.yml \
+  -f source=pages \
+  -f source_branch=main \
+  -f use_artifact=false \
+  -f force=false
+```
+
+- Run-Status prüfen und Logs ansehen:
+
+```bash
+gh run list --workflow=deploy-pages.yml --limit 1
+gh run view <RUN_ID> --log
+```
+
+- Health-Check (Build-Info) nach Deploy:
+
+```bash
+curl -s https://monkey-trader.github.io/traders-mirror/build-info.json | jq
+```
+
+### Firestore Rules Deployment
+
+- Projekt-ID setzen: Verwende Repo-Variable `FIREBASE_PROJECT_ID` oder übergib die ID beim Aufruf.
+- Empfohlen: Service-Account-Authentifizierung via Secret `FIREBASE_SERVICE_ACCOUNT` (JSON-Inhalt des Keys).
+
+- Deploy auslösen:
+
+```bash
+gh workflow run deploy-firestore-rules.yml -f project_id=c3s-monkey-trader
+gh run list --workflow=deploy-firestore-rules.yml --limit 1
+gh run view <RUN_ID> --log
+```
+
+- Hinweis: `FIREBASE_TOKEN` ist veraltet und kann zu `401`-Fehlern beim Aktivieren von APIs führen. Bevorzugt wird `GOOGLE_APPLICATION_CREDENTIALS` aus `FIREBASE_SERVICE_ACCOUNT`.
+
+### Service Account Secret hinzufügen (Kurz)
+
+1. Google Cloud Console → IAM & Admin → Service Accounts → Neu erstellen.
+2. Rollen vergeben: z. B. „Editor“ oder „Firebase Admin“ + „Service Usage Admin“.
+3. Schlüssel (JSON) erzeugen und kopieren.
+4. GitHub Repo → Settings → Secrets and variables → Actions → New secret:
+   - Name: `FIREBASE_SERVICE_ACCOUNT`
+   - Value: kompletter JSON-Inhalt
+5. Erneut Workflow „Deploy Firestore Rules (manual)“ starten und Logs prüfen.
+
 ## Architektur
 - Die Anwendung verwendet Onion Architecture und Domain-Driven Design (DDD).
 - Strikte Trennung der Schichten: Domain, Application, Infrastructure, Presentation.
