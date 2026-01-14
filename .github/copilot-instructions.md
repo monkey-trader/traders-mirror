@@ -25,6 +25,11 @@
 
 Manuelle Deployments (GitHub Pages & Firestore Rules) können per GitHub CLI (`gh`) ausgelöst werden. Voraussetzungen: `gh` ist installiert und authentifiziert (`gh auth login`).
 
+### Neu: Immer beide Workflows deployen
+
+- Wenn ein manueller Deploy angefordert wird, immer beide Workflows auslösen: GitHub Pages und Firestore Rules. So bleibt die Seite und die Security-Regeln synchron.
+- Nach jedem Push auf `main` (sofern Deploy gewünscht ist): Beide Workflows starten und den Status prüfen.
+
 ### GitHub Pages Deployment
 
 - Standard-Deploy des aktuellen `main`-Stands:
@@ -80,6 +85,24 @@ gh run view <RUN_ID> --log
    - Name: `FIREBASE_SERVICE_ACCOUNT`
    - Value: kompletter JSON-Inhalt
 5. Erneut Workflow „Deploy Firestore Rules (manual)“ starten und Logs prüfen.
+
+### Kombinierter manueller Deploy (Pages + Rules)
+
+```bash
+# Pages deploy starten
+gh workflow run deploy-pages.yml
+
+# Firestore Rules deploy starten (Projekt-ID anpassen, falls nötig)
+gh workflow run deploy-firestore-rules.yml -f project_id=c3s-monkey-trader
+
+# Status prüfen
+gh run list --workflow=deploy-pages.yml --limit 1
+gh run list --workflow=deploy-firestore-rules.yml --limit 1
+
+# Logs ansehen (RUN_ID entsprechend ersetzen)
+gh run view <RUN_ID_PAGES> --log
+gh run view <RUN_ID_RULES> --log
+```
 
 ## Architektur
 - Die Anwendung verwendet Onion Architecture und Domain-Driven Design (DDD).
