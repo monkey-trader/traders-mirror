@@ -1,6 +1,8 @@
 import type { TradeRepository } from '@/domain/trade/interfaces/TradeRepository';
 import LocalStorageTradeRepository from '@/infrastructure/trade/repositories/LocalStorageTradeRepository';
 import FirebaseTradeRepository from '@/infrastructure/trade/repositories/FirebaseTradeRepository';
+import { ensureFirebase, getCurrentUserId } from '@/infrastructure/firebase/client';
+import { collection, onSnapshot, query } from 'firebase/firestore';
 import { Trade } from '@/domain/trade/entities/Trade';
 import { TradeFactory, type TradeInput } from '@/domain/trade/factories/TradeFactory';
 
@@ -88,6 +90,55 @@ export class HybridTradeRepository implements TradeRepository {
       // Best effort flush on startup if online
       if (typeof navigator !== 'undefined' && (navigator as { onLine?: boolean }).onLine) {
         void this.flushOutbox();
+      }
+
+      // Real-time subscription: mirror remote changes to local and notify UI
+      try {
+        const { db } = ensureFirebase();
+        const uid = getCurrentUserId();
+        if (uid) {
+          const q = query(collection(db, 'users', uid, 'trades'));
+          onSnapshot(q, async (snap) => {
+            try {
+              const items = snap.docs.map((d) => d.data() as import('@/infrastructure/trade/repositories/FirebaseTradeRepository').RepoTrade);
+              for (const rt of items) {
+                try {
+                  const t = TradeFactory.create({
+                    id: rt.id,
+                    symbol: rt.symbol,
+                    entryDate: rt.entryDate,
+                    size: rt.size,
+                    price: rt.price,
+                    side: rt.side,
+                    notes: rt.notes,
+                    market: rt.market,
+                    sl: rt.sl,
+                    tp1: rt.tp1,
+                    tp2: rt.tp2,
+                    tp3: rt.tp3,
+                    tp4: rt.tp4,
+                    leverage: rt.leverage,
+                    margin: rt.margin,
+                    analysisId: rt.analysisId,
+                    status: rt.status,
+                  });
+                  await this.local.update(t);
+                } catch {
+                  /* ignore individual conversion errors */
+                }
+              }
+              try {
+                globalThis.dispatchEvent(new CustomEvent('trades-updated', { detail: { type: 'remote' } }));
+              } catch {
+                /* ignore */
+              }
+            } catch {
+              /* ignore snapshot processing errors */
+            }
+          });
+        }
+      } catch {
+        // ignore subscription setup errors
       }
     }
     if (!this.remote) {

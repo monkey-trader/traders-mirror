@@ -27,6 +27,7 @@ import { useTradesViewModel } from './hooks/useTradesViewModel';
 // Analysis link helpers
 import { LocalStorageAnalysisRepository } from '@/infrastructure/analysis/repositories/LocalStorageAnalysisRepository';
 import { FirebaseAnalysisRepository } from '@/infrastructure/analysis/repositories/FirebaseAnalysisRepository';
+import HybridAnalysisRepository from '@/infrastructure/analysis/repositories/HybridAnalysisRepository';
 import { AnalysisService } from '@/application/analysis/services/AnalysisService';
 
 const useFirebase = (() => {
@@ -40,10 +41,14 @@ const useFirebase = (() => {
   return false;
 })();
 
-const analysisRepo =
-  useFirebase && process.env.NODE_ENV !== 'test'
-    ? new FirebaseAnalysisRepository()
-    : new LocalStorageAnalysisRepository();
+// Use HybridAnalysisRepository to ensure local mirror + event dispatch for UI updates
+const analysisRepo = (() => {
+  if (useFirebase && process.env.NODE_ENV !== 'test') {
+    const remote = new FirebaseAnalysisRepository();
+    return new HybridAnalysisRepository({ remote });
+  }
+  return new HybridAnalysisRepository();
+})();
 const analysisService = new AnalysisService(analysisRepo);
 
 type TradeJournalProps = { repo?: TradeRepository; forceCompact?: boolean };
@@ -174,6 +179,23 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
     return () => {
       mounted = false;
     };
+  }, []);
+
+  // Reload trades when repository signals updates (e.g., remote snapshot mirrored)
+  useEffect(() => {
+    const handler = async (_e: Event) => {
+      void _e;
+      try {
+        if (!repoRef.current) return;
+        const domainTrades = await repoRef.current.getAll();
+        const all = domainTrades.map((dt) => TradeFactory.toDTO(dt));
+        setPositions(all as unknown as TradeRow[]);
+      } catch {
+        /* ignore */
+      }
+    };
+    globalThis.addEventListener('trades-updated', handler as EventListener);
+    return () => globalThis.removeEventListener('trades-updated', handler as EventListener);
   }, []);
 
   // Mobile modal state for New Trade (used on small screens)

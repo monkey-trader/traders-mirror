@@ -4,6 +4,8 @@ import type {
 } from '@/domain/analysis/interfaces/AnalysisRepository';
 import { LocalStorageAnalysisRepository } from '@/infrastructure/analysis/repositories/LocalStorageAnalysisRepository';
 import { FirebaseAnalysisRepository } from '@/infrastructure/analysis/repositories/FirebaseAnalysisRepository';
+import { ensureFirebase, getCurrentUserId } from '@/infrastructure/firebase/client';
+import { collection, onSnapshot, query } from 'firebase/firestore';
 
 type OutboxItem = { op: 'save'; dto: AnalysisDTO } | { op: 'delete'; id: string };
 
@@ -59,6 +61,47 @@ export class HybridAnalysisRepository implements AnalysisRepository {
       }
       if (typeof navigator !== 'undefined' && (navigator as { onLine?: boolean }).onLine) {
         void this.flushOutbox();
+      }
+
+      // Real-time sync from remote: mirror changes to local and notify UI
+      try {
+        const { db } = ensureFirebase();
+        const uid = getCurrentUserId();
+        if (uid) {
+          const q = query(collection(db, 'users', uid, 'analyses'));
+          onSnapshot(q, async (snap) => {
+            try {
+              const items = snap.docs.map((d) => d.data() as (import('./FirebaseAnalysisRepository').default extends infer _T ? unknown : never) & Record<string, unknown>);
+              for (const src of items) {
+                const dto: import('@/domain/analysis/interfaces/AnalysisRepository').AnalysisDTO = {
+                  id: String(src.id),
+                  symbol: String(src.symbol),
+                  createdAt: String(src.createdAt ?? new Date().toISOString()),
+                  updatedAt: typeof src.updatedAt === 'string' ? src.updatedAt : undefined,
+                  market:
+                    typeof src.market === 'string' && (src.market === 'Forex' || src.market === 'Crypto')
+                      ? (src.market as 'Forex' | 'Crypto')
+                      : undefined,
+                  timeframes: (src.timeframes as Record<string, unknown>) as unknown as Record<
+                    import('@/domain/analysis/interfaces/AnalysisRepository').Timeframe,
+                    import('@/domain/analysis/interfaces/AnalysisRepository').TimeframeAnalysisDTO
+                  >,
+                  notes: typeof src.notes === 'string' ? src.notes : undefined,
+                };
+                await this.local.save(dto);
+              }
+              try {
+                globalThis.dispatchEvent(new CustomEvent('analyses-updated', { detail: { type: 'remote' } }));
+              } catch {
+                /* ignore */
+              }
+            } catch {
+              /* ignore snapshot processing errors */
+            }
+          });
+        }
+      } catch {
+        // ignore subscription setup errors (e.g., missing env vars in tests)
       }
     }
     if (!this.remote) {
