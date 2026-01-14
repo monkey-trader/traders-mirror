@@ -71,7 +71,7 @@ export class HybridAnalysisRepository implements AnalysisRepository {
           const q = query(collection(db, 'users', uid, 'analyses'));
           onSnapshot(q, async (snap) => {
             try {
-              const items = snap.docs.map((d) => d.data() as (import('./FirebaseAnalysisRepository').default extends infer _T ? unknown : never) & Record<string, unknown>);
+              const items = snap.docs.map((d) => d.data() as Record<string, unknown>);
               for (const src of items) {
                 const dto: import('@/domain/analysis/interfaces/AnalysisRepository').AnalysisDTO = {
                   id: String(src.id),

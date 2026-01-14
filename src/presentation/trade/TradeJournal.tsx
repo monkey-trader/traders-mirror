@@ -25,7 +25,6 @@ import TradesPanel from './components/TradesPanel/TradesPanel';
 import { useTradesViewModel } from './hooks/useTradesViewModel';
 
 // Analysis link helpers
-import { LocalStorageAnalysisRepository } from '@/infrastructure/analysis/repositories/LocalStorageAnalysisRepository';
 import { FirebaseAnalysisRepository } from '@/infrastructure/analysis/repositories/FirebaseAnalysisRepository';
 import HybridAnalysisRepository from '@/infrastructure/analysis/repositories/HybridAnalysisRepository';
 import { AnalysisService } from '@/application/analysis/services/AnalysisService';
