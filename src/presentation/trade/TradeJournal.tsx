@@ -606,6 +606,7 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
         onClose={() => setMockModalOpen(false)}
         repoRef={repoRef}
         setPositions={setPositions}
+        analysisService={analysisService}
       />
 
       {undoInfo && (

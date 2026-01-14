@@ -8,6 +8,9 @@ import {
   MORE_FOREX_MOCK_TRADES,
 } from '@/infrastructure/trade/repositories/mockData';
 import { loadMockTrades } from '../../mockLoader';
+import { loadExplicitAnalyses } from '@/presentation/analysis/mockLoader';
+import { AnalysisService } from '@/application/analysis/services/AnalysisService';
+import { TradeFactory } from '@/domain/trade/factories/TradeFactory';
 import styles from '../../TradeJournal.module.css';
 
 type Props = {
@@ -15,9 +18,10 @@ type Props = {
   onClose: () => void;
   repoRef: React.MutableRefObject<TradeRepository | null>;
   setPositions: React.Dispatch<React.SetStateAction<TradeRow[]>>;
+  analysisService: AnalysisService;
 };
 
-export function MockLoaderModal({ open, onClose, repoRef, setPositions }: Props) {
+export function MockLoaderModal({ open, onClose, repoRef, setPositions, analysisService }: Props) {
   const [mockLoadOption, setMockLoadOption] = useState<'crypto' | 'forex' | 'both'>('both');
   const [mockLoading, setMockLoading] = useState(false);
 
@@ -68,6 +72,37 @@ export function MockLoaderModal({ open, onClose, repoRef, setPositions }: Props)
                     : COMBINED_MOCK_TRADES;
 
                 await loadMockTrades(repoRef.current, seedSet, setPositions);
+
+                // Also seed analyses matched with trades including TradingView links
+                await loadExplicitAnalyses(analysisService, repoRef.current, [
+                  {
+                    symbol: 'BTCUSD',
+                    market: 'Crypto',
+                    notes: 'BTC 4H setup seeded from mock loader',
+                    timeframes: [
+                      { timeframe: '4h', tradingViewLink: 'https://www.tradingview.com/x/zuXCVxnH/' },
+                    ],
+                  },
+                  {
+                    symbol: 'USDCAD',
+                    market: 'Forex',
+                    notes: 'USDCAD 4H setup seeded from mock loader',
+                    timeframes: [
+                      { timeframe: '4h', tradingViewLink: 'https://www.tradingview.com/x/MGlHVCHj/' },
+                    ],
+                  },
+                ]);
+
+                // Refresh trades to reflect linked analysisIds
+                if (repoRef.current && typeof repoRef.current.getAll === 'function') {
+                  try {
+                    const all = await repoRef.current.getAll();
+                    const dto = all.map((t) => TradeFactory.toDTO(t)) as unknown as TradeRow[];
+                    setPositions(dto);
+                  } catch {
+                    /* ignore */
+                  }
+                }
               } finally {
                 setMockLoading(false);
                 onClose();

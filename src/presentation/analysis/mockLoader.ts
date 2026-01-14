@@ -6,6 +6,8 @@ import type { Trade } from '@/domain/trade/entities/Trade';
 import type { TradeRepository } from '@/domain/trade/interfaces/TradeRepository';
 import { AnalysisFactory } from '@/domain/analysis/factories/AnalysisFactory';
 import { TradeFactory } from '@/domain/trade/factories/TradeFactory';
+import type { AnalysisInput } from '@/domain/analysis/factories/AnalysisFactory';
+import { AnalysisService } from '@/application/analysis/services/AnalysisService';
 
 // Create random analyses from available trades and optionally link them back to trades
 export async function loadMockAnalyses(
@@ -138,6 +140,53 @@ export async function clearAnalyses(
   }
 
   setAnalyses([]);
+}
+
+// Create explicit analyses from provided inputs and optionally link to matching trades by symbol
+export async function loadExplicitAnalyses(
+  service: AnalysisService,
+  tradeRepo: TradeRepository | null,
+  inputs: AnalysisInput[]
+): Promise<AnalysisDTO[]> {
+  const created: AnalysisDTO[] = [];
+
+  for (const input of inputs) {
+    try {
+      const a = await service.createAnalysis(input);
+      created.push(a);
+
+      // Link to the first matching trade by symbol (case-insensitive)
+      if (tradeRepo) {
+        try {
+          const all = await tradeRepo.getAll();
+          const match = all.find((t) =>
+            String(TradeFactory.toDTO(t).symbol || '').toUpperCase() ===
+            String(input.symbol).toUpperCase()
+          );
+          if (match) {
+            const dto = TradeFactory.toDTO(match);
+            dto.analysisId = a.id;
+            const updated = TradeFactory.create(
+              dto as unknown as Parameters<typeof TradeFactory.create>[0]
+            );
+            await tradeRepo.update(updated);
+          }
+        } catch {
+          // ignore linking errors to keep seeding robust
+        }
+      }
+    } catch {
+      // ignore individual failures
+    }
+  }
+
+  try {
+    globalThis.dispatchEvent(new CustomEvent('analyses-updated', { detail: { type: 'seeded' } }));
+  } catch {
+    /* ignore */
+  }
+
+  return created;
 }
 
 export default { loadMockAnalyses, clearAnalyses };
