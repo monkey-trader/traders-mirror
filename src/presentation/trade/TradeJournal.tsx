@@ -420,6 +420,7 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
         tp4: selectedPos.tp4,
         margin: selectedPos.margin,
         leverage: selectedPos.leverage,
+        sl: selectedPos.sl,
       }
     : null;
 

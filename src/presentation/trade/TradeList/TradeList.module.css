@@ -101,6 +101,13 @@
   transition: background 120ms ease, transform 120ms ease, box-shadow 120ms ease, color 120ms ease;
 }
 
+.slDisplay {
+  font-size: 12px;
+  color: var(--muted);
+  min-width: 72px;
+  text-align: right;
+}
+
 .analysisBtn:hover {
   background: linear-gradient(180deg, rgba(37, 99, 235, 0.06), rgba(255, 255, 255, 0.01));
   transform: translateY(-2px);
