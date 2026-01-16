@@ -1,6 +1,19 @@
 // Global Vitest setup for jsdom
 import '@testing-library/jest-dom/vitest';
 
+// Tell React test utils that we're running in a test environment
+try {
+  if (typeof globalThis !== 'undefined') {
+    // React's testing utilities check this flag to avoid spurious act() warnings
+    // when running under a test harness that provides its own act handling.
+    // See: React 18 testing guidance
+    // eslint-disable-next-line no-undef
+    globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+  }
+} catch (e) {
+  // ignore
+}
+
 // Provide Jest-compatible globals for legacy tests
 try {
   if (typeof globalThis !== 'undefined' && typeof vi !== 'undefined' && !globalThis.jest) {

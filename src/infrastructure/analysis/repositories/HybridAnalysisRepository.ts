@@ -147,28 +147,14 @@ export class HybridAnalysisRepository implements AnalysisRepository {
   }
 
   async save(analysis: AnalysisDTO): Promise<void> {
-    // Remote-first write; on failure, persist locally and queue
-    if (this.remote) {
-      try {
-        await this.remote.save(analysis);
-        await this.local.save(analysis);
-        try {
-          globalThis.dispatchEvent(
-            new CustomEvent('repo-sync-status', {
-              detail: { feature: 'analysis', status: 'online' },
-            })
-          );
-        } catch {
-          /* ignore */
-        }
-        return;
-      } catch {
-        // fall through to local + outbox
-        /* remote failed, will queue */
-      }
-    }
+    // Local-first write: persist immediately and enqueue a background sync to remote
     await this.local.save(analysis);
-    await this.trySync({ op: 'save', dto: analysis });
+    if (this.remote) {
+      // attempt remote save in background; if it fails it will be queued by trySync
+      void this.trySync({ op: 'save', dto: analysis });
+      return;
+    }
+    // no remote configured — remain local-only
   }
 
   async getById(id: string): Promise<AnalysisDTO | null> {
@@ -238,27 +224,12 @@ export class HybridAnalysisRepository implements AnalysisRepository {
   }
 
   async delete(id: string): Promise<void> {
-    if (this.remote) {
-      try {
-        await this.remote.delete(id);
-        await this.local.delete(id);
-        try {
-          globalThis.dispatchEvent(
-            new CustomEvent('repo-sync-status', {
-              detail: { feature: 'analysis', status: 'online' },
-            })
-          );
-        } catch {
-          /* ignore */
-        }
-        return;
-      } catch {
-        // fall back
-        /* remote failed, will queue */
-      }
-    }
+    // Local-first delete: remove locally immediately and queue remote delete in background
     await this.local.delete(id);
-    await this.trySync({ op: 'delete', id });
+    if (this.remote) {
+      void this.trySync({ op: 'delete', id });
+      return;
+    }
   }
 
   async clear(): Promise<void> {

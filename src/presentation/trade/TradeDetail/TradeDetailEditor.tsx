@@ -18,6 +18,7 @@ export type TradeDetailEditorProps = {
   onSave?: (t: TradeInput) => Promise<void>;
   onDelete?: (id: string) => Promise<void>;
   compactView?: boolean;
+  focusField?: string | null;
 };
 
 export function TradeDetailEditor({
@@ -26,18 +27,33 @@ export function TradeDetailEditor({
   onSave,
   onDelete,
   compactView = false,
+  focusField,
 }: TradeDetailEditorProps) {
   const [local, setLocal] = useState<TradeInput | null>(trade);
   const [errors, setErrors] = useState<Record<string, string | undefined>>({});
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'failed'>('idle');
+  const symbolRef = useRef<HTMLInputElement | null>(null);
+  const entryDateRef = useRef<HTMLInputElement | null>(null);
+  const sizeRef = useRef<HTMLInputElement | null>(null);
+  const priceRef = useRef<HTMLInputElement | null>(null);
+  const slRef = useRef<HTMLInputElement | null>(null);
+  const notesRef = useRef<HTMLTextAreaElement | null>(null);
+  const tp1Ref = useRef<HTMLInputElement | null>(null);
+  const tp2Ref = useRef<HTMLInputElement | null>(null);
+  const tp3Ref = useRef<HTMLInputElement | null>(null);
+  const tp4Ref = useRef<HTMLInputElement | null>(null);
+  const marginRef = useRef<HTMLInputElement | null>(null);
+  const leverageRef = useRef<HTMLInputElement | null>(null);
 
   // (No local analysis creation here) — creation is delegated to TradeJournal via event
 
   useEffect(() => {
+    // Reset local editor when the incoming `trade` object changes (not only id).
+    // This ensures the editor reflects immediate updates persisted by the parent.
     setLocal(trade);
     setErrors({});
     setStatus('idle');
-  }, [trade?.id]);
+  }, [trade]);
 
   // Keep an immutable snapshot of the trade as it was when loaded into the editor.
   // This avoids a race where parent onChange updates the canonical trade object
@@ -45,12 +61,41 @@ export function TradeDetailEditor({
   const initialTradeRef = useRef<TradeInput | null>(trade ?? null);
   useEffect(() => {
     initialTradeRef.current = trade ?? null;
-  }, [trade?.id]);
+  }, [trade]);
 
   useEffect(() => {
     // notify parent immediately on change so parent can keep canonical list
     if (local && onChange) onChange(local);
   }, [local, onChange]);
+
+  // focus requested field when asked
+  useEffect(() => {
+    if (!local) return;
+    try {
+      const f = (focusField as string | undefined) ?? undefined;
+      if (!f) return;
+      const map: Record<string, (() => void) | undefined> = {
+        symbol: () => symbolRef.current?.focus(),
+        entryDate: () => entryDateRef.current?.focus(),
+        size: () => sizeRef.current?.focus(),
+        price: () => priceRef.current?.focus(),
+        sl: () => slRef.current?.focus(),
+        notes: () => notesRef.current?.focus(),
+        tp1: () => tp1Ref.current?.focus(),
+        tp2: () => tp2Ref.current?.focus(),
+        tp3: () => tp3Ref.current?.focus(),
+        tp4: () => tp4Ref.current?.focus(),
+        margin: () => marginRef.current?.focus(),
+        leverage: () => leverageRef.current?.focus(),
+        side: () => undefined,
+        status: () => undefined,
+      };
+      const fn = map[f];
+      if (fn) fn();
+    } catch {
+      /* ignore focus errors */
+    }
+  }, [local, focusField]);
 
   const validation = useMemo(() => (local ? validateTrade(local) : {}), [local]);
   const hasValidationErrors = Object.values(validation).some(Boolean);
@@ -243,6 +288,7 @@ export function TradeDetailEditor({
         <input
           aria-label="Symbol"
           className={styles.input}
+          ref={symbolRef}
           value={local.symbol}
           onChange={(e) => fieldChange('symbol', e.target.value)}
           onBlur={handleBlurOrSave}
@@ -254,6 +300,7 @@ export function TradeDetailEditor({
           aria-label="Entry Date"
           className={styles.input}
           type="datetime-local"
+          ref={entryDateRef}
           value={local.entryDate}
           onChange={(e) => fieldChange('entryDate', e.target.value)}
           onBlur={handleBlurOrSave}
@@ -265,6 +312,7 @@ export function TradeDetailEditor({
           aria-label="Size"
           className={styles.input}
           type="number"
+          ref={sizeRef}
           value={local.size}
           onChange={(e) => fieldChange('size', Number(e.target.value))}
           onBlur={handleBlurOrSave}
@@ -276,11 +324,24 @@ export function TradeDetailEditor({
           aria-label="Price"
           className={styles.input}
           type="number"
+          ref={priceRef}
           value={local.price}
           onChange={(e) => fieldChange('price', Number(e.target.value))}
           onBlur={handleBlurOrSave}
         />
         {errors.price && <div className={styles.fieldError}>{errors.price}</div>}
+
+        <label className={styles.label}>SL</label>
+        <input
+          aria-label="SL"
+          className={styles.input}
+          type="number"
+          ref={slRef}
+          value={local.sl ?? ''}
+          onChange={(e) => fieldChange('sl', e.target.value === '' ? undefined : Number(e.target.value))}
+          onBlur={handleBlurOrSave}
+        />
+        {errors.sl && <div className={styles.fieldError}>{errors.sl}</div>}
 
         <label className={styles.label}>Side</label>
         <SideSelect
@@ -321,6 +382,7 @@ export function TradeDetailEditor({
         <textarea
           aria-label="Notes"
           className={styles.textarea}
+          ref={notesRef}
           value={local.notes ?? ''}
           onChange={(e) => fieldChange('notes', e.target.value)}
           onBlur={handleBlurOrSave}
@@ -331,6 +393,7 @@ export function TradeDetailEditor({
           aria-label="TP1"
           className={styles.input}
           type="number"
+          ref={tp1Ref}
           value={local.tp1 ?? ''}
           onChange={(e) =>
             fieldChange('tp1', e.target.value === '' ? undefined : Number(e.target.value))
@@ -344,6 +407,7 @@ export function TradeDetailEditor({
           aria-label="TP2"
           className={styles.input}
           type="number"
+          ref={tp2Ref}
           value={local.tp2 ?? ''}
           onChange={(e) =>
             fieldChange('tp2', e.target.value === '' ? undefined : Number(e.target.value))
@@ -357,6 +421,7 @@ export function TradeDetailEditor({
           aria-label="TP3"
           className={styles.input}
           type="number"
+          ref={tp3Ref}
           value={local.tp3 ?? ''}
           onChange={(e) =>
             fieldChange('tp3', e.target.value === '' ? undefined : Number(e.target.value))
@@ -370,6 +435,7 @@ export function TradeDetailEditor({
           aria-label="TP4"
           className={styles.input}
           type="number"
+          ref={tp4Ref}
           value={local.tp4 ?? ''}
           onChange={(e) =>
             fieldChange('tp4', e.target.value === '' ? undefined : Number(e.target.value))
@@ -383,6 +449,7 @@ export function TradeDetailEditor({
           aria-label="Margin"
           className={styles.input}
           type="number"
+          ref={marginRef}
           value={local.margin ?? ''}
           onChange={(e) =>
             fieldChange('margin', e.target.value === '' ? undefined : Number(e.target.value))
@@ -396,6 +463,7 @@ export function TradeDetailEditor({
           aria-label="Leverage"
           className={styles.input}
           type="number"
+          ref={leverageRef}
           value={local.leverage ?? ''}
           onChange={(e) =>
             fieldChange('leverage', e.target.value === '' ? undefined : Number(e.target.value))

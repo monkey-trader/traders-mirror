@@ -9,7 +9,8 @@ import type { TradeInput } from '@/domain/trade/factories/TradeFactory';
 type Props = {
   tradeListItems: TradeRow[];
   selectedId: string | null;
-  onSelect: (id: string) => void;
+  // onSelect may optionally request a specific field to focus in the detail editor
+  onSelect: (id: string, focusField?: string) => void;
   performAction: (
     action: 'toggle-side' | 'sl-be' | 'sl-hit' | 'close' | 'delete',
     id: string
@@ -30,6 +31,8 @@ type Props = {
     status?: 'OPEN' | 'CLOSED' | 'FILLED';
   }) => Promise<void>;
   onDeleteFromEditor: (id: string) => Promise<void>;
+  // optional name of field to focus when editor opens
+  selectedFieldToFocus?: string | null;
 };
 
 export function TradesPanel({
@@ -44,6 +47,7 @@ export function TradesPanel({
   onEditorChange,
   onEditorSave,
   onDeleteFromEditor,
+  selectedFieldToFocus,
 }: Props) {
   // Return only the inner panes — the parent should render the outer .listAndDetailWrap
   return (
@@ -75,6 +79,7 @@ export function TradesPanel({
                   onSave={onEditorSave}
                   onDelete={onDeleteFromEditor}
                   compactView={compactGrid}
+                  focusField={selectedFieldToFocus}
                 />
               </div>
             ) : (
@@ -124,6 +129,7 @@ export function TradesPanel({
               onChange={onEditorChange}
               onSave={onEditorSave}
               onDelete={onDeleteFromEditor}
+              focusField={selectedFieldToFocus}
             />
           </div>
         </>

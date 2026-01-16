@@ -20,18 +20,31 @@ type Props = {
     market?: 'Forex' | 'Crypto';
   };
   onSave?: (input: AnalysisFormValues & { timeframes?: TimeframeInput[] }) => Promise<void> | void;
+  // optional field to focus when the editor mounts or when changed
+  focusField?: string | null;
 };
 
-export function AnalysisEditor({ initial = {}, onSave }: Props) {
+export function AnalysisEditor({ initial = {}, onSave, focusField }: Props) {
   const [symbol, setSymbol] = useState(initial.symbol ?? '');
   const [notes, setNotes] = useState(initial.notes ?? '');
   const [market, setMarket] = useState<MarketValue>(
     () => (initial.market ?? 'Forex') as MarketValue
   );
   const [wizardMode, setWizardMode] = useState(true);
-  const [timeframes, setTimeframes] = useState<TimeframeInput[]>(() =>
-    DEFAULT_TIMEFRAMES.map((t) => ({ timeframe: t }))
-  );
+  const [timeframes, setTimeframes] = useState<TimeframeInput[]>(() => {
+    const base = DEFAULT_TIMEFRAMES.map((t) => ({ timeframe: t }));
+    if (initial.timeframes) {
+      return base.map((b) => {
+        const tf = (initial.timeframes as Record<string, TimeframeAnalysis>)[b.timeframe];
+        return {
+          ...b,
+          tradingViewLink: tf?.tradingViewLink,
+          note: tf?.note,
+        };
+      });
+    }
+    return base;
+  });
   const [saving, setSaving] = useState(false);
 
   const [formErrors, setFormErrors] = useState<Partial<Record<keyof AnalysisFormValues, string>>>(
@@ -39,6 +52,32 @@ export function AnalysisEditor({ initial = {}, onSave }: Props) {
   );
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [formSubmitted, setFormSubmitted] = useState(false);
+  const symbolRef = React.useRef<HTMLInputElement | null>(null);
+  const notesRef = React.useRef<HTMLTextAreaElement | null>(null);
+  const tfLinkRefs = React.useRef<Record<string, HTMLInputElement | null>>({});
+  const tfNoteRefs = React.useRef<Record<string, HTMLInputElement | null>>({});
+
+  React.useEffect(() => {
+    if (!focusField) return;
+    setTimeout(() => {
+      try {
+        if (focusField === 'symbol' && symbolRef.current) symbolRef.current.focus();
+        if (focusField === 'notes' && notesRef.current) notesRef.current.focus();
+        // timeframe field format: tf:<timeframe>:note or tf:<timeframe>:link
+        if (focusField.startsWith('tf:')) {
+          const parts = focusField.split(':');
+          if (parts.length === 3) {
+            const tfKey = parts[1];
+            const which = parts[2];
+            if (which === 'note' && tfNoteRefs.current[tfKey]) tfNoteRefs.current[tfKey]!.focus();
+            if (which === 'link' && tfLinkRefs.current[tfKey]) tfLinkRefs.current[tfKey]!.focus();
+          }
+        }
+      } catch {
+        /* ignore */
+      }
+    }, 50);
+  }, [focusField]);
   const handleTimeframeChange = (index: number, patch: Partial<TimeframeInput>) => {
     setTimeframes((prev) => {
       const copy = prev.slice();
@@ -72,6 +111,7 @@ export function AnalysisEditor({ initial = {}, onSave }: Props) {
             label="Symbol"
             value={symbol}
             onChange={(e) => setSymbol(e.target.value)}
+            inputRef={symbolRef}
             aria-label="Symbol"
             onBlur={() => setTouched((t) => ({ ...t, symbol: true }))}
             hasError={Boolean(formErrors.symbol && (touched.symbol || formSubmitted))}
@@ -105,7 +145,7 @@ export function AnalysisEditor({ initial = {}, onSave }: Props) {
         )}
       </div>
 
-      <Textarea label="Notes" value={notes} onChange={(e) => setNotes(e.target.value)} />
+      <Textarea label="Notes" value={notes} onChange={(e) => setNotes(e.target.value)} inputRef={notesRef} />
 
       <div
         className={styles.timeframesHeader}
@@ -140,12 +180,20 @@ export function AnalysisEditor({ initial = {}, onSave }: Props) {
                 placeholder="TradingView Link"
                 value={tf.tradingViewLink ?? ''}
                 onChange={(e) => handleTimeframeChange(i, { tradingViewLink: e.target.value })}
+                inputRef={(el: HTMLInputElement | null) => {
+                  if (el) tfLinkRefs.current[tf.timeframe] = el;
+                  else delete tfLinkRefs.current[tf.timeframe];
+                }}
               />
               <Input
                 className={styles.tfInput}
                 placeholder="Note"
                 value={tf.note ?? ''}
                 onChange={(e) => handleTimeframeChange(i, { note: e.target.value })}
+                inputRef={(el: HTMLInputElement | null) => {
+                  if (el) tfNoteRefs.current[tf.timeframe] = el;
+                  else delete tfNoteRefs.current[tf.timeframe];
+                }}
               />
             </div>
           ))}

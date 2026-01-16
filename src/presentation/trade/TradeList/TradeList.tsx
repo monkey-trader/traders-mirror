@@ -12,6 +12,9 @@ export type TradeListItem = {
   tp2?: number;
   tp3?: number;
   tp4?: number;
+  sl?: number;
+  margin?: number;
+  leverage?: number;
   analysisId?: string; // optional link to originating analysis
 };
 
@@ -77,7 +80,8 @@ function AnalysisOpenButton({
 export type TradeListProps = {
   trades: TradeListItem[];
   selectedId?: string | null;
-  onSelect: (id: string) => void;
+  // onSelect can optionally request a field to focus in the detail editor
+  onSelect: (id: string, focusField?: string) => void;
   // optional handlers for compact action buttons
   onToggleSide?: (id: string) => void;
   onSetSLtoBE?: (id: string) => void;
@@ -132,6 +136,7 @@ export function TradeList({
               <div className={styles.tpLevelsCompact}>
                 <span>TP1: {t.tp1 ?? '-'}</span> <span>TP2: {t.tp2 ?? '-'}</span>{' '}
                 <span>TP3: {t.tp3 ?? '-'}</span> <span>TP4: {t.tp4 ?? '-'}</span>
+                <div style={{ marginTop: 6 }}>SL: {t.sl ?? '-'}</div>
               </div>
             </div>
           );
@@ -176,8 +181,45 @@ export function TradeList({
             }}
           >
             <div className={styles.rowLeft}>
-              <div className={styles.symbol}>{t.symbol}</div>
-              <div className={styles.meta}>{new Date(t.entryDate).toLocaleDateString()}</div>
+              <div
+                className={styles.symbol}
+                role="button"
+                tabIndex={0}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSelect(t.id, 'symbol');
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onSelect(t.id, 'symbol');
+                  }
+                }}
+              >
+                {t.symbol}
+              </div>
+              <div className={styles.slDisplay} style={{ marginLeft: 8, color: 'var(--muted)' }}>
+                SL: {t.sl ?? '-'}
+              </div>
+              <div
+                className={styles.meta}
+                role="button"
+                tabIndex={0}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSelect(t.id, 'entryDate');
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onSelect(t.id, 'entryDate');
+                  }
+                }}
+              >
+                {new Date(t.entryDate).toLocaleDateString()}
+              </div>
               {/* TP1–TP4 werden hier NICHT mehr angezeigt */}
             </div>
             <div className={styles.rowRight}>
@@ -194,6 +236,12 @@ export function TradeList({
                 className={[styles.side, sideClass].join(' ')}
                 aria-label={`Side: ${sideKey}`}
                 title={sideKey}
+                role="button"
+                tabIndex={0}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSelect(t.id, 'side');
+                }}
               >
                 {sideKey.toUpperCase()}
               </div>
@@ -201,6 +249,12 @@ export function TradeList({
                 className={[styles.status, statusClass].join(' ')}
                 aria-label={`Status: ${rawStatus}`}
                 title={rawStatus}
+                role="button"
+                tabIndex={0}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSelect(t.id, 'status');
+                }}
               >
                 {rawStatus || 'UNKNOWN'}
               </div>

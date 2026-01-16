@@ -14,7 +14,7 @@ type Props = {
   items?: AnalysisSummary[];
   compactView?: boolean;
   selectedId?: string | null;
-  onSelect?: (id: string) => void;
+  onSelect?: (id: string, focusField?: string) => void;
   // legacy prop used by tests / older callers
   onOpen?: (id: string) => void;
 };
@@ -64,7 +64,24 @@ export function AnalysisList({
               tabIndex={0}
             >
               <div className={styles.header}>
-                <strong className={styles.symbol}>{it.symbol}</strong>
+                <strong
+                  className={styles.symbol}
+                  role="button"
+                  tabIndex={0}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (onSelect) onSelect(it.id, 'symbol');
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      if (onSelect) onSelect(it.id, 'symbol');
+                    }
+                  }}
+                >
+                  {it.symbol}
+                </strong>
                 <div className={styles.headerActions}>
                   <Button
                     variant="ghost"

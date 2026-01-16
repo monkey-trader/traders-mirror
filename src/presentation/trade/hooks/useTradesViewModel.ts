@@ -211,6 +211,13 @@ export function useTradesViewModel({
           side: dto.side as 'LONG' | 'SHORT',
           status: dto.status ?? existing.status,
           notes: dto.notes,
+          tp1: dto.tp1 ?? existing.tp1,
+          tp2: dto.tp2 ?? existing.tp2,
+          tp3: dto.tp3 ?? existing.tp3,
+          tp4: dto.tp4 ?? existing.tp4,
+          sl: dto.sl ?? existing.sl,
+          leverage: dto.leverage ?? existing.leverage,
+          margin: dto.margin ?? existing.margin,
         };
         return prev.map((p) => (p.id === dto.id ? updatedTrade! : p));
       });

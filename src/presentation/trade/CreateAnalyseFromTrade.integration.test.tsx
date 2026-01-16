@@ -24,7 +24,8 @@ describe('Create Analyse from Trade flow', () => {
     await screen.findByText(/Trading Journal/i);
 
     // click the expand/details button for the first trade to open the detail view
-    const expandBtn = await screen.findByRole('button', { name: /Toggle details for/i });
+    const expandBtns = await screen.findAllByRole('button', { name: /Toggle details for/i });
+    const expandBtn = expandBtns[0];
     fireEvent.click(expandBtn);
 
     // After expanding, click the 'Show details' button to open the editor

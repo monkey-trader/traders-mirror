@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { TradeFactory } from '@/domain/trade/factories/TradeFactory'
 import HybridTradeRepository from './HybridTradeRepository'
+import type FirebaseTradeRepository from './FirebaseTradeRepository'
 
 const OUTBOX_KEY = 'trade_outbox_v1'
 
@@ -23,11 +24,14 @@ describe('HybridTradeRepository (basic outbox/flush)', () => {
       getAll: vi.fn(() => Promise.resolve([])),
     }
 
-    const events: any[] = []
-    const listener = (e: Event) => events.push((e as CustomEvent).detail)
+    const events: Array<Record<string, unknown>> = []
+    const listener = (e: Event) => {
+      const detail = (e as CustomEvent).detail as Record<string, unknown> | undefined
+      if (detail) events.push(detail)
+    }
     globalThis.addEventListener('repo-sync-status', listener)
 
-    const repo = new HybridTradeRepository({ remote } as any)
+    const repo = new HybridTradeRepository({ remote: remote as unknown as FirebaseTradeRepository })
 
     const trade = TradeFactory.create({ id: 't-q', symbol: 'BTCUSD', size: 1, price: 100, side: 'LONG' })
 
@@ -58,11 +62,14 @@ describe('HybridTradeRepository (basic outbox/flush)', () => {
       getAll: vi.fn(() => Promise.resolve([])),
     }
 
-    const events: any[] = []
-    const listener = (e: Event) => events.push((e as CustomEvent).detail)
+    const events: Array<Record<string, unknown>> = []
+    const listener = (e: Event) => {
+      const detail = (e as CustomEvent).detail as Record<string, unknown> | undefined
+      if (detail) events.push(detail)
+    }
     globalThis.addEventListener('repo-sync-status', listener)
 
-    const repo = new HybridTradeRepository({ remote } as any)
+    new HybridTradeRepository({ remote: remote as unknown as FirebaseTradeRepository })
 
     // trigger flush via global force event (constructor registers handler)
     globalThis.dispatchEvent(new CustomEvent('repo-sync-force'))
@@ -76,7 +83,7 @@ describe('HybridTradeRepository (basic outbox/flush)', () => {
     expect(arr.length).toBe(0)
 
     // there should be an online status event after successful flush
-    expect(events.some((d) => d && d.status === 'online')).toBeTruthy()
+    expect(events.some((d) => typeof d === 'object' && d !== null && (d as Record<string, unknown>).status === 'online')).toBeTruthy()
 
     globalThis.removeEventListener('repo-sync-status', listener)
   })

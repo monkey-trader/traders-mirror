@@ -61,45 +61,57 @@ export function Analysis({ onCreateTradeSuggestion, compactView = false }: Analy
   const [list, setList] = useState<AnalysisSummary[]>([]);
   const [marketFilter, setMarketFilter] = useState<'All' | 'Crypto' | 'Forex'>('All');
   const [selected, setSelected] = useState<string | null>(null);
+  const [selectedFieldToFocus, setSelectedFieldToFocus] = useState<string | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmId, setConfirmId] = useState<string | null>(null);
 
   useEffect(() => {
-    // load existing analyses from repo (localStorage)
+    // load existing analyses from repo (localStorage) and poll periodically
     let mounted = true;
-    (async () => {
-      const all = await repository.listAll();
-      if (!mounted) return;
-      const toMarketString = (m: unknown) => {
-        if (!m) return '';
-        if (typeof m === 'string') return m;
-        try {
-          const maybe = m as { value?: unknown };
-          if (typeof maybe.value === 'string') return maybe.value;
-        } catch {
-          /* ignore */
-        }
-        return '';
-      };
 
-      setList(
-        all.map((a) => {
-          const raw = String(toMarketString(a.market) ?? '');
-          const normalized = raw.trim().toLowerCase();
-          const marketValue =
-            normalized === 'forex' ? 'Forex' : normalized === 'crypto' ? 'Crypto' : 'All';
-          return {
-            id: a.id,
-            symbol: a.symbol,
-            createdAt: a.createdAt,
-            notes: a.notes,
-            market: marketValue,
-          };
-        })
-      );
-    })();
+    const toMarketString = (m: unknown) => {
+      if (!m) return '';
+      if (typeof m === 'string') return m;
+      try {
+        const maybe = m as { value?: unknown };
+        if (typeof maybe.value === 'string') return maybe.value;
+      } catch {
+        /* ignore */
+      }
+      return '';
+    };
+
+    const fetchList = async () => {
+      try {
+        const all = await repository.listAll();
+        if (!mounted) return;
+        setList(
+          all.map((a) => {
+            const raw = String(toMarketString(a.market) ?? '');
+            const normalized = raw.trim().toLowerCase();
+            const marketValue =
+              normalized === 'forex' ? 'Forex' : normalized === 'crypto' ? 'Crypto' : 'All';
+            return {
+              id: a.id,
+              symbol: a.symbol,
+              createdAt: a.createdAt,
+              notes: a.notes,
+              market: marketValue,
+            };
+          })
+        );
+      } catch {
+        /* ignore */
+      }
+    };
+
+    void fetchList();
+    // poll every 15s
+    const timer = window.setInterval(() => void fetchList(), 15000);
+
     return () => {
       mounted = false;
+      clearInterval(timer as unknown as number);
     };
   }, []);
 
@@ -161,8 +173,13 @@ export function Analysis({ onCreateTradeSuggestion, compactView = false }: Analy
     return () => globalThis.removeEventListener('open-analysis', handler as EventListener);
   }, []);
 
-  const handleOpen = async (id: string) => {
+  const handleOpen = async (id: string, focusField?: string) => {
     setSelected(id);
+    if (focusField) {
+      setSelectedFieldToFocus(focusField);
+      // clear after short delay so it's a one-off trigger
+      setTimeout(() => setSelectedFieldToFocus(null), 200);
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -244,6 +261,7 @@ export function Analysis({ onCreateTradeSuggestion, compactView = false }: Analy
               <>
                 <DetailLoader
                   id={selected}
+                  startEditingField={selectedFieldToFocus ?? undefined}
                   onCreateTrade={onCreateTradeSuggestion}
                   onRequestDelete={requestDeleteFromDetail}
                 />
@@ -276,8 +294,10 @@ function DetailLoader({
   id,
   onCreateTrade,
   onRequestDelete,
+  startEditingField,
 }: {
   id: string;
+  startEditingField?: string | null;
   onCreateTrade?: (s: AnalysisSuggestion) => void | Promise<void>;
   onRequestDelete?: (id: string) => void;
 }) {
@@ -285,12 +305,23 @@ function DetailLoader({
 
   useEffect(() => {
     let mounted = true;
-    (async () => {
-      const a = await repository.getById(id);
-      if (mounted) setAnalysis(a);
-    })();
+
+    const fetchDetail = async () => {
+      try {
+        const a = await repository.getById(id);
+        if (mounted) setAnalysis(a);
+      } catch {
+        /* ignore */
+      }
+    };
+
+    void fetchDetail();
+    // poll detail every 15s while open
+    const timer = window.setInterval(() => void fetchDetail(), 15000);
+
     return () => {
       mounted = false;
+      clearInterval(timer as unknown as number);
     };
   }, [id]);
 
@@ -300,6 +331,8 @@ function DetailLoader({
     <AnalysisDetail
       analysis={analysis}
       compactView={false}
+      // instruct detail/editor to start in edit mode and focus a field if requested
+      startEditingField={startEditingField ?? undefined}
       onCreateTrade={(_analysisId) => {
         void _analysisId;
         if (!onCreateTrade) return;
@@ -319,6 +352,30 @@ function DetailLoader({
         });
       }}
       onRequestDelete={onRequestDelete}
+      onSave={async (updated) => {
+              try {
+                await repository.save(updated as unknown as AnalysisDTOType);
+          // refresh local copy from repo to reflect any normalization
+          const refreshed = await repository.getById(updated.id);
+          if (refreshed) {
+            // update local detail immediately
+            try {
+              setAnalysis(refreshed);
+            } catch {
+              /* ignore */
+            }
+            // dispatch global update so list reloads
+            try {
+              globalThis.dispatchEvent(new CustomEvent('analyses-updated', { detail: { type: 'local' } }));
+            } catch {
+              /* ignore */
+            }
+          }
+        } catch (err) {
+          // eslint-disable-next-line no-console
+          console.warn('Failed to save analysis', err);
+        }
+      }}
     />
   );
 }

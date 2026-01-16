@@ -170,75 +170,31 @@ export class HybridTradeRepository implements TradeRepository {
   }
 
   async save(trade: Trade): Promise<void> {
-    // Remote-first write; if remote fails, persist locally and queue
+    // Local-first write: persist immediately and enqueue background sync to remote
     const dto = TradeFactory.toDTO(trade);
-    if (this.remote) {
-      try {
-        await this.remote.save(TradeFactory.create(dto));
-        await this.local.update(trade);
-        try {
-          globalThis.dispatchEvent(
-            new CustomEvent('repo-sync-status', {
-              detail: { feature: 'trade', status: 'online' },
-            })
-          );
-        } catch {
-          /* ignore */
-        }
-        return;
-      } catch {
-        // fall through to local + outbox
-      }
-    }
     await this.local.save(trade);
-    await this.trySync({ op: 'save', dto });
+    if (this.remote) {
+      void this.trySync({ op: 'save', dto });
+      return;
+    }
   }
 
   async update(trade: Trade): Promise<void> {
     const dto = TradeFactory.toDTO(trade);
-    if (this.remote) {
-      try {
-        await this.remote.update(TradeFactory.create(dto));
-        await this.local.update(trade);
-        try {
-          globalThis.dispatchEvent(
-            new CustomEvent('repo-sync-status', {
-              detail: { feature: 'trade', status: 'online' },
-            })
-          );
-        } catch {
-          /* ignore */
-        }
-        return;
-      } catch {
-        // fall through to local + outbox
-      }
-    }
     await this.local.update(trade);
-    await this.trySync({ op: 'update', dto });
+    if (this.remote) {
+      void this.trySync({ op: 'update', dto });
+      return;
+    }
   }
 
   async delete(id: string): Promise<void> {
-    if (this.remote) {
-      try {
-        await this.remote.delete(id);
-        await this.local.delete(id);
-        try {
-          globalThis.dispatchEvent(
-            new CustomEvent('repo-sync-status', {
-              detail: { feature: 'trade', status: 'online' },
-            })
-          );
-        } catch {
-          /* ignore */
-        }
-        return;
-      } catch {
-        // fall through to local + outbox
-      }
-    }
+    // Local-first delete: remove locally and queue remote delete in background
     await this.local.delete(id);
-    await this.trySync({ op: 'delete', id });
+    if (this.remote) {
+      void this.trySync({ op: 'delete', id });
+      return;
+    }
   }
 
   private async trySync(item: OutboxItem): Promise<void> {

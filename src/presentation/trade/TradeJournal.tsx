@@ -146,6 +146,14 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
 
   // selected trade id for left-right layout
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedFieldToFocus, setSelectedFieldToFocus] = useState<string | null>(null);
+
+  // clear requested focus shortly after it's set to avoid repeated focusing
+  useEffect(() => {
+    if (!selectedFieldToFocus) return;
+    const t = setTimeout(() => setSelectedFieldToFocus(null), 400);
+    return () => clearTimeout(t);
+  }, [selectedFieldToFocus]);
   // compact editor open state (mobile UX): default closed, open on selection
   const [compactEditorOpen, setCompactEditorOpen] = useState<boolean>(false);
 
@@ -562,7 +570,10 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
                       <TradesPanel
                         tradeListItems={tradeListItems}
                         selectedId={selectedId}
-                        onSelect={(id) => setSelectedId(id)}
+                        onSelect={(id, focusField) => {
+                          setSelectedId(id);
+                          setSelectedFieldToFocus(focusField ?? null);
+                        }}
                         performAction={performAction}
                         compactGrid={compactGrid}
                         compactEditorOpen={compactEditorOpen}
@@ -572,6 +583,7 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
                         onEditorSave={handleEditorSave}
                         // Use a request-based delete that opens the ConfirmDialog; actual delete runs on confirm
                         onDeleteFromEditor={requestDeleteFromEditor}
+                        selectedFieldToFocus={selectedFieldToFocus}
                       />
                     </div>
                   </>
