@@ -205,14 +205,6 @@ export function TradeList({
                 {t.symbol}
               </div>
               <div
-                className={[styles.slDisplay, t.sl === 0 ? styles.slZero : styles.slAlert]
-                  .filter(Boolean)
-                  .join(' ')}
-                style={{ marginLeft: 8 }}
-              >
-                SL: {t.sl ?? '-'}
-              </div>
-              <div
                 className={styles.meta}
                 role="button"
                 tabIndex={0}
@@ -229,6 +221,14 @@ export function TradeList({
                 }}
               >
                 {new Date(t.entryDate).toLocaleDateString()}
+              </div>
+              <div
+                className={[styles.slDisplay, t.sl === 0 ? styles.slZero : styles.slAlert]
+                  .filter(Boolean)
+                  .join(' ')}
+                style={{ marginLeft: 8 }}
+              >
+                SL: {t.sl ?? '-'}
               </div>
               {/* TP1–TP4 werden hier NICHT mehr angezeigt */}
             </div>
