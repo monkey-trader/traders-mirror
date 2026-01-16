@@ -84,7 +84,10 @@ export function useTradesViewModel({
                 console.warn('Repository unavailable');
                 return;
               }
-              const domain = TradeFactory.create(updated as unknown as TradeInput);
+              // sanitize values that are not valid domain primitives (e.g. SL==0 is used as UI sentinel)
+              const sanitized: TradeInput = { ...updated } as unknown as TradeInput;
+              if (sanitized.sl === 0) delete (sanitized as Partial<TradeInput>).sl;
+              const domain = TradeFactory.create(sanitized as unknown as TradeInput);
               if (serviceRef.current) await serviceRef.current.update(domain as unknown as Trade);
               else await repoRef.current.update(domain);
               setLastStatus?.('Update persisted');
@@ -102,7 +105,9 @@ export function useTradesViewModel({
                 console.warn('Repository unavailable');
                 return;
               }
-              const domain = TradeFactory.create(restored as unknown as TradeInput);
+              const sanitized: TradeInput = { ...restored } as unknown as TradeInput;
+              if (sanitized.sl === 0) delete (sanitized as Partial<TradeInput>).sl;
+              const domain = TradeFactory.create(sanitized as unknown as TradeInput);
               if (serviceRef.current) await serviceRef.current.save(domain as unknown as Trade);
               else if (typeof repoRef.current.save === 'function')
                 await repoRef.current.save(domain);
@@ -140,7 +145,9 @@ export function useTradesViewModel({
           try {
             const updated = positionsRef.current.find((p) => p.id === id);
             if (!updated) return;
-            const domain = TradeFactory.create(updated as unknown as TradeInput);
+            const sanitized: TradeInput = { ...updated } as unknown as TradeInput;
+            if (sanitized.sl === 0) delete (sanitized as Partial<TradeInput>).sl;
+            const domain = TradeFactory.create(sanitized as unknown as TradeInput);
             if (serviceRef.current) await serviceRef.current.update(domain as unknown as Trade);
             else if (repoRef.current) await repoRef.current.update(domain as unknown as Trade);
             setLastStatus?.('SL set to BE and persisted');
