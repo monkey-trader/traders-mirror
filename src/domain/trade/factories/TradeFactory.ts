@@ -24,6 +24,7 @@ export type TradeInput = {
   market?: string;
   margin?: number;
   sl?: number;
+  slIsBE?: boolean;
   tp1?: number;
   tp2?: number;
   tp3?: number;
@@ -47,6 +48,7 @@ export class TradeFactory {
       input.status ? new Status(input.status) : undefined,
       input.notes ? new Notes(input.notes) : undefined,
       typeof input.sl === 'number' ? new Price(input.sl) : undefined,
+      input.slIsBE === true ? true : undefined,
       typeof input.tp1 === 'number' ? new Price(input.tp1) : undefined,
       typeof input.tp2 === 'number' ? new Price(input.tp2) : undefined,
       typeof input.tp3 === 'number' ? new Price(input.tp3) : undefined,
@@ -77,6 +79,7 @@ export class TradeFactory {
       tp4: trade.tp4?.value,
       leverage: trade.leverage?.value,
       margin: trade.margin?.value,
+      slIsBE: trade.slIsBE,
       analysisId: trade.analysisId?.value,
     };
   }

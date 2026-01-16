@@ -22,6 +22,7 @@ export class Trade {
   public readonly notes?: Notes;
   public readonly market: Market;
   public readonly sl?: Price;
+  public readonly slIsBE?: boolean;
   public readonly tp1?: Price;
   public readonly tp2?: Price;
   public readonly tp3?: Price;
@@ -41,6 +42,7 @@ export class Trade {
     status?: Status,
     notes?: Notes,
     sl?: Price,
+    slIsBE?: boolean,
     tp1?: Price,
     tp2?: Price,
     tp3?: Price,
@@ -59,6 +61,7 @@ export class Trade {
     this.market = market;
     this.notes = notes;
     this.sl = sl;
+    this.slIsBE = slIsBE;
     this.tp1 = tp1;
     this.tp2 = tp2;
     this.tp3 = tp3;
