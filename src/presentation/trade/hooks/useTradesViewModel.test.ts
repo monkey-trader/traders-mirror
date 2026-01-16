@@ -70,6 +70,16 @@ describe('useTradesViewModel', () => {
     });
   });
 
+  it('performTPHit marks trade as CLOSED', async () => {
+    const row = makeTradeRow({ status: 'OPEN' });
+    const { result } = renderHook(() => useTradesViewModel({ repoRef, tradeService }));
+    await act(async () => {
+      result.current.setPositions([row]);
+      result.current.performTPHit(row.id, 2);
+    });
+    expect(result.current.positions[0].status).toBe('CLOSED');
+  });
+
   it('can clear undo info', () => {
     const row = makeTradeRow();
     const { result } = renderHook(() => useTradesViewModel({ repoRef, tradeService }));

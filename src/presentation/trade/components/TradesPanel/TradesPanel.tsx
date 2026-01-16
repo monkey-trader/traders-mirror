@@ -15,6 +15,7 @@ type Props = {
     action: 'toggle-side' | 'sl-be' | 'sl-hit' | 'close' | 'delete',
     id: string
   ) => void;
+  performTPHit: (id: string, tpIndex: 1 | 2 | 3 | 4) => void;
   compactGrid: boolean;
   compactEditorOpen: boolean;
   setCompactEditorOpen: (v: boolean) => void;
@@ -30,9 +31,11 @@ type Props = {
     notes?: string;
     status?: 'OPEN' | 'CLOSED' | 'FILLED';
   }) => Promise<void>;
-  onDeleteFromEditor: (id: string) => Promise<void>;
+  onDeleteFromEditor: (id: string) => Promise<void>; // Ensure types are preserved
   // optional name of field to focus when editor opens
   selectedFieldToFocus?: string | null;
+  // when true the detail view is expected to be shown in a modal by the parent
+  modalDetail?: boolean;
 };
 
 export function TradesPanel({
@@ -40,6 +43,7 @@ export function TradesPanel({
   selectedId,
   onSelect,
   performAction,
+  performTPHit,
   compactGrid,
   compactEditorOpen,
   setCompactEditorOpen,
@@ -48,6 +52,7 @@ export function TradesPanel({
   onEditorSave,
   onDeleteFromEditor,
   selectedFieldToFocus,
+  modalDetail = false,
 }: Props) {
   // Return only the inner panes — the parent should render the outer .listAndDetailWrap
   return (
@@ -62,6 +67,7 @@ export function TradesPanel({
             onSetSLtoBE={(id) => performAction('sl-be', id)}
             onSetSLHit={(id) => performAction('sl-hit', id)}
             onClose={(id) => performAction('close', id)}
+            onSetTPHit={(id, idx) => performTPHit(id, idx)}
             compactView={compactGrid}
           />
           <div className={styles.spacer12} />
@@ -119,19 +125,22 @@ export function TradesPanel({
               onSetSLtoBE={(id) => performAction('sl-be', id)}
               onSetSLHit={(id) => performAction('sl-hit', id)}
               onClose={(id) => performAction('close', id)}
+              onSetTPHit={(id, idx) => performTPHit(id, idx)}
               compactView={compactGrid}
             />
           </div>
 
-          <div className={styles.rightPane}>
-            <TradeDetailEditor
-              trade={selectedTrade}
-              onChange={onEditorChange}
-              onSave={onEditorSave}
-              onDelete={onDeleteFromEditor}
-              focusField={selectedFieldToFocus}
-            />
-          </div>
+          {!modalDetail && (
+            <div className={styles.rightPane}>
+              <TradeDetailEditor
+                trade={selectedTrade}
+                onChange={onEditorChange}
+                onSave={onEditorSave}
+                onDelete={onDeleteFromEditor}
+                focusField={selectedFieldToFocus}
+              />
+            </div>
+          )}
         </>
       )}
     </>

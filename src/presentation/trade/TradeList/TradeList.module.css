@@ -19,6 +19,11 @@
   transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
 }
 
+/* allow the item to shrink instead of forcing horizontal scroll */
+.item {
+  min-width: 0;
+}
+
 .item:hover {
   transform: translateY(-1px);
   /* reduce the shadow so it doesn't reach into the detail pane */
@@ -114,6 +119,23 @@
 
 .slAlert {
   color: #fb7185; /* red-400 */
+}
+
+/* horizontal scroll wrapper for TP buttons to keep UI usable on narrow screens */
+.tpButtons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap; /* allow TP buttons to wrap to next line instead of horizontal scrolling */
+  max-width: none; /* use available space */
+  padding-bottom: 2px;
+}
+.tpButtons::-webkit-scrollbar {
+  height: 6px;
+}
+.tpButtons::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.04);
+  border-radius: 6px;
 }
 
 .analysisBtn:hover {

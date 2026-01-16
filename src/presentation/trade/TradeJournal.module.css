@@ -13,12 +13,50 @@
 /* New layout wrapper for list + detail inside the right column */
 .listAndDetailWrap {
   display: grid;
-  /* larger responsive left column: min 360px, preferred 30vw, max 640px */
-  grid-template-columns: clamp(360px, 30vw, 640px) 1fr;
+  /* left column slightly wider and kept consistent across tabs */
+  /* moderate width so cards reach the right-side filter buttons without over-expanding */
+  grid-template-columns: clamp(460px, 46vw, 820px) 1fr;
   gap: 16px;
   align-items: start;
   width: 100%;
 }
+
+/* Keep trade and analysis layouts using the same column sizing to avoid
+   jumps when switching tabs. Right pane remains present so widths are stable. */
+
+/* Also handle alternative grid wrapper (.grid) and ensure no horizontal overflow occurs
+   when analysis mode is active. Use box-sizing and min-width resets to avoid forcing
+   the grid wider than the viewport. */
+/* Avoid forcing single-column layout in analysis mode; keep grid-template consistent. */
+
+.analysisActive .left,
+.analysisActive .leftPane {
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+.analysisActive .leftPane {
+  /* keep visual styling, avoid dimensional overrides */
+}
+
+.analysisActive .leftPane .positionsList {
+  /* keep default padding to avoid layout differences */
+}
+
+/* Ensure the container itself cannot cause viewport overflow when analysis mode is active */
+.analysisActive {
+  /* marker only — no dimensional overrides so tabs keep identical widths */
+}
+
+/* Use scoped universal box-sizing inside analysisActive to avoid padding from children causing overflow */
+.analysisActive * {
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+/* No transitions: keep instant switches and identical widths between tabs */
+
+/* Note: modal-specific layout tweaks removed to keep the original centered modal behavior. */
 
 .leftPane {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
@@ -201,11 +239,17 @@
 .grid {
   display: grid;
   /* left column flexible but constrained, right column uses remaining space */
-  /* increased clamp: min 360px, preferred 30vw, max 640px to give more room on desktop */
-  grid-template-columns: clamp(360px, 30vw, 640px) 1fr;
+  /* moderate width so left content (list/cards) can use more horizontal room without overshooting */
+  grid-template-columns: clamp(460px, 46vw, 820px) 1fr;
   gap: 18px;
   /* create isolated stacking context so z-index between columns behaves predictably */
   isolation: isolate;
+}
+
+/* When the parent grid container has the analysisActive class, widen the left column so the
+   analysis form has more horizontal room. The class is placed on the same element as .grid. */
+.grid.analysisActive {
+  grid-template-columns: clamp(460px, 46vw, 820px) 1fr;
 }
 
 /* Ensure left column stays in the normal document flow by default so it does not overlay the table.
@@ -308,7 +352,7 @@
   position: relative;
   z-index: 20;
   width: 100%;
-  min-width: 760px; /* reduce forced table width so left-pane has more usable space */
+  min-width: 0; /* allow table to shrink inside right pane so right card can use full width */
   border-collapse: collapse;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.01), rgba(255, 255, 255, 0.005));
   border-radius: 8px;

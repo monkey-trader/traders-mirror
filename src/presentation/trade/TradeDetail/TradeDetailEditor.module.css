@@ -69,6 +69,11 @@
   transform: translateY(-1px);
 }
 
+.slBEInput {
+  border-color: #4ade80; /* green-400 */
+  box-shadow: 0 6px 18px rgba(74, 222, 128, 0.06);
+}
+
 .textarea {
   grid-column: 1 / -1;
   padding: 12px 14px;

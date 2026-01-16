@@ -114,6 +114,7 @@ export class HybridTradeRepository implements TradeRepository {
                     notes: rt.notes,
                     market: rt.market,
                     sl: rt.sl,
+                    slIsBE: rt.slIsBE,
                     tp1: rt.tp1,
                     tp2: rt.tp2,
                     tp3: rt.tp3,

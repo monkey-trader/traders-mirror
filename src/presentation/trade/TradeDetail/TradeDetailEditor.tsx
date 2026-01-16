@@ -337,10 +337,10 @@ export function TradeDetailEditor({
         <label className={styles.label}>SL</label>
         <input
           aria-label="SL"
-          className={styles.input}
+          className={`${styles.input} ${local.slIsBE ? styles.slBEInput : ''}`.trim()}
           type="number"
           ref={slRef}
-          value={local.sl ?? ''}
+          value={typeof local.sl === 'number' ? local.sl : local.slIsBE ? 0 : ''}
           onChange={(e) => fieldChange('sl', e.target.value === '' ? undefined : Number(e.target.value))}
           onBlur={handleBlurOrSave}
         />

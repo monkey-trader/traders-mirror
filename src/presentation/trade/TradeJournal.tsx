@@ -7,9 +7,11 @@ import { SideValue } from '@/presentation/shared/components/SideSelect/SideSelec
 import styles from './TradeJournal.module.css';
 import type { TradeRepository } from '@/domain/trade/interfaces/TradeRepository';
 import { ConfirmDialog } from '@/presentation/shared/components/ConfirmDialog/ConfirmDialog';
+import modalStyles from '@/presentation/shared/components/ConfirmDialog/ConfirmDialog.module.css';
 import { Analysis } from '@/presentation/analysis/Analysis';
 import type { MarketValue } from '@/presentation/shared/components/MarketSelect/MarketSelect';
 import { TradeFactory } from '@/domain/trade/factories/TradeFactory';
+import type { TradeInput } from '@/domain/trade/factories/TradeFactory';
 import type { TradeRow } from './types';
 import { useNewTradeForm, type NewTradeFormState } from './hooks/useNewTradeForm';
 import { MarketFilters, StatusFilters } from './components/TradeFilters/TradeFilters';
@@ -23,6 +25,7 @@ import { loadSettings } from '@/presentation/settings/settingsStorage';
 import MockLoaderModal from './components/MockLoaderModal/MockLoaderModal';
 import TradesPanel from './components/TradesPanel/TradesPanel';
 import { useTradesViewModel } from './hooks/useTradesViewModel';
+import { TradeDetailEditor } from './TradeDetail/TradeDetailEditor';
 
 // Analysis link helpers
 import { FirebaseAnalysisRepository } from '@/infrastructure/analysis/repositories/FirebaseAnalysisRepository';
@@ -102,6 +105,7 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
     positions,
     setPositions,
     performAction,
+    performTPHit,
     handleEditorChange,
     handleEditorSave,
     undoInfo,
@@ -146,6 +150,7 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
 
   // selected trade id for left-right layout
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [detailModalOpen, setDetailModalOpen] = useState<boolean>(false);
   const [selectedFieldToFocus, setSelectedFieldToFocus] = useState<string | null>(null);
 
   // clear requested focus shortly after it's set to avoid repeated focusing
@@ -154,6 +159,8 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
     const t = setTimeout(() => setSelectedFieldToFocus(null), 400);
     return () => clearTimeout(t);
   }, [selectedFieldToFocus]);
+
+  // Keep modal centered by default; no anchored positioning required.
   // compact editor open state (mobile UX): default closed, open on selection
   const [compactEditorOpen, setCompactEditorOpen] = useState<boolean>(false);
 
@@ -477,9 +484,9 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
       <div
         ref={containerRef}
         className={
-          compactGrid
-            ? `${styles.grid} ${styles.gridCompact} ${styles.fullScreen}`
-            : `${styles.grid} ${styles.fullScreen}`
+          `${compactGrid ? `${styles.grid} ${styles.gridCompact}` : `${styles.grid}`} ${
+            styles.fullScreen
+          } ${tradesCardTab === 'analysis' ? styles.analysisActive : ''}`.trim()
         }
       >
         <div className={styles.left}>
@@ -569,14 +576,17 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
                     </div>
 
                     <div className={styles.listAndDetailWrap}>
-                      <TradesPanel
+                        <TradesPanel
                         tradeListItems={tradeListItems}
                         selectedId={selectedId}
                         onSelect={(id, focusField) => {
                           setSelectedId(id);
                           setSelectedFieldToFocus(focusField ?? null);
+                          // open modal-based detail view when not in compact mode
+                          if (!compactGrid) setDetailModalOpen(true);
                         }}
                         performAction={performAction}
+                          performTPHit={performTPHit}
                         compactGrid={compactGrid}
                         compactEditorOpen={compactEditorOpen}
                         setCompactEditorOpen={setCompactEditorOpen}
@@ -586,6 +596,7 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
                         // Use a request-based delete that opens the ConfirmDialog; actual delete runs on confirm
                         onDeleteFromEditor={requestDeleteFromEditor}
                         selectedFieldToFocus={selectedFieldToFocus}
+                        modalDetail={true}
                       />
                     </div>
                   </>
@@ -622,6 +633,50 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
         setPositions={setPositions}
         analysisService={analysisService}
       />
+
+      {/* Detail modal (shows trade editor in a modal when requested) */}
+      {detailModalOpen && selectedTrade && (
+        <div className={modalStyles.backdrop} role="dialog" aria-modal="true">
+          <div
+            className={modalStyles.dialog}
+            style={{
+              width: '760px',
+              maxWidth: '96vw',
+              margin: '6vh auto',
+              maxHeight: '80vh',
+              overflow: 'auto',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ fontWeight: 800 }}>{selectedTrade.symbol}</div>
+              <div>
+                <button
+                  type="button"
+                  onClick={() => setDetailModalOpen(false)}
+                  style={{ background: 'transparent', border: 'none', color: 'var(--muted)', cursor: 'pointer' }}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+            <div style={{ marginTop: 12 }}>
+              <TradeDetailEditor
+                trade={selectedTrade}
+                onChange={handleEditorChange}
+                onSave={async (dto: TradeInput) => {
+                  await handleEditorSave(dto);
+                  setDetailModalOpen(false);
+                }}
+                onDelete={async (id: string) => {
+                  await requestDeleteFromEditor(id);
+                  setDetailModalOpen(false);
+                }}
+                focusField={selectedFieldToFocus}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {undoInfo && (
         <div className={styles.undoBanner}>

@@ -17,6 +17,7 @@ export type RepoTrade = {
   notes?: string;
   entry?: string;
   sl?: number;
+  slIsBE?: boolean;
   tp1?: number;
   tp2?: number;
   tp3?: number;
@@ -72,6 +73,7 @@ function toRepoTrade(obj: unknown, userId: string): RepoTrade {
       notes: o.notes as string | undefined,
       entry: o.entry as string | undefined,
       sl: typeof o.sl === 'number' ? (o.sl as number) : undefined,
+      slIsBE: typeof o.slIsBE === 'boolean' ? (o.slIsBE as boolean) : undefined,
       tp1: typeof o.tp1 === 'number' ? (o.tp1 as number) : undefined,
       tp2: typeof o.tp2 === 'number' ? (o.tp2 as number) : undefined,
       tp3: typeof o.tp3 === 'number' ? (o.tp3 as number) : undefined,
@@ -98,6 +100,7 @@ function toRepoTrade(obj: unknown, userId: string): RepoTrade {
       notes: o.notes as string | undefined,
       entry: o.entry as string | undefined,
       sl: typeof o.sl === 'number' ? (o.sl as number) : undefined,
+      slIsBE: typeof o.slIsBE === 'boolean' ? (o.slIsBE as boolean) : undefined,
       tp1: typeof o.tp1 === 'number' ? (o.tp1 as number) : undefined,
       tp2: typeof o.tp2 === 'number' ? (o.tp2 as number) : undefined,
       tp3: typeof o.tp3 === 'number' ? (o.tp3 as number) : undefined,

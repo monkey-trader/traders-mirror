@@ -137,17 +137,35 @@ export function useTradesViewModel({
         const newSide = toggleSide(prev.side);
         updateTradeById(id, { side: newSide });
       } else if (action === 'sl-be') {
-        // Set SL to break-even. Persist `slIsBE=true` and clear numeric SL.
-        updateTradeById(id, { sl: undefined, slIsBE: true });
+        // Set SL to break-even. Persist `slIsBE=true` and set numeric SL to 0 so UI shows 0.0.
+        updateTradeById(id, { sl: 0, slIsBE: true });
         // Also persist immediately via repository/service to ensure storage reflects the change.
         (async () => {
           try {
             const updated = positionsRef.current.find((p) => p.id === id);
             if (!updated) return;
-            const sanitized: TradeInput = { ...updated } as unknown as TradeInput;
+            const sanitized: TradeInput = {
+              id: updated.id,
+              symbol: updated.symbol,
+              entryDate: updated.entryDate,
+              size: updated.size,
+              price: updated.price,
+              side: updated.side,
+              status: updated.status,
+              notes: updated.notes,
+              tp1: updated.tp1,
+              tp2: updated.tp2,
+              tp3: updated.tp3,
+              tp4: updated.tp4,
+              sl: updated.sl,
+              slIsBE: updated.slIsBE,
+              leverage: updated.leverage,
+              margin: updated.margin,
+              market: updated.market,
+            };
             // convert UI sentinel (sl === 0) to explicit BE flag
-            if (sanitized.sl === 0) {
-              sanitized.slIsBE = true;
+            if ((sanitized as Partial<TradeInput>).sl === 0) {
+              (sanitized as Partial<TradeInput>).slIsBE = true;
               delete (sanitized as Partial<TradeInput>).sl;
             }
             const domain = TradeFactory.create(sanitized as unknown as TradeInput);
@@ -191,6 +209,24 @@ export function useTradesViewModel({
     },
     [positions, repoRef, updateTradeById, setLastStatus]
   );
+
+    const performTPHit = useCallback(
+      (id: string, tpIndex?: 1 | 2 | 3 | 4) => {
+        void tpIndex;
+        const prev = positionsRef.current.find((p) => p.id === id) ?? positions.find((p) => p.id === id);
+        if (!prev) return;
+        const prevCopy = { ...prev };
+        // Mark as closed on TP hit
+        updateTradeById(id, { status: 'CLOSED' });
+        setUndoInfo({ id, prev: prevCopy });
+        if (undoTimerRef.current) window.clearTimeout(undoTimerRef.current);
+        undoTimerRef.current = window.setTimeout(() => {
+          setUndoInfo(null);
+          undoTimerRef.current = null;
+        }, 5000) as unknown as number;
+      },
+      [positions, updateTradeById]
+    );
 
   const handleEditorChange = useCallback((dto: TradeInput) => {
     setPositions((prev) =>
@@ -253,7 +289,31 @@ export function useTradesViewModel({
       }
 
       try {
-        const domain = TradeFactory.create(updatedTrade as unknown as TradeInput);
+        const ut = updatedTrade as TradeRow;
+        const sanitizedForSave: TradeInput = {
+          id: ut.id,
+          symbol: ut.symbol,
+          entryDate: ut.entryDate,
+          size: ut.size,
+          price: ut.price,
+          side: ut.side,
+          status: ut.status,
+          notes: ut.notes,
+          tp1: ut.tp1,
+          tp2: ut.tp2,
+          tp3: ut.tp3,
+          tp4: ut.tp4,
+          sl: ut.sl,
+          slIsBE: ut.slIsBE,
+          leverage: ut.leverage,
+          margin: ut.margin,
+          market: ut.market,
+        };
+        if (sanitizedForSave.sl === 0) {
+          sanitizedForSave.slIsBE = true;
+          sanitizedForSave.sl = undefined;
+        }
+        const domain = TradeFactory.create(sanitizedForSave);
         if (serviceRef.current) await serviceRef.current.update(domain as unknown as Trade);
         else {
           if (!repoRef.current) {
@@ -301,6 +361,7 @@ export function useTradesViewModel({
     setPositions,
     updateTradeById,
     performAction,
+    performTPHit,
     handleEditorChange,
     handleEditorSave,
     handleDeleteFromEditor,

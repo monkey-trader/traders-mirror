@@ -13,6 +13,8 @@
   color: var(--text);
   box-shadow: var(--shadow-1);
   border-left: 4px solid transparent;
+  min-width: 0; /* allow cards to shrink instead of forcing horizontal scroll */
+  width: 100%; /* let the card fill available column width */
 }
 
 .card:hover {
@@ -82,6 +84,7 @@
   display: flex;
   gap: 8px;
   align-items: center;
+  flex-wrap: wrap; /* allow action buttons to wrap on narrow widths */
 }
 
 .actionBtn {
@@ -92,7 +95,8 @@
   border: 1px solid rgba(255, 255, 255, 0.02);
   cursor: pointer;
   font-size: 13px;
-  min-width: 56px;
+  min-width: 40px; /* slightly reduced to avoid overflow */
+  white-space: nowrap;
 }
 
 .actionBtn:hover {

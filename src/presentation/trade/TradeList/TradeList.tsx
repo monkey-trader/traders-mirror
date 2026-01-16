@@ -13,6 +13,7 @@ export type TradeListItem = {
   tp3?: number;
   tp4?: number;
   sl?: number;
+  slIsBE?: boolean;
   margin?: number;
   leverage?: number;
   analysisId?: string; // optional link to originating analysis
@@ -86,6 +87,7 @@ export type TradeListProps = {
   onToggleSide?: (id: string) => void;
   onSetSLtoBE?: (id: string) => void;
   onSetSLHit?: (id: string) => void;
+  onSetTPHit?: (id: string, tpIndex: 1 | 2 | 3 | 4) => void;
   onClose?: (id: string) => void;
   compactView?: boolean;
 };
@@ -98,6 +100,7 @@ export function TradeList({
   onToggleSide,
   onSetSLtoBE,
   onSetSLHit,
+  onSetTPHit,
   onClose,
 }: TradeListProps) {
   if (compactView) {
@@ -134,14 +137,65 @@ export function TradeList({
                 ) : null}
               </div>
               <div className={styles.tpLevelsCompact}>
-                <span>TP1: {t.tp1 ?? '-'}</span> <span>TP2: {t.tp2 ?? '-'}</span>{' '}
-                <span>TP3: {t.tp3 ?? '-'}</span> <span>TP4: {t.tp4 ?? '-'}</span>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                  <span>TP1: {t.tp1 ?? '-'}</span>
+                  <button
+                    type="button"
+                    className={posStyles.actionBtn}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onSetTPHit?.(t.id, 1);
+                    }}
+                    aria-label={`Mark target 1 for ${t.symbol}`}
+                  >
+                    <span aria-hidden="true">TP1</span>
+                  </button>
+                  <span>TP2: {t.tp2 ?? '-'}</span>
+                  <button
+                    type="button"
+                    className={posStyles.actionBtn}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onSetTPHit?.(t.id, 2);
+                    }}
+                    aria-label={`Mark target 2 for ${t.symbol}`}
+                  >
+                    <span aria-hidden="true">TP2</span>
+                  </button>
+                  <span>TP3: {t.tp3 ?? '-'}</span>
+                  <button
+                    type="button"
+                    className={posStyles.actionBtn}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onSetTPHit?.(t.id, 3);
+                    }}
+                    aria-label={`Mark target 3 for ${t.symbol}`}
+                  >
+                    <span aria-hidden="true">TP3</span>
+                  </button>
+                  <span>TP4: {t.tp4 ?? '-'}</span>
+                  <button
+                    type="button"
+                    className={posStyles.actionBtn}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onSetTPHit?.(t.id, 4);
+                    }}
+                    aria-label={`Mark target 4 for ${t.symbol}`}
+                  >
+                    <span aria-hidden="true">TP4</span>
+                  </button>
+                </div>
                 <div style={{ marginTop: 6, color: 'var(--muted)' }}>
                   {new Date(t.entryDate).toLocaleDateString()}
                 </div>
-                <div style={{ marginTop: 4 }} className={t.sl === 0 ? styles.slZero : styles.slAlert}>
-                  SL: {t.sl ?? '-'}
-                </div>
+                  <div
+                    style={{ marginTop: 4 }}
+                    className={t.slIsBE ? styles.slZero : styles.slAlert}
+                  >
+                    SL: {t.slIsBE ? '0.0' : t.sl ?? '-'}
+                  </div>
               </div>
             </div>
           );
@@ -309,6 +363,54 @@ export function TradeList({
                     >
                       SL‑HIT
                     </button>
+                  )}
+                  {onSetTPHit && (
+                    <div className={styles.tpButtons} onClick={(e) => e.stopPropagation()}>
+                      <button
+                        type="button"
+                        className={posStyles.actionBtn}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onSetTPHit(t.id, 1);
+                        }}
+                        aria-label={`Set target 1 for ${t.symbol}`}
+                      >
+                        <span aria-hidden="true">TP1</span>
+                      </button>
+                      <button
+                        type="button"
+                        className={posStyles.actionBtn}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onSetTPHit(t.id, 2);
+                        }}
+                        aria-label={`Set target 2 for ${t.symbol}`}
+                      >
+                        <span aria-hidden="true">TP2</span>
+                      </button>
+                      <button
+                        type="button"
+                        className={posStyles.actionBtn}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onSetTPHit(t.id, 3);
+                        }}
+                        aria-label={`Set target 3 for ${t.symbol}`}
+                      >
+                        <span aria-hidden="true">TP3</span>
+                      </button>
+                      <button
+                        type="button"
+                        className={posStyles.actionBtn}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onSetTPHit(t.id, 4);
+                        }}
+                        aria-label={`Set target 4 for ${t.symbol}`}
+                      >
+                        <span aria-hidden="true">TP4</span>
+                      </button>
+                    </div>
                   )}
                   {onClose && (
                     <button
