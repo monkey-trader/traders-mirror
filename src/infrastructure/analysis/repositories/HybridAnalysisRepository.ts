@@ -33,12 +33,25 @@ function saveOutbox(items: OutboxItem[]): void {
 export class HybridAnalysisRepository implements AnalysisRepository {
   private readonly local = new LocalStorageAnalysisRepository();
   private readonly remote?: FirebaseAnalysisRepository;
+  private bootstrapped = false;
 
   constructor(options?: { remote?: FirebaseAnalysisRepository }) {
     this.remote = options?.remote;
     if (this.remote) {
-      // eslint-disable-next-line no-console
-      console.info('[HybridRepo:Analysis] remote configured: online mode');
+      // Bootstrap local store from remote once (if authenticated)
+      (async () => {
+        try {
+          if (this.bootstrapped) return;
+          this.bootstrapped = true;
+          const remoteList = await this.remote!.listAll();
+          if (Array.isArray(remoteList) && remoteList.length) {
+            for (const a of remoteList) await this.local.save(a);
+          }
+        } catch {
+          /* ignore bootstrap errors */
+        }
+      })();
+
       try {
         queueMicrotask(() => {
           try {
@@ -58,6 +71,14 @@ export class HybridAnalysisRepository implements AnalysisRepository {
         window.addEventListener('online', () => {
           void this.flushOutbox();
         });
+        // respond to explicit force-sync requests from UI
+        try {
+          globalThis.addEventListener('repo-sync-force', () => {
+            void this.flushOutbox();
+          });
+        } catch {
+          /* ignore */
+        }
       }
       if (typeof navigator !== 'undefined' && (navigator as { onLine?: boolean }).onLine) {
         void this.flushOutbox();
@@ -79,10 +100,11 @@ export class HybridAnalysisRepository implements AnalysisRepository {
                   createdAt: String(src.createdAt ?? new Date().toISOString()),
                   updatedAt: typeof src.updatedAt === 'string' ? src.updatedAt : undefined,
                   market:
-                    typeof src.market === 'string' && (src.market === 'Forex' || src.market === 'Crypto')
+                    typeof src.market === 'string' &&
+                    (src.market === 'Forex' || src.market === 'Crypto')
                       ? (src.market as 'Forex' | 'Crypto')
                       : undefined,
-                  timeframes: (src.timeframes as Record<string, unknown>) as unknown as Record<
+                  timeframes: src.timeframes as Record<string, unknown> as unknown as Record<
                     import('@/domain/analysis/interfaces/AnalysisRepository').Timeframe,
                     import('@/domain/analysis/interfaces/AnalysisRepository').TimeframeAnalysisDTO
                   >,
@@ -91,7 +113,9 @@ export class HybridAnalysisRepository implements AnalysisRepository {
                 await this.local.save(dto);
               }
               try {
-                globalThis.dispatchEvent(new CustomEvent('analyses-updated', { detail: { type: 'remote' } }));
+                globalThis.dispatchEvent(
+                  new CustomEvent('analyses-updated', { detail: { type: 'remote' } })
+                );
               } catch {
                 /* ignore */
               }
@@ -103,8 +127,7 @@ export class HybridAnalysisRepository implements AnalysisRepository {
       } catch {
         // ignore subscription setup errors (e.g., missing env vars in tests)
       }
-    }
-    if (!this.remote) {
+    } else {
       try {
         queueMicrotask(() => {
           try {
@@ -127,12 +150,8 @@ export class HybridAnalysisRepository implements AnalysisRepository {
     // Remote-first write; on failure, persist locally and queue
     if (this.remote) {
       try {
-        // eslint-disable-next-line no-console
-        console.info('[HybridRepo:Analysis] save: remote first', analysis.id);
         await this.remote.save(analysis);
         await this.local.save(analysis);
-        // eslint-disable-next-line no-console
-        console.info('[HybridRepo:Analysis] save: mirrored to local', analysis.id);
         try {
           globalThis.dispatchEvent(
             new CustomEvent('repo-sync-status', {
@@ -145,8 +164,7 @@ export class HybridAnalysisRepository implements AnalysisRepository {
         return;
       } catch {
         // fall through to local + outbox
-        // eslint-disable-next-line no-console
-        console.warn('[HybridRepo:Analysis] save: remote failed, queueing', analysis.id);
+        /* remote failed, will queue */
       }
     }
     await this.local.save(analysis);
@@ -154,73 +172,76 @@ export class HybridAnalysisRepository implements AnalysisRepository {
   }
 
   async getById(id: string): Promise<AnalysisDTO | null> {
+    // Local-first: return fast local value, then attempt background refresh from remote
+    const local = await this.local.getById(id);
     if (this.remote) {
-      try {
-        // eslint-disable-next-line no-console
-        console.info('[HybridRepo:Analysis] getById: try remote first', id);
-        const dto = await this.remote.getById(id);
-        if (dto) await this.local.save(dto);
-        return dto;
-      } catch {
-        // ignore and fall back
-        // eslint-disable-next-line no-console
-        console.warn('[HybridRepo:Analysis] getById: remote failed, using local', id);
-      }
+      (async () => {
+        try {
+          const dto = await this.remote!.getById(id);
+          if (dto) await this.local.save(dto);
+        } catch {
+          /* ignore remote fetch errors */
+        }
+      })();
     }
-    return this.local.getById(id);
+    return local;
   }
 
   async listBySymbol(symbol: string): Promise<AnalysisDTO[]> {
+    // Local-first: return quick local list and refresh in background
+    const localList = await this.local.listBySymbol(symbol);
     if (this.remote) {
-      try {
-        // eslint-disable-next-line no-console
-        console.info('[HybridRepo:Analysis] listBySymbol: try remote first', symbol);
-        const list = await this.remote.listBySymbol(symbol);
-        if (Array.isArray(list) && list.length) {
-          for (const a of list) await this.local.save(a);
+      (async () => {
+        try {
+          const list = await this.remote!.listBySymbol(symbol);
+          if (Array.isArray(list) && list.length) {
+            for (const a of list) await this.local.save(a);
+            try {
+              globalThis.dispatchEvent(
+                new CustomEvent('analyses-updated', { detail: { type: 'remote' } })
+              );
+            } catch {
+              /* ignore */
+            }
+          }
+        } catch {
+          /* ignore */
         }
-        // eslint-disable-next-line no-console
-        console.info('[HybridRepo:Analysis] listBySymbol: remote returned', list.length);
-        return list;
-      } catch {
-        // fall back
-        // eslint-disable-next-line no-console
-        console.warn('[HybridRepo:Analysis] listBySymbol: remote failed, using local');
-      }
+      })();
     }
-    return this.local.listBySymbol(symbol);
+    return localList;
   }
 
   async listAll(): Promise<AnalysisDTO[]> {
+    // Local-first: fast local response, then background remote refresh
+    const localList = await this.local.listAll();
     if (this.remote) {
-      try {
-        // eslint-disable-next-line no-console
-        console.info('[HybridRepo:Analysis] listAll: try remote first');
-        const list = await this.remote.listAll();
-        if (Array.isArray(list) && list.length) {
-          for (const a of list) await this.local.save(a);
+      (async () => {
+        try {
+          const list = await this.remote!.listAll();
+          if (Array.isArray(list) && list.length) {
+            for (const a of list) await this.local.save(a);
+            try {
+              globalThis.dispatchEvent(
+                new CustomEvent('analyses-updated', { detail: { type: 'remote' } })
+              );
+            } catch {
+              /* ignore */
+            }
+          }
+        } catch {
+          /* ignore */
         }
-        // eslint-disable-next-line no-console
-        console.info('[HybridRepo:Analysis] listAll: remote returned', list.length);
-        return list;
-      } catch {
-        // fall back
-        // eslint-disable-next-line no-console
-        console.warn('[HybridRepo:Analysis] listAll: remote failed, using local');
-      }
+      })();
     }
-    return this.local.listAll();
+    return localList;
   }
 
   async delete(id: string): Promise<void> {
     if (this.remote) {
       try {
-        // eslint-disable-next-line no-console
-        console.info('[HybridRepo:Analysis] delete: remote first', id);
         await this.remote.delete(id);
         await this.local.delete(id);
-        // eslint-disable-next-line no-console
-        console.info('[HybridRepo:Analysis] delete: mirrored to local', id);
         try {
           globalThis.dispatchEvent(
             new CustomEvent('repo-sync-status', {
@@ -233,8 +254,7 @@ export class HybridAnalysisRepository implements AnalysisRepository {
         return;
       } catch {
         // fall back
-        // eslint-disable-next-line no-console
-        console.warn('[HybridRepo:Analysis] delete: remote failed, queueing', id);
+        /* remote failed, will queue */
       }
     }
     await this.local.delete(id);
@@ -250,12 +270,8 @@ export class HybridAnalysisRepository implements AnalysisRepository {
     if (!this.remote) return;
     try {
       if (item.op === 'delete') {
-        // eslint-disable-next-line no-console
-        console.info('[HybridRepo:Analysis] trySync: delete', item.id);
         await this.remote.delete(item.id);
       } else {
-        // eslint-disable-next-line no-console
-        console.info('[HybridRepo:Analysis] trySync: save', item.dto.id);
         await this.remote.save(item.dto);
       }
       try {
@@ -271,8 +287,7 @@ export class HybridAnalysisRepository implements AnalysisRepository {
       const q = loadOutbox();
       q.push(item);
       saveOutbox(q);
-      // eslint-disable-next-line no-console
-      console.warn('[HybridRepo:Analysis] trySync: queued (size=', q.length, ')');
+      /* queued for later */
       try {
         globalThis.dispatchEvent(
           new CustomEvent('repo-sync-status', {
@@ -289,8 +304,6 @@ export class HybridAnalysisRepository implements AnalysisRepository {
     if (!this.remote) return;
     const queue = loadOutbox();
     if (!queue.length) return;
-    // eslint-disable-next-line no-console
-    console.info('[HybridRepo:Analysis] flushOutbox: attempting', queue.length, 'items');
     const remain: OutboxItem[] = [];
     for (const item of queue) {
       try {
@@ -304,8 +317,6 @@ export class HybridAnalysisRepository implements AnalysisRepository {
       }
     }
     saveOutbox(remain);
-    // eslint-disable-next-line no-console
-    console.info('[HybridRepo:Analysis] flushOutbox: remaining', remain.length);
     try {
       globalThis.dispatchEvent(
         new CustomEvent('repo-sync-status', {

@@ -17,6 +17,7 @@ export type TradeListItem = {
 
 import styles from './TradeList.module.css';
 import btnStyles from '@/presentation/shared/components/Button/Button.module.css';
+import posStyles from '@/presentation/shared/components/PositionCard/PositionCard.module.css';
 import { IconButton } from '@/presentation/shared/components/IconButton/IconButton';
 import { PositionCard } from '@/presentation/shared/components/PositionCard/PositionCard';
 
@@ -203,6 +204,63 @@ export function TradeList({
               >
                 {rawStatus || 'UNKNOWN'}
               </div>
+              {/* action buttons similar to compact PositionCard (prevent row click propagation) */}
+              {(onToggleSide || onSetSLtoBE || onSetSLHit || onClose) && (
+                <div className={posStyles.actions} style={{ marginLeft: 8 }}>
+                  {onToggleSide && (
+                    <button
+                      type="button"
+                      className={posStyles.actionBtn}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onToggleSide(t.id);
+                      }}
+                      aria-label={`Toggle side for ${t.symbol}`}
+                    >
+                      Side
+                    </button>
+                  )}
+                  {onSetSLtoBE && (
+                    <button
+                      type="button"
+                      className={posStyles.actionBtn}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onSetSLtoBE(t.id);
+                      }}
+                      aria-label={`Set SL to BE for ${t.symbol}`}
+                    >
+                      SL‑BE
+                    </button>
+                  )}
+                  {onSetSLHit && (
+                    <button
+                      type="button"
+                      className={posStyles.actionBtn}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onSetSLHit(t.id);
+                      }}
+                      aria-label={`Set SL hit for ${t.symbol}`}
+                    >
+                      SL‑HIT
+                    </button>
+                  )}
+                  {onClose && (
+                    <button
+                      type="button"
+                      className={posStyles.closeBtn}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onClose(t.id);
+                      }}
+                      aria-label={`Close ${t.symbol}`}
+                    >
+                      Close
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         );

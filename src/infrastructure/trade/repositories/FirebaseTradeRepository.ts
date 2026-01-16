@@ -136,8 +136,6 @@ export class FirebaseTradeRepository implements TradeRepository {
       Object.entries(repoTrade).filter(([, v]) => v !== undefined)
     ) as RepoTrade;
     const ref = doc(db, 'users', uid, 'trades', repoTrade.id);
-    // eslint-disable-next-line no-console
-    console.info('[FirebaseRepo:Trade] save', repoTrade.id, 'symbol=', repoTrade.symbol);
     await setDoc(ref, sanitized);
   }
 
@@ -146,12 +144,8 @@ export class FirebaseTradeRepository implements TradeRepository {
     const uid = getCurrentUserId();
     if (!uid) return [];
     const q = query(collection(db, 'users', uid, 'trades'));
-    // eslint-disable-next-line no-console
-    console.info('[FirebaseRepo:Trade] getAll for user', uid);
     const snap = await getDocs(q);
     const inputs = snap.docs.map((d) => d.data() as RepoTrade);
-    // eslint-disable-next-line no-console
-    console.info('[FirebaseRepo:Trade] getAll returned', inputs.length);
     return inputs.map((rt) =>
       TradeFactory.create({
         id: rt.id,
@@ -177,8 +171,6 @@ export class FirebaseTradeRepository implements TradeRepository {
 
   async update(trade: Trade): Promise<void> {
     // Overwrite with full document to keep logic simple
-    // eslint-disable-next-line no-console
-    console.info('[FirebaseRepo:Trade] update', TradeFactory.toDTO(trade).id);
     await this.save(trade);
   }
 
@@ -186,8 +178,6 @@ export class FirebaseTradeRepository implements TradeRepository {
     const { db } = ensureFirebase();
     const uid = getCurrentUserId();
     if (!uid) throw new Error('Not authenticated');
-    // eslint-disable-next-line no-console
-    console.info('[FirebaseRepo:Trade] delete', id);
     const ref = doc(db, 'users', uid, 'trades', id);
     await deleteDoc(ref);
   }

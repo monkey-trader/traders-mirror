@@ -137,6 +137,12 @@
   cursor: pointer;
 }
 
+.outboxBadgePlaceholder {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 4px;
+}
+
 @media (max-width: 720px) {
   .nav {
     display: none;

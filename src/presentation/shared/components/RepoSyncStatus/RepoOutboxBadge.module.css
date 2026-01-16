@@ -1,0 +1,14 @@
+.outbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 235, 59, 0.06);
+  color: var(--color-warning);
+  border: 1px solid rgba(255, 193, 7, 0.18);
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+}
+.count {
+  font-weight: 700;
+}

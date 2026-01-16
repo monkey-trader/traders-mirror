@@ -80,13 +80,34 @@ export function MockLoaderModal({ open, onClose, repoRef, setPositions, analysis
                     market: 'Crypto',
                     notes: 'BTC seeded analyses with TradingView links',
                     timeframes: [
-                      { timeframe: '4h', tradingViewLink: 'https://www.tradingview.com/x/zuXCVxnH/' },
-                      { timeframe: '1h', tradingViewLink: 'https://www.tradingview.com/x/zuXCVxnH/' },
-                      { timeframe: 'daily', tradingViewLink: 'https://www.tradingview.com/x/zuXCVxnH/' },
-                      { timeframe: '2h', tradingViewLink: 'https://www.tradingview.com/x/zuXCVxnH/' },
-                      { timeframe: '15min', tradingViewLink: 'https://www.tradingview.com/x/zuXCVxnH/' },
-                      { timeframe: 'weekly', tradingViewLink: 'https://www.tradingview.com/x/zuXCVxnH/' },
-                      { timeframe: 'monthly', tradingViewLink: 'https://www.tradingview.com/x/zuXCVxnH/' },
+                      {
+                        timeframe: '4h',
+                        tradingViewLink: 'https://www.tradingview.com/x/zuXCVxnH/',
+                      },
+                      {
+                        timeframe: '1h',
+                        tradingViewLink: 'https://www.tradingview.com/x/zuXCVxnH/',
+                      },
+                      {
+                        timeframe: 'daily',
+                        tradingViewLink: 'https://www.tradingview.com/x/zuXCVxnH/',
+                      },
+                      {
+                        timeframe: '2h',
+                        tradingViewLink: 'https://www.tradingview.com/x/zuXCVxnH/',
+                      },
+                      {
+                        timeframe: '15min',
+                        tradingViewLink: 'https://www.tradingview.com/x/zuXCVxnH/',
+                      },
+                      {
+                        timeframe: 'weekly',
+                        tradingViewLink: 'https://www.tradingview.com/x/zuXCVxnH/',
+                      },
+                      {
+                        timeframe: 'monthly',
+                        tradingViewLink: 'https://www.tradingview.com/x/zuXCVxnH/',
+                      },
                     ],
                   },
                   {
@@ -94,13 +115,34 @@ export function MockLoaderModal({ open, onClose, repoRef, setPositions, analysis
                     market: 'Forex',
                     notes: 'USDCAD seeded analyses with TradingView links',
                     timeframes: [
-                      { timeframe: '4h', tradingViewLink: 'https://www.tradingview.com/x/MGlHVCHj/' },
-                      { timeframe: '1h', tradingViewLink: 'https://www.tradingview.com/x/MGlHVCHj/' },
-                      { timeframe: 'daily', tradingViewLink: 'https://www.tradingview.com/x/MGlHVCHj/' },
-                      { timeframe: '2h', tradingViewLink: 'https://www.tradingview.com/x/MGlHVCHj/' },
-                      { timeframe: '15min', tradingViewLink: 'https://www.tradingview.com/x/MGlHVCHj/' },
-                      { timeframe: 'weekly', tradingViewLink: 'https://www.tradingview.com/x/MGlHVCHj/' },
-                      { timeframe: 'monthly', tradingViewLink: 'https://www.tradingview.com/x/MGlHVCHj/' },
+                      {
+                        timeframe: '4h',
+                        tradingViewLink: 'https://www.tradingview.com/x/MGlHVCHj/',
+                      },
+                      {
+                        timeframe: '1h',
+                        tradingViewLink: 'https://www.tradingview.com/x/MGlHVCHj/',
+                      },
+                      {
+                        timeframe: 'daily',
+                        tradingViewLink: 'https://www.tradingview.com/x/MGlHVCHj/',
+                      },
+                      {
+                        timeframe: '2h',
+                        tradingViewLink: 'https://www.tradingview.com/x/MGlHVCHj/',
+                      },
+                      {
+                        timeframe: '15min',
+                        tradingViewLink: 'https://www.tradingview.com/x/MGlHVCHj/',
+                      },
+                      {
+                        timeframe: 'weekly',
+                        tradingViewLink: 'https://www.tradingview.com/x/MGlHVCHj/',
+                      },
+                      {
+                        timeframe: 'monthly',
+                        tradingViewLink: 'https://www.tradingview.com/x/MGlHVCHj/',
+                      },
                     ],
                   },
                   {
@@ -108,10 +150,26 @@ export function MockLoaderModal({ open, onClose, repoRef, setPositions, analysis
                     market: 'Crypto',
                     notes: 'ETH 4H seeded from mock loader',
                     timeframes: [
-                      { timeframe: '4h', tradingViewLink: 'https://www.tradingview.com/chart/?symbol=BINANCE:ETHUSDT' },
-                      { timeframe: '1h', tradingViewLink: 'https://www.tradingview.com/chart/?symbol=BINANCE:ETHUSDT' },
-                      { timeframe: 'daily', tradingViewLink: 'https://www.tradingview.com/chart/?symbol=BINANCE:ETHUSDT' },
-                      { timeframe: 'weekly', tradingViewLink: 'https://www.tradingview.com/chart/?symbol=BINANCE:ETHUSDT' },
+                      {
+                        timeframe: '4h',
+                        tradingViewLink:
+                          'https://www.tradingview.com/chart/?symbol=BINANCE:ETHUSDT',
+                      },
+                      {
+                        timeframe: '1h',
+                        tradingViewLink:
+                          'https://www.tradingview.com/chart/?symbol=BINANCE:ETHUSDT',
+                      },
+                      {
+                        timeframe: 'daily',
+                        tradingViewLink:
+                          'https://www.tradingview.com/chart/?symbol=BINANCE:ETHUSDT',
+                      },
+                      {
+                        timeframe: 'weekly',
+                        tradingViewLink:
+                          'https://www.tradingview.com/chart/?symbol=BINANCE:ETHUSDT',
+                      },
                     ],
                   },
                   {
@@ -119,10 +177,22 @@ export function MockLoaderModal({ open, onClose, repoRef, setPositions, analysis
                     market: 'Forex',
                     notes: 'EURUSD seeded from mock loader',
                     timeframes: [
-                      { timeframe: '4h', tradingViewLink: 'https://www.tradingview.com/chart/?symbol=FX:EURUSD' },
-                      { timeframe: '1h', tradingViewLink: 'https://www.tradingview.com/chart/?symbol=FX:EURUSD' },
-                      { timeframe: 'daily', tradingViewLink: 'https://www.tradingview.com/chart/?symbol=FX:EURUSD' },
-                      { timeframe: 'weekly', tradingViewLink: 'https://www.tradingview.com/chart/?symbol=FX:EURUSD' },
+                      {
+                        timeframe: '4h',
+                        tradingViewLink: 'https://www.tradingview.com/chart/?symbol=FX:EURUSD',
+                      },
+                      {
+                        timeframe: '1h',
+                        tradingViewLink: 'https://www.tradingview.com/chart/?symbol=FX:EURUSD',
+                      },
+                      {
+                        timeframe: 'daily',
+                        tradingViewLink: 'https://www.tradingview.com/chart/?symbol=FX:EURUSD',
+                      },
+                      {
+                        timeframe: 'weekly',
+                        tradingViewLink: 'https://www.tradingview.com/chart/?symbol=FX:EURUSD',
+                      },
                     ],
                   },
                   {
@@ -130,10 +200,22 @@ export function MockLoaderModal({ open, onClose, repoRef, setPositions, analysis
                     market: 'Forex',
                     notes: 'GBPUSD seeded from mock loader',
                     timeframes: [
-                      { timeframe: '4h', tradingViewLink: 'https://www.tradingview.com/chart/?symbol=FX:GBPUSD' },
-                      { timeframe: '1h', tradingViewLink: 'https://www.tradingview.com/chart/?symbol=FX:GBPUSD' },
-                      { timeframe: 'daily', tradingViewLink: 'https://www.tradingview.com/chart/?symbol=FX:GBPUSD' },
-                      { timeframe: 'weekly', tradingViewLink: 'https://www.tradingview.com/chart/?symbol=FX:GBPUSD' },
+                      {
+                        timeframe: '4h',
+                        tradingViewLink: 'https://www.tradingview.com/chart/?symbol=FX:GBPUSD',
+                      },
+                      {
+                        timeframe: '1h',
+                        tradingViewLink: 'https://www.tradingview.com/chart/?symbol=FX:GBPUSD',
+                      },
+                      {
+                        timeframe: 'daily',
+                        tradingViewLink: 'https://www.tradingview.com/chart/?symbol=FX:GBPUSD',
+                      },
+                      {
+                        timeframe: 'weekly',
+                        tradingViewLink: 'https://www.tradingview.com/chart/?symbol=FX:GBPUSD',
+                      },
                     ],
                   },
                 ]);

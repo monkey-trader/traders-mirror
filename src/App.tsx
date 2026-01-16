@@ -4,6 +4,7 @@ import FirebaseTradeRepository from '@/infrastructure/trade/repositories/Firebas
 import HybridTradeRepository from '@/infrastructure/trade/repositories/HybridTradeRepository';
 import { Settings } from '@/presentation/settings/Settings';
 import { Layout } from '@/presentation/shared/components/Layout/Layout';
+import ToastProvider from '@/presentation/shared/components/Toast/ToastProvider';
 import { Analysis } from '@/presentation/analysis/Analysis';
 import { AuthProvider } from '@/presentation/auth/AuthProvider';
 import { ProtectedRoute } from '@/presentation/auth/ProtectedRoute';
@@ -94,11 +95,13 @@ function App() {
   return (
     <AuthProvider>
       <ProtectedRoute>
-        <Layout fullWidth={true}>
-          {/* Simple hash-based routing: #/journal, #/analysis, #/settings.
-              Support query/hash params like #/analysis?id=... by matching prefix. */}
-          {mainContent}
-        </Layout>
+        <ToastProvider>
+          <Layout fullWidth={true}>
+            {/* Simple hash-based routing: #/journal, #/analysis, #/settings.
+                Support query/hash params like #/analysis?id=... by matching prefix. */}
+            {mainContent}
+          </Layout>
+        </ToastProvider>
       </ProtectedRoute>
       {/* LoginButton wird von ProtectedRoute angezeigt, wenn nicht eingeloggt */}
     </AuthProvider>
