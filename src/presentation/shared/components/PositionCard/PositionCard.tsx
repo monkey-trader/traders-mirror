@@ -57,7 +57,11 @@ export function PositionCard({
           </button>
           <button
             type="button"
-            className={styles.actionBtn}
+            className={
+              [styles.actionBtn, Number(sl) === 0 ? styles.slBeActive : styles.slBeInactive]
+                .filter(Boolean)
+                .join(' ')
+            }
             onClick={() => onSetSLtoBE?.(id)}
             aria-label={`Set SL to BE for ${symbol}`}
           >

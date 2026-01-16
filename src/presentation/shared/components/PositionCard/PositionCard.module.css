@@ -100,6 +100,18 @@
   color: var(--text);
 }
 
+.slBeActive {
+  background: linear-gradient(180deg, rgba(50, 200, 120, 0.14), rgba(30, 180, 100, 0.08));
+  color: #00d078;
+  border: 1px solid rgba(0, 200, 120, 0.12);
+}
+
+.slBeInactive {
+  background: linear-gradient(180deg, rgba(255, 80, 80, 0.06), rgba(255, 60, 60, 0.02));
+  color: var(--muted);
+  border: 1px solid rgba(255, 80, 80, 0.06);
+}
+
 .closeBtn {
   background: linear-gradient(180deg, rgba(255, 100, 100, 0.16), rgba(255, 80, 80, 0.12));
   color: var(--surface);
