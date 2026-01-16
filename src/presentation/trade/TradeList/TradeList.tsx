@@ -136,7 +136,10 @@ export function TradeList({
               <div className={styles.tpLevelsCompact}>
                 <span>TP1: {t.tp1 ?? '-'}</span> <span>TP2: {t.tp2 ?? '-'}</span>{' '}
                 <span>TP3: {t.tp3 ?? '-'}</span> <span>TP4: {t.tp4 ?? '-'}</span>
-                <div style={{ marginTop: 6 }} className={t.sl === 0 ? styles.slZero : styles.slAlert}>
+                <div style={{ marginTop: 6, color: 'var(--muted)' }}>
+                  {new Date(t.entryDate).toLocaleDateString()}
+                </div>
+                <div style={{ marginTop: 4 }} className={t.sl === 0 ? styles.slZero : styles.slAlert}>
                   SL: {t.sl ?? '-'}
                 </div>
               </div>
