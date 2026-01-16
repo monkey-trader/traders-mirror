@@ -135,6 +135,20 @@ export function useTradesViewModel({
         // Set SL to break-even value. Per request, set SL to 0.00 (explicit zero)
         // instead of closing the trade.
         updateTradeById(id, { sl: 0 });
+        // Also persist immediately via repository/service to ensure storage reflects the change.
+        (async () => {
+          try {
+            const updated = positionsRef.current.find((p) => p.id === id);
+            if (!updated) return;
+            const domain = TradeFactory.create(updated as unknown as TradeInput);
+            if (serviceRef.current) await serviceRef.current.update(domain as unknown as Trade);
+            else if (repoRef.current) await repoRef.current.update(domain as unknown as Trade);
+            setLastStatus?.('SL set to BE and persisted');
+          } catch (err) {
+            console.error('Failed to persist SL-BE change', err);
+            setLastStatus?.('SL-BE persist failed');
+          }
+        })();
       } else if (action === 'sl-hit') {
         updateTradeById(id, { status: 'CLOSED' });
       } else if (action === 'close') {
