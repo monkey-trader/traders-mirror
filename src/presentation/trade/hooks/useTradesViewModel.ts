@@ -7,7 +7,7 @@ import type { TradeRow } from '@/presentation/trade/types';
 import type { TradeInput } from '@/domain/trade/factories/TradeFactory';
 import type { AnalysisService } from '@/application/analysis/services/AnalysisService';
 import { TradeService } from '@/application/trade/services/TradeService';
-import { toggleSide, chooseSlFromEntry } from '@/presentation/trade/utils/tradeHelpers';
+import { toggleSide } from '@/presentation/trade/utils/tradeHelpers';
 import type { Trade } from '@/domain/trade/entities/Trade';
 
 type UseTradesViewModelParams = {
