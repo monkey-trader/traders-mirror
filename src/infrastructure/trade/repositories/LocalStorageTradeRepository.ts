@@ -62,27 +62,40 @@ export class LocalStorageTradeRepository implements TradeRepository {
   constructor(key = STORAGE_KEY, options?: { seedDefaults?: boolean }) {
     this.key = key;
     const seedDefaults = options?.seedDefaults !== undefined ? options?.seedDefaults : true;
-    try {
-      const raw = window.localStorage.getItem(this.key);
-      if (raw) {
+    const raw = (() => {
+      try {
+        return window.localStorage.getItem(this.key);
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.warn('[LocalStorageRepo] localStorage.getItem threw, ignoring storage');
+        return null;
+      }
+    })();
+
+    if (raw) {
+      try {
         const parsed = JSON.parse(raw) as RepoTrade[];
         this.trades = parsed.map((t) => ({ ...t }));
         // eslint-disable-next-line no-console
         console.info('[LocalStorageRepo] loaded', this.trades.length, 'trades');
-      } else if (seedDefaults) {
-        this.trades = DEFAULT_MOCK_TRADES.map((t) => ({ ...t }));
-        this.flush();
+      } catch (e) {
+        // Malformed JSON in storage should not crash the app/tests; fall back to defaults/empty
         // eslint-disable-next-line no-console
-        console.info('[LocalStorageRepo] initialized with defaults');
-      } else {
-        this.trades = [];
-        // eslint-disable-next-line no-console
-        console.info('[LocalStorageRepo] initialized empty (no defaults)');
+        console.warn(
+          '[LocalStorageRepo] could not parse stored trades, falling back to defaults/empty'
+        );
+        this.trades = seedDefaults ? DEFAULT_MOCK_TRADES.map((t) => ({ ...t })) : [];
+        if (seedDefaults) this.flush();
       }
-    } catch (err) {
+    } else if (seedDefaults) {
+      this.trades = DEFAULT_MOCK_TRADES.map((t) => ({ ...t }));
+      this.flush();
       // eslint-disable-next-line no-console
-      console.error('[LocalStorageRepo] failed to initialize', err);
-      this.trades = seedDefaults ? DEFAULT_MOCK_TRADES.map((t) => ({ ...t })) : [];
+      console.info('[LocalStorageRepo] initialized with defaults');
+    } else {
+      this.trades = [];
+      // eslint-disable-next-line no-console
+      console.info('[LocalStorageRepo] initialized empty (no defaults)');
     }
   }
 
@@ -105,7 +118,7 @@ export class LocalStorageTradeRepository implements TradeRepository {
       console.info('[LocalStorageRepo] flushed', this.trades.length, 'trades to localStorage');
     } catch (err) {
       // eslint-disable-next-line no-console
-      console.error('[LocalStorageRepo] failed to persist to localStorage', err);
+      console.warn('[LocalStorageRepo] failed to persist to localStorage', err);
     }
   }
 
@@ -239,7 +252,7 @@ export class LocalStorageTradeRepository implements TradeRepository {
         return TradeFactory.create(input);
       } catch (err) {
         // eslint-disable-next-line no-console
-        console.error('[LocalStorageRepo] failed to convert stored trade to domain Trade', err);
+        console.warn('[LocalStorageRepo] failed to convert stored trade to domain Trade', err);
         // create a minimal Trade to keep API stable
         return TradeFactory.create({
           id: rt.id,
