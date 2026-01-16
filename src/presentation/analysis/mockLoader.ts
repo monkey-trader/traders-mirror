@@ -159,9 +159,10 @@ export async function loadExplicitAnalyses(
       if (tradeRepo) {
         try {
           const all = await tradeRepo.getAll();
-          const match = all.find((t) =>
-            String(TradeFactory.toDTO(t).symbol || '').toUpperCase() ===
-            String(input.symbol).toUpperCase()
+          const match = all.find(
+            (t) =>
+              String(TradeFactory.toDTO(t).symbol || '').toUpperCase() ===
+              String(input.symbol).toUpperCase()
           );
           if (match) {
             const dto = TradeFactory.toDTO(match);

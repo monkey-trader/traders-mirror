@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import styles from './RepoSyncStatus.module.css';
+import { useToast } from '@/presentation/shared/components/Toast/ToastProvider';
 
 type SyncStatus = 'local' | 'online' | 'queued';
 
@@ -36,7 +37,10 @@ export function RepoSyncStatus({ compactView }: RepoSyncStatusProps) {
   const [statuses, setStatuses] = useState<
     Record<string, { status: SyncStatus; queuedCount?: number }>
   >({});
+  const [syncing, setSyncing] = useState(false);
   const overall = pickOverallStatus(statuses);
+  const { addToast } = useToast();
+  const timeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
     function onStatus(e: Event) {
@@ -51,12 +55,27 @@ export function RepoSyncStatus({ compactView }: RepoSyncStatusProps) {
     };
   }, []);
 
-  const label =
-    overall.status === 'queued'
-      ? `Sync: Queued ${overall.queuedCount ?? ''}`.trim()
-      : overall.status === 'online'
-      ? 'Sync: Online'
-      : 'Sync: Local';
+  // Watch for overall status changes to infer success when a forced sync completes
+  useEffect(() => {
+    if (!syncing) return;
+    // success if online and no queued items
+    if (overall.status === 'online' && !(overall.queuedCount && overall.queuedCount > 0)) {
+      addToast('Sync completed', 'success');
+      setSyncing(false);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+    }
+  }, [overall, syncing, addToast]);
+
+  const label = syncing
+    ? 'Syncing…'
+    : overall.status === 'queued'
+    ? `Sync: Queued ${overall.queuedCount ?? ''}`.trim()
+    : overall.status === 'online'
+    ? 'Sync: Online'
+    : 'Sync: Local';
 
   const base = compactView ? `${styles.chip} ${styles.compact}` : styles.chip;
   const cls =
@@ -66,8 +85,42 @@ export function RepoSyncStatus({ compactView }: RepoSyncStatusProps) {
       ? `${base} ${styles.chipOnline}`
       : `${base} ${styles.chipLocal}`;
 
+  // Dispatch a global event to request flushing outboxes in hybrid repos
+  const doForceSync = () => {
+    try {
+      setSyncing(true);
+      addToast('Sync started', 'info');
+      globalThis.dispatchEvent(new CustomEvent('repo-sync-force'));
+      // clear transient syncing indicator after timeout if not completed
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      timeoutRef.current = window.setTimeout(() => {
+        if (syncing) {
+          addToast('Sync timed out', 'error');
+          setSyncing(false);
+        }
+        timeoutRef.current = null;
+      }, 10000);
+    } catch {
+      setSyncing(false);
+    }
+  };
+
   return (
-    <span className={cls} aria-live="polite">
+    <span
+      className={cls}
+      role="button"
+      tabIndex={0}
+      onClick={() => doForceSync()}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          doForceSync();
+        }
+      }}
+      aria-pressed={syncing}
+      aria-live="polite"
+    >
+      {syncing ? <span className={styles.spinner} aria-hidden="true" /> : null}
       {label}
     </span>
   );

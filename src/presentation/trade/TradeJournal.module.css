@@ -13,7 +13,8 @@
 /* New layout wrapper for list + detail inside the right column */
 .listAndDetailWrap {
   display: grid;
-  grid-template-columns: 360px 1fr; /* fixed left list, flexible right detail */
+  /* larger responsive left column: min 360px, preferred 30vw, max 640px */
+  grid-template-columns: clamp(360px, 30vw, 640px) 1fr;
   gap: 16px;
   align-items: start;
   width: 100%;
@@ -25,6 +26,9 @@
   padding: 10px;
   min-height: 420px;
   box-shadow: 0 6px 24px rgba(2, 8, 23, 0.5);
+  position: relative;
+  z-index: 0; /* keep left pane under the right detail pane so shadows won't cover actions */
+  overflow: hidden; /* clip large item shadows to left pane */
 }
 
 .rightPane {
@@ -33,6 +37,8 @@
   padding: 12px;
   min-height: 420px;
   box-shadow: 0 6px 24px rgba(2, 8, 23, 0.35);
+  position: relative;
+  z-index: 5; /* ensure right pane content (detail + actions) appear above left pane shadows */
 }
 
 /* tweak existing left/right panels to be darker and compact */
@@ -195,8 +201,8 @@
 .grid {
   display: grid;
   /* left column flexible but constrained, right column uses remaining space */
-  /* clamp(min, preferred, max) keeps the left column readable while allowing the table to grow */
-  grid-template-columns: clamp(280px, 22vw, 420px) 1fr;
+  /* increased clamp: min 360px, preferred 30vw, max 640px to give more room on desktop */
+  grid-template-columns: clamp(360px, 30vw, 640px) 1fr;
   gap: 18px;
   /* create isolated stacking context so z-index between columns behaves predictably */
   isolation: isolate;
@@ -302,7 +308,7 @@
   position: relative;
   z-index: 20;
   width: 100%;
-  min-width: 900px; /* ensure table columns don't collapse and cause overlaps */
+  min-width: 760px; /* reduce forced table width so left-pane has more usable space */
   border-collapse: collapse;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.01), rgba(255, 255, 255, 0.005));
   border-radius: 8px;

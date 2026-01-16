@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import styles from './Header.module.css';
 import { UserBadge } from '@/presentation/auth/UserBadge';
 import { RepoSyncStatus } from '@/presentation/shared/components/RepoSyncStatus/RepoSyncStatus';
+import RepoOutboxBadge from '@/presentation/shared/components/RepoSyncStatus/RepoOutboxBadge';
 
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -109,8 +110,15 @@ export function Header() {
       </div>
 
       <div className={styles.controls}>
-        {/* Sync status indicator + User avatar/name */}
-        <RepoSyncStatus />
+        {/* Sync status indicator + User avatar/name (only show on Settings page) */}
+        {/* compact outbox badge shown in header when there are queued items */}
+        <RepoOutboxBadge />
+        {typeof window !== 'undefined' &&
+        window.location &&
+        window.location.hash &&
+        window.location.hash.startsWith('#/settings') ? (
+          <RepoSyncStatus />
+        ) : null}
         <UserBadge />
       </div>
     </header>

@@ -11,7 +11,9 @@ describe('TradeJournal live refresh', () => {
   it('reloads trades when trades-updated event is dispatched', async () => {
     try {
       window.localStorage.removeItem(STORAGE_KEY);
-    } catch {}
+    } catch {
+      // ignore localStorage removal errors in some environments (e.g. restricted test runners)
+    }
 
     // Render with a LocalStorage repo injected
     const repo = new LocalStorageTradeRepository(STORAGE_KEY, { seedDefaults: false });
@@ -34,8 +36,12 @@ describe('TradeJournal live refresh', () => {
     await repo.save(domain);
 
     try {
-      globalThis.dispatchEvent(new CustomEvent('trades-updated', { detail: { type: 'created', id: 'T-J-1' } }));
-    } catch {}
+      globalThis.dispatchEvent(
+        new CustomEvent('trades-updated', { detail: { type: 'created', id: 'T-J-1' } })
+      );
+    } catch {
+      // ignore if dispatch isn't allowed in some runtimes
+    }
 
     await waitFor(() => {
       // TradeList renders the symbol

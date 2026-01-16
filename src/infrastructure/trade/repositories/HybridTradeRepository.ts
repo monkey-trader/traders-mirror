@@ -35,38 +35,28 @@ function saveOutbox(items: OutboxItem[]): void {
 export class HybridTradeRepository implements TradeRepository {
   private readonly local = new LocalStorageTradeRepository(undefined, { seedDefaults: false });
   private readonly remote?: FirebaseTradeRepository;
+  private bootstrapped = false;
 
   constructor(options?: { remote?: FirebaseTradeRepository }) {
     this.remote = options?.remote;
 
-    // Attempt immediate flush and on network regain
+    // Bootstrap local store from remote on startup (once, if authenticated)
     if (this.remote) {
-      // Bootstrap local store from remote on startup (if authenticated)
-      try {
-        (async () => {
-          try {
-            // eslint-disable-next-line no-console
-            console.info('[HybridRepo:Trade] bootstrap: fetching remote trades');
-            const remoteTrades = await this.remote!.getAll();
-            if (Array.isArray(remoteTrades) && remoteTrades.length) {
-              for (const t of remoteTrades) {
-                await this.local.update(t);
-              }
-              // eslint-disable-next-line no-console
-              console.info(
-                '[HybridRepo:Trade] bootstrap: mirrored',
-                remoteTrades.length,
-                'trades to local'
-              );
+      (async () => {
+        try {
+          if (this.bootstrapped) return;
+          this.bootstrapped = true;
+          const remoteTrades = await this.remote!.getAll();
+          if (Array.isArray(remoteTrades) && remoteTrades.length) {
+            for (const t of remoteTrades) {
+              await this.local.update(t);
             }
-          } catch (err) {
-            // eslint-disable-next-line no-console
-            console.warn('[HybridRepo] initial remote sync failed or unauthenticated', err);
           }
-        })();
-      } catch {
-        /* ignore */
-      }
+        } catch {
+          // ignore bootstrap errors (unauthenticated/offline)
+        }
+      })();
+
       try {
         queueMicrotask(() => {
           try {
@@ -86,6 +76,14 @@ export class HybridTradeRepository implements TradeRepository {
         window.addEventListener('online', () => {
           void this.flushOutbox();
         });
+        // respond to explicit force-sync requests from UI
+        try {
+          globalThis.addEventListener('repo-sync-force', () => {
+            void this.flushOutbox();
+          });
+        } catch {
+          /* ignore */
+        }
       }
       // Best effort flush on startup if online
       if (typeof navigator !== 'undefined' && (navigator as { onLine?: boolean }).onLine) {
@@ -100,7 +98,10 @@ export class HybridTradeRepository implements TradeRepository {
           const q = query(collection(db, 'users', uid, 'trades'));
           onSnapshot(q, async (snap) => {
             try {
-              const items = snap.docs.map((d) => d.data() as import('@/infrastructure/trade/repositories/FirebaseTradeRepository').RepoTrade);
+              const items = snap.docs.map(
+                (d) =>
+                  d.data() as import('@/infrastructure/trade/repositories/FirebaseTradeRepository').RepoTrade
+              );
               for (const rt of items) {
                 try {
                   const t = TradeFactory.create({
@@ -128,7 +129,9 @@ export class HybridTradeRepository implements TradeRepository {
                 }
               }
               try {
-                globalThis.dispatchEvent(new CustomEvent('trades-updated', { detail: { type: 'remote' } }));
+                globalThis.dispatchEvent(
+                  new CustomEvent('trades-updated', { detail: { type: 'remote' } })
+                );
               } catch {
                 /* ignore */
               }
@@ -140,8 +143,7 @@ export class HybridTradeRepository implements TradeRepository {
       } catch {
         // ignore subscription setup errors
       }
-    }
-    if (!this.remote) {
+    } else {
       try {
         queueMicrotask(() => {
           try {
@@ -161,30 +163,9 @@ export class HybridTradeRepository implements TradeRepository {
   }
 
   async getAll(): Promise<Trade[]> {
-    // Remote-first: try to read from remote, mirror to local, fall back to local
-    if (this.remote) {
-      try {
-        // eslint-disable-next-line no-console
-        console.info('[HybridRepo:Trade] getAll: try remote first');
-        const remoteTrades = await this.remote.getAll();
-        if (Array.isArray(remoteTrades) && remoteTrades.length) {
-          for (const t of remoteTrades) {
-            await this.local.update(t);
-          }
-          // eslint-disable-next-line no-console
-          console.info('[HybridRepo:Trade] getAll: remote returned', remoteTrades.length);
-          return remoteTrades;
-        }
-        // If remote returns empty, prefer local so unsynced items remain visible
-        // eslint-disable-next-line no-console
-        console.info('[HybridRepo:Trade] getAll: remote empty, using local');
-        return this.local.getAll();
-      } catch (err) {
-        // ignore errors (unauthenticated/offline), fall back to local
-        // eslint-disable-next-line no-console
-        console.warn('[HybridRepo:Trade] getAll: remote failed, using local', err);
-      }
-    }
+    // Local-first: read from fast LocalStorage cache
+    // Real-time listener keeps local in sync with remote changes
+    // Bootstrap (on construction) ensures initial sync from remote
     return this.local.getAll();
   }
 
@@ -193,12 +174,8 @@ export class HybridTradeRepository implements TradeRepository {
     const dto = TradeFactory.toDTO(trade);
     if (this.remote) {
       try {
-        // eslint-disable-next-line no-console
-        console.info('[HybridRepo:Trade] save: remote first', dto.id);
         await this.remote.save(TradeFactory.create(dto));
         await this.local.update(trade);
-        // eslint-disable-next-line no-console
-        console.info('[HybridRepo:Trade] save: mirrored to local', dto.id);
         try {
           globalThis.dispatchEvent(
             new CustomEvent('repo-sync-status', {
@@ -209,10 +186,8 @@ export class HybridTradeRepository implements TradeRepository {
           /* ignore */
         }
         return;
-      } catch (err) {
+      } catch {
         // fall through to local + outbox
-        // eslint-disable-next-line no-console
-        console.warn('[HybridRepo:Trade] save: remote failed, queueing', dto.id, err);
       }
     }
     await this.local.save(trade);
@@ -223,12 +198,8 @@ export class HybridTradeRepository implements TradeRepository {
     const dto = TradeFactory.toDTO(trade);
     if (this.remote) {
       try {
-        // eslint-disable-next-line no-console
-        console.info('[HybridRepo:Trade] update: remote first', dto.id);
         await this.remote.update(TradeFactory.create(dto));
         await this.local.update(trade);
-        // eslint-disable-next-line no-console
-        console.info('[HybridRepo:Trade] update: mirrored to local', dto.id);
         try {
           globalThis.dispatchEvent(
             new CustomEvent('repo-sync-status', {
@@ -239,10 +210,8 @@ export class HybridTradeRepository implements TradeRepository {
           /* ignore */
         }
         return;
-      } catch (err) {
+      } catch {
         // fall through to local + outbox
-        // eslint-disable-next-line no-console
-        console.warn('[HybridRepo:Trade] update: remote failed, queueing', dto.id, err);
       }
     }
     await this.local.update(trade);
@@ -252,12 +221,8 @@ export class HybridTradeRepository implements TradeRepository {
   async delete(id: string): Promise<void> {
     if (this.remote) {
       try {
-        // eslint-disable-next-line no-console
-        console.info('[HybridRepo:Trade] delete: remote first', id);
         await this.remote.delete(id);
         await this.local.delete(id);
-        // eslint-disable-next-line no-console
-        console.info('[HybridRepo:Trade] delete: mirrored to local', id);
         try {
           globalThis.dispatchEvent(
             new CustomEvent('repo-sync-status', {
@@ -268,10 +233,8 @@ export class HybridTradeRepository implements TradeRepository {
           /* ignore */
         }
         return;
-      } catch (err) {
+      } catch {
         // fall through to local + outbox
-        // eslint-disable-next-line no-console
-        console.warn('[HybridRepo:Trade] delete: remote failed, queueing', id, err);
       }
     }
     await this.local.delete(id);
@@ -282,16 +245,10 @@ export class HybridTradeRepository implements TradeRepository {
     if (!this.remote) return; // no remote configured, local-only mode
     try {
       if (item.op === 'delete') {
-        // eslint-disable-next-line no-console
-        console.info('[HybridRepo:Trade] trySync: delete', item.id);
         await this.remote.delete(item.id);
       } else if (item.op === 'save') {
-        // eslint-disable-next-line no-console
-        console.info('[HybridRepo:Trade] trySync: save', item.dto.id);
         await this.remote.save(TradeFactory.create(item.dto));
       } else {
-        // eslint-disable-next-line no-console
-        console.info('[HybridRepo:Trade] trySync: update', item.dto.id);
         await this.remote.update(TradeFactory.create(item.dto));
       }
       try {
@@ -303,13 +260,11 @@ export class HybridTradeRepository implements TradeRepository {
       } catch {
         /* ignore */
       }
-    } catch (err) {
+    } catch {
       // Queue for later
       const current = loadOutbox();
       current.push(item);
       saveOutbox(current);
-      // eslint-disable-next-line no-console
-      console.warn('[HybridRepo:Trade] trySync: queued (size=', current.length, ')', err);
       try {
         globalThis.dispatchEvent(
           new CustomEvent('repo-sync-status', {
@@ -326,8 +281,6 @@ export class HybridTradeRepository implements TradeRepository {
     if (!this.remote) return;
     const queue = loadOutbox();
     if (!queue.length) return;
-    // eslint-disable-next-line no-console
-    console.info('[HybridRepo:Trade] flushOutbox: attempting', queue.length, 'items');
     const remaining: OutboxItem[] = [];
     for (const item of queue) {
       try {
@@ -343,8 +296,6 @@ export class HybridTradeRepository implements TradeRepository {
       }
     }
     saveOutbox(remaining);
-    // eslint-disable-next-line no-console
-    console.info('[HybridRepo:Trade] flushOutbox: remaining', remaining.length);
     try {
       globalThis.dispatchEvent(
         new CustomEvent('repo-sync-status', {

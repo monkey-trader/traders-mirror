@@ -20,9 +20,10 @@
 }
 
 .item:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(2, 8, 23, 0.45);
-  background: linear-gradient(180deg, rgba(34, 193, 195, 0.02), rgba(255, 255, 255, 0.008));
+  transform: translateY(-1px);
+  /* reduce the shadow so it doesn't reach into the detail pane */
+  box-shadow: 0 6px 12px rgba(2, 8, 23, 0.28);
+  background: linear-gradient(180deg, rgba(34, 193, 195, 0.015), rgba(255, 255, 255, 0.006));
 }
 
 .selected {
@@ -38,6 +39,11 @@
   align-items: flex-start;
 }
 
+/* ensure left content can shrink/grow while right side (status/actions) keeps its width */
+.rowLeft {
+  flex: 1 1 auto;
+}
+
 .symbol {
   font-weight: 700;
   color: var(--text);
@@ -51,7 +57,10 @@
 .rowRight {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  flex: 0 0 auto; /* prevent right-side (status/actions) from shrinking and hiding buttons */
+  flex-wrap: wrap; /* allow action buttons to wrap instead of overflowing */
+  justify-content: flex-end;
 }
 
 .analysisBtn {
@@ -68,16 +77,10 @@
 }
 
 .analysisIcon {
-  width: 14px;
-  height: 14px;
+  width: 18px;
+  height: 18px;
   display: inline-block;
-  flex: 0 0 14px;
-
-  .analysisBtn {
-    padding: 6px 8px;
-    border-radius: 8px;
-    text-decoration: none;
-  }
+  flex: 0 0 18px;
   color: var(--color-primary); /* use theme primary color */
   opacity: 0.98;
 }
@@ -130,6 +133,11 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* slightly narrower pills to gain horizontal space */
+.side {
+  width: 64px; /* reduced from 72 */
 }
 
 /* Colored pill variants (light tint background + colored border/text) */
@@ -190,7 +198,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 72px; /* match side badge width */
+  width: 64px; /* slightly reduced to match side */
   height: 28px;
   padding: 4px 8px;
   box-sizing: border-box;

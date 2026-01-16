@@ -44,7 +44,9 @@ describe('Analysis live refresh', () => {
 
     // Dispatch repository update event that Analysis listens to
     try {
-      globalThis.dispatchEvent(new CustomEvent('analyses-updated', { detail: { type: 'created', id: 'A1' } }));
+      globalThis.dispatchEvent(
+        new CustomEvent('analyses-updated', { detail: { type: 'created', id: 'A1' } })
+      );
     } catch {
       /* ignore */
     }
