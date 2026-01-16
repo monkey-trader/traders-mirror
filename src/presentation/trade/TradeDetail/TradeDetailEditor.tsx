@@ -64,8 +64,11 @@ export function TradeDetailEditor({
   }, [trade]);
 
   useEffect(() => {
-    // notify parent immediately on change so parent can keep canonical list
-    if (local && onChange) onChange(local);
+    // notify parent only when the editor is dirty so we don't echo back
+    // incoming `trade` props and cause update loops.
+    if (!local || !onChange) return;
+    if (!isDirty) return;
+    onChange(local);
   }, [local, onChange]);
 
   // focus requested field when asked
