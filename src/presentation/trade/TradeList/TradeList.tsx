@@ -101,13 +101,6 @@ export function TradeList({
   onClose,
 }: TradeListProps) {
   if (compactView) {
-    return (
-      <div className={styles.list} role="list">
-        {trades.map((t) => {
-          const sideRaw = (t.side || '').toString().replace(/['"`]/g, '').trim();
-          const sideKey =
-            sideRaw.toUpperCase() === 'LONG' || sideRaw.toLowerCase() === 'buy' ? 'LONG' : 'SHORT';
-          return (
             <div key={t.id} className={styles.compactItem}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
                 <PositionCard
@@ -126,6 +119,13 @@ export function TradeList({
                 {t.analysisId ? (
                   <div>
                     <AnalysisOpenButton
+                       <div className={[styles.slDisplay, t.sl === 0 ? styles.slZero : styles.slAlert]
+                         .filter(Boolean)
+                         .join(' ')}
+                         style={{ marginLeft: 8 }}
+                       >
+                         SL: {t.sl ?? '-'}
+                       </div>
                       analysisId={t.analysisId}
                       symbol={t.symbol}
                       extraClass={styles.analysisBtn}
