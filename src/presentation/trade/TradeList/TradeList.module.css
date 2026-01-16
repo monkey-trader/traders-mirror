@@ -108,6 +108,14 @@
   text-align: right;
 }
 
+.slZero {
+  color: #4ade80; /* green-400 */
+}
+
+.slAlert {
+  color: #fb7185; /* red-400 */
+}
+
 .analysisBtn:hover {
   background: linear-gradient(180deg, rgba(37, 99, 235, 0.06), rgba(255, 255, 255, 0.01));
   transform: translateY(-2px);
