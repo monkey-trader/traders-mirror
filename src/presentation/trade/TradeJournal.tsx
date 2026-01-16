@@ -421,6 +421,7 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
         margin: selectedPos.margin,
         leverage: selectedPos.leverage,
         sl: selectedPos.sl,
+        slIsBE: selectedPos.slIsBE,
       }
     : null;
 

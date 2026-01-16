@@ -13,6 +13,7 @@ export type TradeRow = {
   notes?: string;
   entry?: string;
   sl?: number;
+  slIsBE?: boolean;
   tp1?: number;
   tp2?: number;
   tp3?: number;

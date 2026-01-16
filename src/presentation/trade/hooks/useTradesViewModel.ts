@@ -137,16 +137,19 @@ export function useTradesViewModel({
         const newSide = toggleSide(prev.side);
         updateTradeById(id, { side: newSide });
       } else if (action === 'sl-be') {
-        // Set SL to break-even value. Per request, set SL to 0.00 (explicit zero)
-        // instead of closing the trade.
-        updateTradeById(id, { sl: 0 });
+        // Set SL to break-even. Persist `slIsBE=true` and clear numeric SL.
+        updateTradeById(id, { sl: undefined, slIsBE: true });
         // Also persist immediately via repository/service to ensure storage reflects the change.
         (async () => {
           try {
             const updated = positionsRef.current.find((p) => p.id === id);
             if (!updated) return;
             const sanitized: TradeInput = { ...updated } as unknown as TradeInput;
-            if (sanitized.sl === 0) delete (sanitized as Partial<TradeInput>).sl;
+            // convert UI sentinel (sl === 0) to explicit BE flag
+            if (sanitized.sl === 0) {
+              sanitized.slIsBE = true;
+              delete (sanitized as Partial<TradeInput>).sl;
+            }
             const domain = TradeFactory.create(sanitized as unknown as TradeInput);
             if (serviceRef.current) await serviceRef.current.update(domain as unknown as Trade);
             else if (repoRef.current) await repoRef.current.update(domain as unknown as Trade);
