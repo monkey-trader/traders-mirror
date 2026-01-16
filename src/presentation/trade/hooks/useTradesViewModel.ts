@@ -132,8 +132,9 @@ export function useTradesViewModel({
         const newSide = toggleSide(prev.side);
         updateTradeById(id, { side: newSide });
       } else if (action === 'sl-be') {
-        const chosenSl = chooseSlFromEntry(prev.entry, prev.sl);
-        updateTradeById(id, { sl: chosenSl, status: 'CLOSED' });
+        // Set SL to break-even value. Per request, set SL to 0.00 (explicit zero)
+        // instead of closing the trade.
+        updateTradeById(id, { sl: 0 });
       } else if (action === 'sl-hit') {
         updateTradeById(id, { status: 'CLOSED' });
       } else if (action === 'close') {
