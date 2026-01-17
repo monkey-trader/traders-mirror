@@ -73,7 +73,7 @@ describe('TradeJournal compact actions (toggle-side, sl-be, sl-hit, close)', () 
     fireEvent.click(screen.getByText(/Undo/i));
 
     // close
-    const closeBtn = screen.getByLabelText(/Close COMPACT/i);
+    const closeBtn = screen.getByLabelText(/Filled COMPACT/i);
     fireEvent.click(closeBtn);
     await waitFor(() => expect(screen.getByText(/Undo/i)).toBeTruthy());
   });

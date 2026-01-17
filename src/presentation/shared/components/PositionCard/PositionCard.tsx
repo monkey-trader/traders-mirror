@@ -79,9 +79,9 @@ export function PositionCard({
             type="button"
             className={styles.closeBtn}
             onClick={() => onClose?.(id)}
-            aria-label={`Close ${symbol}`}
+            aria-label={`Filled ${symbol}`}
           >
-            Close
+            Filled
           </button>
           <button
             type="button"

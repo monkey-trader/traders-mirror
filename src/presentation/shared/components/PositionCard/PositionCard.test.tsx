@@ -50,7 +50,7 @@ describe('PositionCard (shared)', () => {
     fireEvent.click(screen.getByLabelText('Toggle side for ETHUSD'));
     fireEvent.click(screen.getByLabelText('Set SL to BE for ETHUSD'));
     fireEvent.click(screen.getByLabelText('Set SL hit for ETHUSD'));
-    fireEvent.click(screen.getByLabelText('Close ETHUSD'));
+    fireEvent.click(screen.getByLabelText('Filled ETHUSD'));
     fireEvent.click(screen.getByLabelText('Toggle details for ETHUSD'));
 
     expect(onToggleSide).toHaveBeenCalledWith('p2');

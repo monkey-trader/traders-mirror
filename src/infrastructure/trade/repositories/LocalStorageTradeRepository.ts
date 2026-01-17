@@ -26,6 +26,7 @@ export type RepoTrade = {
   margin?: number;
   leverage?: number;
   analysisId?: string; // optional link to analysis
+  userId?: string;
 };
 
 const STORAGE_KEY = 'mt_trades_v1';
@@ -422,6 +423,7 @@ export class LocalStorageTradeRepository implements TradeRepository {
         margin: typeof o.margin === 'number' ? (o.margin as number) : undefined,
         leverage: typeof o.leverage === 'number' ? (o.leverage as number) : undefined,
         analysisId: typeof o.analysisId === 'string' ? (o.analysisId as string) : undefined,
+        userId: typeof o.userId === 'string' ? (o.userId as string) : undefined,
       };
     }
 
@@ -448,6 +450,7 @@ export class LocalStorageTradeRepository implements TradeRepository {
         margin: typeof o.margin === 'number' ? (o.margin as number) : undefined,
         leverage: typeof o.leverage === 'number' ? (o.leverage as number) : undefined,
         analysisId: typeof o.analysisId === 'string' ? (o.analysisId as string) : undefined,
+        userId: typeof o.userId === 'string' ? (o.userId as string) : undefined,
       };
     }
 
@@ -490,6 +493,7 @@ export class LocalStorageTradeRepository implements TradeRepository {
         market: rt.market,
         sl: rt.sl,
         slIsBE: rt.slIsBE,
+        userId: rt.userId,
         tp1: rt.tp1,
         tp2: rt.tp2,
         tp3: rt.tp3,

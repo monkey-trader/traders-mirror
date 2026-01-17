@@ -150,7 +150,6 @@ export function TradeList({
                   >
                     <span aria-hidden="true">TP1</span>
                   </button>
-                  <span>TP2: {t.tp2 ?? '-'}</span>
                   <button
                     type="button"
                     className={posStyles.actionBtn}
@@ -190,12 +189,9 @@ export function TradeList({
                 <div style={{ marginTop: 6, color: 'var(--muted)' }}>
                   {new Date(t.entryDate).toLocaleDateString()}
                 </div>
-                  <div
-                    style={{ marginTop: 4 }}
-                    className={t.slIsBE ? styles.slZero : styles.slAlert}
-                  >
-                    SL: {t.slIsBE ? '0.0' : t.sl ?? '-'}
-                  </div>
+                <div style={{ marginTop: 4 }} className={t.slIsBE ? styles.slZero : styles.slAlert}>
+                  SL: {t.slIsBE ? '0.0' : t.sl ?? '-'}
+                </div>
               </div>
             </div>
           );
@@ -420,9 +416,9 @@ export function TradeList({
                         e.stopPropagation();
                         onClose(t.id);
                       }}
-                      aria-label={`Close ${t.symbol}`}
+                      aria-label={`Filled ${t.symbol}`}
                     >
-                      Close
+                      Filled
                     </button>
                   )}
                 </div>

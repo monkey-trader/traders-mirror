@@ -16,6 +16,8 @@ export type RepoTrade = {
   notes?: string;
   entry?: string;
   sl?: number;
+  slIsBE?: boolean;
+  userId?: string;
   tp1?: number;
   tp2?: number;
   tp3?: number;
@@ -419,6 +421,8 @@ export class InMemoryTradeRepository {
         notes: rt.notes,
         market: rt.market,
         sl: rt.sl,
+        slIsBE: rt.slIsBE,
+        userId: rt.userId,
         tp1: rt.tp1,
         tp2: rt.tp2,
         tp3: rt.tp3,

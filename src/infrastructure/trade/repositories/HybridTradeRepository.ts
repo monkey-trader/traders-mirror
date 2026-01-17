@@ -46,6 +46,13 @@ export class HybridTradeRepository implements TradeRepository {
         try {
           if (this.bootstrapped) return;
           this.bootstrapped = true;
+          // Flush any local outbox first so pending local edits are pushed to remote
+          // before we bootstrap/overwrite the local cache from remote state.
+          try {
+            await this.flushOutbox();
+          } catch {
+            // ignore flush errors - we'll continue with bootstrap
+          }
           const remoteTrades = await this.remote!.getAll();
           if (Array.isArray(remoteTrades) && remoteTrades.length) {
             for (const t of remoteTrades) {

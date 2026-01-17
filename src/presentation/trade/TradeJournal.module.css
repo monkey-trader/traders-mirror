@@ -1250,7 +1250,8 @@ textarea {
 }
 
 /* For the close button ensure it's visible over the sheet */
-.mobileModalContent > button[aria-label='Close'] {
+.mobileModalContent > button[aria-label='Close'],
+.mobileModalContent > button[aria-label='Filled'] {
   z-index: 10;
   color: var(--text);
 }

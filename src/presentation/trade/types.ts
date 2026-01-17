@@ -20,4 +20,5 @@ export type TradeRow = {
   tp4?: number;
   margin?: number;
   leverage?: number;
+  userId?: string;
 };

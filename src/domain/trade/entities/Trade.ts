@@ -30,6 +30,7 @@ export class Trade {
   public readonly leverage?: Leverage;
   public readonly margin?: Margin;
   public readonly analysisId?: AnalysisId; // link to originating Analysis (if any)
+  public readonly userId?: string;
 
   constructor(
     id: TradeId,
@@ -49,7 +50,8 @@ export class Trade {
     tp4?: Price,
     leverage?: Leverage,
     margin?: Margin,
-    analysisId?: AnalysisId
+    analysisId?: AnalysisId,
+    userId?: string
   ) {
     this.id = id;
     this.symbol = symbol;
@@ -69,5 +71,6 @@ export class Trade {
     this.leverage = leverage;
     this.margin = margin;
     this.analysisId = analysisId;
+    this.userId = userId;
   }
 }
