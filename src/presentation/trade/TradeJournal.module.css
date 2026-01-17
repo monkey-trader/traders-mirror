@@ -21,6 +21,104 @@
   width: 100%;
 }
 
+/* When used inside a full-bleed Card we want the left list to claim more horizontal space
+   so trades can show more fields and badges without excessive wrapping. This class is
+   applied to the Card via the `className` prop from TradeJournal. */
+.cardFullBleedTrade .listAndDetailWrap {
+  /* Make the left list column take the flexible remaining space and
+     allocate a smaller fixed column for the optional detail/controls on the right.
+     This makes the internal trade-list card expand to the right edge of the Card. */
+  /* reduce right detail column so list gets more horizontal space */
+  grid-template-columns: 1fr 280px;
+}
+
+.cardFullBleedTrade .leftPane {
+  padding: 10px; /* slightly reduce inner padding to use more width */
+}
+
+/* When rendering without Card (tradesArea) remove card-like background/shadow
+   so the list appears flush with the outer container and uses full width. */
+.tradesArea .leftPane {
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+  padding: 0;
+  min-height: 0;
+}
+
+.tradesArea .listAndDetailWrap {
+  /* tradesArea renders without Card; give the detail pane less width so
+     the left (list) pane becomes noticeably wider */
+  grid-template-columns: 1fr 280px;
+}
+
+/* Make table full-bleed inside tradesArea (remove rounded card container) */
+.tradesArea .table {
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+}
+
+.tradesArea .tableWrap {
+  padding: 0;
+  max-height: 72vh; /* keep scrolling behaviour */
+}
+
+/* Aggressive override to ensure no card visuals remain in the trades area.
+   This helps identify whether the new markup is being loaded in the browser. */
+.tradesArea .table,
+.tradesArea .table *,
+.tradesArea .positionsList,
+.tradesArea .positionsList * {
+  /* restrict the aggressive 'no-card' visual reset to the table/list area only
+     so control elements (buttons, filters, tabs) keep their intended styles */
+  background: transparent !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
+/* Ultra-wide modifier: makes the left (list) pane even wider by shrinking the
+   right/detail pane further. Toggle this class on the trades wrapper to enable. */
+.ultraWide .listAndDetailWrap {
+  /* hide the right/detail pane entirely so the list claims full width */
+  grid-template-columns: 1fr 0px;
+}
+
+/* Minimal styles for the toggle button shown in the trades controls */
+.ultraWideToggle {
+  background: rgba(255,255,255,0.03);
+  color: var(--muted);
+  border: 1px solid rgba(255,255,255,0.03);
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.ultraWideToggleActive {
+  background: linear-gradient(90deg, rgba(34,193,195,0.14), rgba(124,92,255,0.12));
+  color: var(--text);
+  border: 1px solid rgba(34,193,195,0.18);
+}
+
+/* Further tighten paddings inside ultraWide to free up more horizontal space */
+.ultraWide .leftPane {
+  padding: 2px;
+}
+
+.ultraWide .tableWrap {
+  padding: 0;
+}
+
+/* hide any right-side detail pane content when ultraWide is active */
+.ultraWide .rightPane {
+  display: none !important;
+}
+
+/* ensure table uses full width without clipping issues */
+.ultraWide .table {
+  min-width: 0;
+}
+
 /* Keep trade and analysis layouts using the same column sizing to avoid
    jumps when switching tabs. Right pane remains present so widths are stable. */
 
@@ -345,6 +443,21 @@
 .filterPills {
   display: flex;
   gap: 8px;
+}
+
+/* Make filter buttons pill-like and match the primary 'All' pill appearance
+   without changing global Button styles. Scoped to trades filters and controls. */
+.tradesFilters button,
+.controls button {
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-weight: 700;
+  min-height: 32px;
+}
+
+.tradesFilters button:hover,
+.controls button:hover {
+  transform: translateY(-1px);
 }
 
 /* lower the table shadow and make the table not visually bleed into left column */
@@ -950,6 +1063,42 @@
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+/* Tabs and wrapper for the trades area when not using Card */
+.tradesArea {
+  width: 100%;
+  padding: 6px 6px 0 6px;
+}
+
+.tradesTabs {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.tradesTab {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--muted);
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.tradesTabActive {
+  color: var(--text);
+  /* stronger accent for active tab: subtle gradient + soft glow to match pill style */
+  background: linear-gradient(90deg, rgba(34,193,195,0.10), rgba(124,92,255,0.08));
+  border-color: rgba(34,193,195,0.18);
+  box-shadow: 0 6px 18px rgba(34,193,195,0.06), 0 0 0 1px rgba(124,92,255,0.04) inset;
+  transform: translateY(-1px);
+}
+
+.tradesTab:focus-visible,
+.tradesTabActive:focus-visible {
+  outline: 3px solid rgba(124,92,255,0.12);
+  outline-offset: 3px;
 }
 
 .tradesCount {

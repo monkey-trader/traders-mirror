@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import React, { useEffect, useRef, useState } from 'react';
 // Layout is provided by App; do not render Layout again here to avoid duplicate headers
-import { Card } from '@/presentation/shared/components/Card/Card';
+// Intentionally do not use Card here for the trades area — render simple tabs
 import { Button } from '@/presentation/shared/components/Button/Button';
 import { SideValue } from '@/presentation/shared/components/SideSelect/SideSelect';
 import styles from './TradeJournal.module.css';
@@ -166,6 +166,7 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
 
   // active tab for the Trades card (list | analysis)
   const [tradesCardTab, setTradesCardTab] = useState<'list' | 'analysis'>('list');
+  // Note: ultra-wide layout is now permanent (no toggle)
 
   // load initial data from repo once on mount
   useEffect(() => {
@@ -549,68 +550,78 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
         </div>
 
         <div className={styles.right}>
-          <Card
-            tabs={[
-              {
-                key: 'list',
-                title: 'List',
-                render: () => (
-                  <>
-                    <div className={styles.tradesHeader}>
-                      <div className={styles.tradesHeaderColumn}>
-                        <div className={styles.tradesTitle}>Trades</div>
-                        <div className={styles.tradesStatusRow}>
-                          <StatusFilters
-                            tradeStatusFilter={tradeStatusFilter}
-                            setTradeStatusFilter={(s) => setTradeStatusFilter(s)}
-                          />
-                        </div>
-                      </div>
-                      <div className={styles.tradesControls}>
-                        <MarketFilters
-                          marketFilter={marketFilter}
-                          setMarketFilter={(m) => setMarketFilter(m)}
-                          tradesCount={trades.length}
-                        />
-                      </div>
-                    </div>
+          <div className={`${styles.cardFullBleedTrade} ${styles.tradesArea} ${styles.ultraWide}`.trim()}>
+            <div className={styles.tradesHeader}>
+              <div className={styles.tradesHeaderColumn}>
+                <div className={styles.tradesTitle}>Trades</div>
+                <div className={styles.tradesStatusRow}>
+                  <StatusFilters
+                    tradeStatusFilter={tradeStatusFilter}
+                    setTradeStatusFilter={(s) => setTradeStatusFilter(s)}
+                  />
+                </div>
+              </div>
+              <div className={styles.tradesControls}>
+                <div className={styles.tradesTabs} role="tablist" aria-label="Trades tabs">
+                  <Button
+                    type="button"
+                    role="tab"
+                    aria-selected={tradesCardTab === 'list'}
+                    variant={tradesCardTab === 'list' ? 'primary' : 'ghost'}
+                    className={tradesCardTab === 'list' ? styles.tradesTabActive : styles.tradesTab}
+                    onClick={() => setTradesCardTab('list')}
+                  >
+                    List
+                  </Button>
+                  <Button
+                    type="button"
+                    role="tab"
+                    aria-selected={tradesCardTab === 'analysis'}
+                    variant={tradesCardTab === 'analysis' ? 'primary' : 'ghost'}
+                    className={tradesCardTab === 'analysis' ? styles.tradesTabActive : styles.tradesTab}
+                    onClick={() => setTradesCardTab('analysis')}
+                  >
+                    Analyse
+                  </Button>
+                </div>
 
-                    <div className={styles.listAndDetailWrap}>
-                        <TradesPanel
-                        tradeListItems={tradeListItems}
-                        selectedId={selectedId}
-                        onSelect={(id, focusField) => {
-                          setSelectedId(id);
-                          setSelectedFieldToFocus(focusField ?? null);
-                          // open modal-based detail view when not in compact mode
-                          if (!compactGrid) setDetailModalOpen(true);
-                        }}
-                        performAction={performAction}
-                          performTPHit={performTPHit}
-                        compactGrid={compactGrid}
-                        compactEditorOpen={compactEditorOpen}
-                        setCompactEditorOpen={setCompactEditorOpen}
-                        selectedTrade={selectedTrade as unknown as TradeRow}
-                        onEditorChange={handleEditorChange}
-                        onEditorSave={handleEditorSave}
-                        // Use a request-based delete that opens the ConfirmDialog; actual delete runs on confirm
-                        onDeleteFromEditor={requestDeleteFromEditor}
-                        selectedFieldToFocus={selectedFieldToFocus}
-                        modalDetail={true}
-                      />
-                    </div>
-                  </>
-                ),
-              },
-              {
-                key: 'analysis',
-                title: 'Analyse',
-                render: () => <Analysis onCreateTradeSuggestion={handleCreateTradeFromAnalysis} />,
-              },
-            ]}
-            activeTabKey={tradesCardTab}
-            onTabChange={(k) => setTradesCardTab(k as 'list' | 'analysis')}
-          />
+                {/* UltraWide is now the default fixed layout; toggle removed */}
+
+                <MarketFilters
+                  marketFilter={marketFilter}
+                  setMarketFilter={(m) => setMarketFilter(m)}
+                  tradesCount={trades.length}
+                />
+              </div>
+            </div>
+
+            <div className={styles.listAndDetailWrap}>
+              {tradesCardTab === 'list' ? (
+                <TradesPanel
+                  tradeListItems={tradeListItems}
+                  selectedId={selectedId}
+                  onSelect={(id, focusField) => {
+                    setSelectedId(id);
+                    setSelectedFieldToFocus(focusField ?? null);
+                    if (!compactGrid) setDetailModalOpen(true);
+                  }}
+                  performAction={performAction}
+                  performTPHit={performTPHit}
+                  compactGrid={compactGrid}
+                  compactEditorOpen={compactEditorOpen}
+                  setCompactEditorOpen={setCompactEditorOpen}
+                  selectedTrade={selectedTrade as unknown as TradeRow}
+                  onEditorChange={handleEditorChange}
+                  onEditorSave={handleEditorSave}
+                  onDeleteFromEditor={requestDeleteFromEditor}
+                  selectedFieldToFocus={selectedFieldToFocus}
+                  modalDetail={true}
+                />
+              ) : (
+                <Analysis onCreateTradeSuggestion={handleCreateTradeFromAnalysis} />
+              )}
+            </div>
+          </div>
         </div>
       </div>
 

@@ -14,6 +14,7 @@ export type CardProps = {
   tabs?: CardTab[];
   activeTabKey?: string;
   onTabChange?: (key: string) => void;
+  fullBleed?: boolean;
 };
 
 export function Card({
@@ -23,12 +24,17 @@ export function Card({
   tabs,
   activeTabKey,
   onTabChange,
+  fullBleed = false,
 }: CardProps) {
   const hasTabs = Array.isArray(tabs) && tabs.length > 0;
   const activeKey = activeTabKey ?? (hasTabs ? tabs![0].key : undefined);
 
   return (
-    <div className={[styles.card, className].filter(Boolean).join(' ')}>
+    <div
+      className={[styles.card, fullBleed ? styles.cardFullBleed : '', className]
+        .filter(Boolean)
+        .join(' ')}
+    >
       {title && <div className={styles.title}>{title}</div>}
 
       {hasTabs && (

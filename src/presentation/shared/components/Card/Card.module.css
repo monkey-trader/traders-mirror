@@ -81,6 +81,16 @@
   border-radius: calc(var(--card-radius, 8px));
 }
 
+/* Optional modifier: reduce internal padding so contained lists/cards can use more horizontal space */
+.cardFullBleed {
+  padding: 8px; /* smaller than default 20px */
+}
+
+/* When using fullBleed, reduce internal content padding for denser layouts */
+.cardFullBleed .content {
+  padding: 0;
+}
+
 /* ensure card content stacks nicely on tiny devices */
 @media (max-width: 420px) {
   .content {
