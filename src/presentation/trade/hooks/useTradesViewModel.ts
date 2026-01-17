@@ -76,6 +76,10 @@ export function useTradesViewModel({
             const upper = String(normalizedPatch.side).toUpperCase();
             normalizedPatch.side = upper === 'LONG' || upper === 'SHORT' ? upper : 'LONG';
           }
+          // If SL is explicitly patched by the UI, clear any previous SL-BE flag
+          if (normalizedPatch.sl !== undefined) {
+            normalizedPatch.slIsBE = undefined;
+          }
           next = prev.map((p) => (p.id === id ? { ...p, ...normalizedPatch } : p));
           const updated = next.find((t) => t.id === id)!;
           void (async () => {
@@ -137,8 +141,9 @@ export function useTradesViewModel({
         const newSide = toggleSide(prev.side);
         updateTradeById(id, { side: newSide });
       } else if (action === 'sl-be') {
-        // Set SL to break-even. Persist `slIsBE=true` and set numeric SL to 0 so UI shows 0.0.
-        updateTradeById(id, { sl: 0, slIsBE: true });
+        // Set SL to break-even. Persist `slIsBE=true` and clear numeric SL in the UI
+        // so the input does not show `0` as a sentinel value.
+        updateTradeById(id, { sl: undefined, slIsBE: true });
         // Also persist immediately via repository/service to ensure storage reflects the change.
         (async () => {
           try {
@@ -152,6 +157,7 @@ export function useTradesViewModel({
               price: updated.price,
               side: updated.side,
               status: updated.status,
+              userId: updated.userId,
               notes: updated.notes,
               tp1: updated.tp1,
               tp2: updated.tp2,
@@ -172,15 +178,90 @@ export function useTradesViewModel({
             if (serviceRef.current) await serviceRef.current.update(domain as unknown as Trade);
             else if (repoRef.current) await repoRef.current.update(domain as unknown as Trade);
             setLastStatus?.('SL set to BE and persisted');
+            // Notify listeners (e.g. TradeJournal) to reload from repo so server-side
+            // derived fields like `side` are refreshed in the UI.
+            try {
+              globalThis.dispatchEvent(new CustomEvent('trades-updated'));
+            } catch {
+              // ignore if dispatch not available
+            }
           } catch (err) {
             console.error('Failed to persist SL-BE change', err);
             setLastStatus?.('SL-BE persist failed');
           }
         })();
       } else if (action === 'sl-hit') {
+        // Mark as CLOSED and persist immediately so refresh shows new state
         updateTradeById(id, { status: 'CLOSED' });
+        (async () => {
+          try {
+            const updated = positionsRef.current.find((p) => p.id === id);
+            if (!updated) return;
+            const sanitized: TradeInput = {
+              id: updated.id,
+              symbol: updated.symbol,
+              entryDate: updated.entryDate,
+              size: updated.size,
+              price: updated.price,
+              side: updated.side,
+              status: updated.status,
+              userId: updated.userId,
+              notes: updated.notes,
+              tp1: updated.tp1,
+              tp2: updated.tp2,
+              tp3: updated.tp3,
+              tp4: updated.tp4,
+              sl: updated.sl,
+              slIsBE: updated.slIsBE,
+              leverage: updated.leverage,
+              margin: updated.margin,
+              market: updated.market,
+            };
+            const domain = TradeFactory.create(sanitized as unknown as TradeInput);
+            if (serviceRef.current) await serviceRef.current.update(domain as unknown as Trade);
+            else if (repoRef.current) await repoRef.current.update(domain as unknown as Trade);
+            setLastStatus?.('Closed persisted');
+          } catch (err) {
+            console.error('Failed to persist closed change', err);
+            setLastStatus?.('Closed persist failed');
+          }
+        })();
       } else if (action === 'close') {
+        // Mark as FILLED and persist immediately so refresh shows new state
         updateTradeById(id, { status: 'FILLED' });
+        (async () => {
+          try {
+            const updated = positionsRef.current.find((p) => p.id === id);
+            if (!updated) return;
+            const sanitized: TradeInput = {
+              id: updated.id,
+              symbol: updated.symbol,
+              entryDate: updated.entryDate,
+              size: updated.size,
+              price: updated.price,
+              side: updated.side,
+              status: updated.status,
+              userId: updated.userId,
+              notes: updated.notes,
+              tp1: updated.tp1,
+              tp2: updated.tp2,
+              tp3: updated.tp3,
+              tp4: updated.tp4,
+              sl: updated.sl,
+              slIsBE: updated.slIsBE,
+              leverage: updated.leverage,
+              margin: updated.margin,
+              market: updated.market,
+            };
+            const domain = TradeFactory.create(sanitized as unknown as TradeInput);
+            if (serviceRef.current) await serviceRef.current.update(domain as unknown as Trade);
+            else if (repoRef.current) await repoRef.current.update(domain as unknown as Trade);
+            setLastStatus?.('Filled persisted');
+          } catch (err) {
+            console.error('Failed to persist filled change', err);
+            setLastStatus?.('Filled persist failed');
+          }
+        })();
       } else if (action === 'delete') {
         // local removal and repo delete
         setPositions((prevs) => prevs.filter((p) => p.id !== id));
@@ -216,8 +297,40 @@ export function useTradesViewModel({
         const prev = positionsRef.current.find((p) => p.id === id) ?? positions.find((p) => p.id === id);
         if (!prev) return;
         const prevCopy = { ...prev };
-        // Mark as closed on TP hit
+        // Mark as closed on TP hit and persist immediately
         updateTradeById(id, { status: 'CLOSED' });
+        (async () => {
+          try {
+            const updated = positionsRef.current.find((p) => p.id === id);
+            if (!updated) return;
+            const sanitized: TradeInput = {
+              id: updated.id,
+              symbol: updated.symbol,
+              entryDate: updated.entryDate,
+              size: updated.size,
+              price: updated.price,
+              side: updated.side,
+              status: updated.status,
+              notes: updated.notes,
+              tp1: updated.tp1,
+              tp2: updated.tp2,
+              tp3: updated.tp3,
+              tp4: updated.tp4,
+              sl: updated.sl,
+              slIsBE: updated.slIsBE,
+              leverage: updated.leverage,
+              margin: updated.margin,
+              market: updated.market,
+            };
+            const domain = TradeFactory.create(sanitized as unknown as TradeInput);
+            if (serviceRef.current) await serviceRef.current.update(domain as unknown as Trade);
+            else if (repoRef.current) await repoRef.current.update(domain as unknown as Trade);
+            setLastStatus?.('TP hit persisted');
+          } catch (err) {
+            console.error('Failed to persist TP hit change', err);
+            setLastStatus?.('TP hit persist failed');
+          }
+        })();
         setUndoInfo({ id, prev: prevCopy });
         if (undoTimerRef.current) window.clearTimeout(undoTimerRef.current);
         undoTimerRef.current = window.setTimeout(() => {
@@ -245,7 +358,9 @@ export function useTradesViewModel({
               tp2: dto.tp2 ?? p.tp2,
               tp3: dto.tp3 ?? p.tp3,
               tp4: dto.tp4 ?? p.tp4,
+              // If the user edited SL in the editor, clear slIsBE so we don't persist BE sentinel
               sl: dto.sl ?? p.sl,
+              slIsBE: dto.sl !== undefined ? undefined : p.slIsBE,
               leverage: dto.leverage ?? p.leverage,
               market:
                 dto.market === 'Crypto' || dto.market === 'Forex' || dto.market === 'All'
@@ -298,6 +413,7 @@ export function useTradesViewModel({
           price: ut.price,
           side: ut.side,
           status: ut.status,
+          userId: ut.userId,
           notes: ut.notes,
           tp1: ut.tp1,
           tp2: ut.tp2,
