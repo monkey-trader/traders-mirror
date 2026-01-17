@@ -55,6 +55,9 @@ Docs
 Update 12.01.2026
 - `RepoSyncStatus` (presentation/shared): Small header badge that summarizes sync state (Local/Online/Queued). Uses color tokens and supports `compactView` to reduce padding/font-size for narrow headers. Tested with Vitest for compact styles and event-driven label changes.
 
+Update 17.01.2026
+- `ActionDropdown` (presentation/shared): Shared dropdown that replaces scattered SL/TP/side buttons. Uses the glass background + text tokens from `design-tokens.css`, stretches to full width on phones, and exposes a `size="compact"` variant for `PositionCard` so compact cards stay narrow. Covered by Vitest through the compact action tests and integration undo flow.
+
 Update 09.01.2026
 - `LoginRequired` (presentation/auth): Centered card that uses spacing tokens (`--space-4/5/6`) and adapts paddings on small screens via media query. No `compactView` prop needed as it is inherently minimal and mobile-friendly.
 

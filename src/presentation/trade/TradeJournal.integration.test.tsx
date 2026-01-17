@@ -199,9 +199,9 @@ describe('TradeJournal Integration', () => {
       fireEvent.submit(form);
     });
     await screen.findByText('UNDOUSD');
-    // Delete: Suche nach Close-Button für UNDOUSD
-    const closeBtn = screen.getByLabelText('Filled UNDOUSD');
-    fireEvent.click(closeBtn);
+    // Delete via action dropdown for UNDOUSD
+    const actionSelect = screen.getByLabelText('Aktionen für UNDOUSD') as HTMLSelectElement;
+    fireEvent.change(actionSelect, { target: { value: 'filled' } });
     // Undo-Banner sollte erscheinen
     // Nutze findAllByRole für Undo-Button und klicke das erste Element (case-insensitive, englisch)
     const undoBtns = await screen.findAllByRole('button', { name: /undo/i });

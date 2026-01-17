@@ -131,7 +131,17 @@ export function useTradesViewModel({
   );
 
   const performAction = useCallback(
-    (action: 'toggle-side' | 'sl-be' | 'sl-hit' | 'close' | 'delete', id: string) => {
+    (
+      action:
+        | 'toggle-side'
+        | 'sl-be'
+        | 'sl-hit'
+        | 'close'
+        | 'delete'
+        | 'status-open'
+        | 'status-closed',
+      id: string
+    ) => {
       const prev =
         positionsRef.current.find((p) => p.id === id) ?? positions.find((p) => p.id === id);
       if (!prev) return;
@@ -190,7 +200,42 @@ export function useTradesViewModel({
             setLastStatus?.('SL-BE persist failed');
           }
         })();
-      } else if (action === 'sl-hit') {
+      } else if (action === 'status-open') {
+        updateTradeById(id, { status: 'OPEN' });
+        (async () => {
+          try {
+            const updated = positionsRef.current.find((p) => p.id === id);
+            if (!updated) return;
+            const sanitized: TradeInput = {
+              id: updated.id,
+              symbol: updated.symbol,
+              entryDate: updated.entryDate,
+              size: updated.size,
+              price: updated.price,
+              side: updated.side,
+              status: updated.status,
+              userId: updated.userId,
+              notes: updated.notes,
+              tp1: updated.tp1,
+              tp2: updated.tp2,
+              tp3: updated.tp3,
+              tp4: updated.tp4,
+              sl: updated.sl,
+              slIsBE: updated.slIsBE,
+              leverage: updated.leverage,
+              margin: updated.margin,
+              market: updated.market,
+            };
+            const domain = TradeFactory.create(sanitized as unknown as TradeInput);
+            if (serviceRef.current) await serviceRef.current.update(domain as unknown as Trade);
+            else if (repoRef.current) await repoRef.current.update(domain as unknown as Trade);
+            setLastStatus?.('Open persisted');
+          } catch (err) {
+            console.error('Failed to persist open change', err);
+            setLastStatus?.('Open persist failed');
+          }
+        })();
+      } else if (action === 'sl-hit' || action === 'status-closed') {
         // Mark as CLOSED and persist immediately so refresh shows new state
         updateTradeById(id, { status: 'CLOSED' });
         (async () => {

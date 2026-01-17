@@ -1,5 +1,18 @@
 import React from 'react';
 import styles from './PositionCard.module.css';
+import { ActionDropdown, type ActionDropdownOption } from '../ActionDropdown/ActionDropdown';
+
+type TradeActionValue =
+  | 'toggle-side'
+  | 'sl-be'
+  | 'status-open'
+  | 'status-closed'
+  | 'sl-hit'
+  | 'tp-1'
+  | 'tp-2'
+  | 'tp-3'
+  | 'tp-4'
+  | 'filled';
 
 export type PositionCardProps = {
   id: string;
@@ -14,6 +27,9 @@ export type PositionCardProps = {
   onClose?: (id: string) => void;
   onSetSLtoBE?: (id: string) => void;
   onSetSLHit?: (id: string) => void;
+  onSetTPHit?: (id: string, tpIndex: 1 | 2 | 3 | 4) => void;
+  onMarkClosed?: (id: string) => void;
+  onMarkOpen?: (id: string) => void;
 };
 
 export function PositionCard({
@@ -29,8 +45,89 @@ export function PositionCard({
   onClose,
   onSetSLtoBE,
   onSetSLHit,
+  onSetTPHit,
+  onMarkClosed,
+  onMarkOpen,
 }: PositionCardProps) {
   const sideClass = side === 'LONG' ? styles.sideLong : styles.sideShort;
+  const optionMap: Partial<Record<TradeActionValue, ActionDropdownOption>> = {};
+
+  if (onToggleSide) {
+    const targetSide = side === 'LONG' ? 'SHORT' : 'LONG';
+    optionMap['toggle-side'] = {
+      value: 'toggle-side',
+      label: `Switch to ${targetSide}`,
+      onSelect: () => onToggleSide(id),
+    };
+  }
+
+  if (onSetSLtoBE) {
+    optionMap['sl-be'] = {
+      value: 'sl-be',
+      label: 'Set SL to BE',
+      onSelect: () => onSetSLtoBE(id),
+    };
+  }
+
+  if (onMarkOpen) {
+    optionMap['status-open'] = {
+      value: 'status-open',
+      label: 'Mark OPEN',
+      onSelect: () => onMarkOpen(id),
+    };
+  }
+
+  if (onMarkClosed) {
+    optionMap['status-closed'] = {
+      value: 'status-closed',
+      label: 'Mark CLOSED',
+      onSelect: () => onMarkClosed(id),
+    };
+  }
+
+  if (onSetSLHit) {
+    optionMap['sl-hit'] = {
+      value: 'sl-hit',
+      label: 'Mark SL hit',
+      onSelect: () => onSetSLHit(id),
+    };
+  }
+
+  if (onSetTPHit) {
+    (['1', '2', '3', '4'] as const).forEach((target) => {
+      const idx = Number(target) as 1 | 2 | 3 | 4;
+      const value = `tp-${target}` as TradeActionValue;
+      optionMap[value] = {
+        value,
+        label: `Mark TP${target} hit`,
+        onSelect: () => onSetTPHit(id, idx),
+      };
+    });
+  }
+
+  if (onClose) {
+    optionMap.filled = {
+      value: 'filled',
+      label: 'Mark FILLED',
+      onSelect: () => onClose(id),
+    };
+  }
+
+  const orderedKeys: TradeActionValue[] = [
+    'sl-be',
+    'sl-hit',
+    'tp-1',
+    'tp-2',
+    'tp-3',
+    'tp-4',
+    'status-open',
+    'status-closed',
+    'filled',
+    'toggle-side',
+  ];
+  const actionOptions = orderedKeys
+    .map((key) => optionMap[key])
+    .filter((opt): opt is ActionDropdownOption => Boolean(opt));
 
   return (
     <div className={styles.card} role="group" aria-labelledby={`pos-${id}-symbol`}>
@@ -47,42 +144,13 @@ export function PositionCard({
       <div className={styles.right}>
         <div className={pnl >= 0 ? styles.pnlPositive : styles.pnlNegative}>{pnl.toFixed(2)}</div>
         <div className={styles.actions}>
-          <button
-            type="button"
-            className={styles.actionBtn}
-            onClick={() => onToggleSide?.(id)}
-            aria-label={`Toggle side for ${symbol}`}
-          >
-            Side
-          </button>
-          <button
-            type="button"
-            className={
-              [styles.actionBtn, Number(sl) === 0 ? styles.slBeActive : styles.slBeInactive]
-                .filter(Boolean)
-                .join(' ')
-            }
-            onClick={() => onSetSLtoBE?.(id)}
-            aria-label={`Set SL to BE for ${symbol}`}
-          >
-            SL‑BE
-          </button>
-          <button
-            type="button"
-            className={styles.actionBtn}
-            onClick={() => onSetSLHit?.(id)}
-            aria-label={`Set SL hit for ${symbol}`}
-          >
-            SL‑HIT
-          </button>
-          <button
-            type="button"
-            className={styles.closeBtn}
-            onClick={() => onClose?.(id)}
-            aria-label={`Filled ${symbol}`}
-          >
-            Filled
-          </button>
+          {actionOptions.length > 0 && (
+            <ActionDropdown
+              options={actionOptions}
+              ariaLabel={`Aktionen für ${symbol}`}
+              size="compact"
+            />
+          )}
           <button
             type="button"
             className={styles.expandBtn}

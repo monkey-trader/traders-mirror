@@ -31,6 +31,9 @@ describe('PositionCard (shared)', () => {
     const onClose = vi.fn();
     const onSetSLtoBE = vi.fn();
     const onSetSLHit = vi.fn();
+    const onSetTPHit = vi.fn();
+    const onMarkClosed = vi.fn();
+    const onMarkOpen = vi.fn();
 
     render(
       <PositionCard
@@ -44,18 +47,28 @@ describe('PositionCard (shared)', () => {
         onClose={onClose}
         onSetSLtoBE={onSetSLtoBE}
         onSetSLHit={onSetSLHit}
+        onSetTPHit={onSetTPHit}
+        onMarkClosed={onMarkClosed}
+        onMarkOpen={onMarkOpen}
       />
     );
 
-    fireEvent.click(screen.getByLabelText('Toggle side for ETHUSD'));
-    fireEvent.click(screen.getByLabelText('Set SL to BE for ETHUSD'));
-    fireEvent.click(screen.getByLabelText('Set SL hit for ETHUSD'));
-    fireEvent.click(screen.getByLabelText('Filled ETHUSD'));
+    const select = screen.getByLabelText('Aktionen für ETHUSD') as HTMLSelectElement;
+    fireEvent.change(select, { target: { value: 'toggle-side' } });
+    fireEvent.change(select, { target: { value: 'sl-be' } });
+    fireEvent.change(select, { target: { value: 'sl-hit' } });
+    fireEvent.change(select, { target: { value: 'status-closed' } });
+    fireEvent.change(select, { target: { value: 'status-open' } });
+    fireEvent.change(select, { target: { value: 'tp-2' } });
+    fireEvent.change(select, { target: { value: 'filled' } });
     fireEvent.click(screen.getByLabelText('Toggle details for ETHUSD'));
 
     expect(onToggleSide).toHaveBeenCalledWith('p2');
     expect(onSetSLtoBE).toHaveBeenCalledWith('p2');
     expect(onSetSLHit).toHaveBeenCalledWith('p2');
+    expect(onMarkClosed).toHaveBeenCalledWith('p2');
+    expect(onMarkOpen).toHaveBeenCalledWith('p2');
+    expect(onSetTPHit).toHaveBeenCalledWith('p2', 2);
     expect(onClose).toHaveBeenCalledWith('p2');
     expect(onExpand).toHaveBeenCalledWith('p2');
 

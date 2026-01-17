@@ -12,7 +12,14 @@ type Props = {
   // onSelect may optionally request a specific field to focus in the detail editor
   onSelect: (id: string, focusField?: string) => void;
   performAction: (
-    action: 'toggle-side' | 'sl-be' | 'sl-hit' | 'close' | 'delete',
+    action:
+      | 'toggle-side'
+      | 'sl-be'
+      | 'sl-hit'
+      | 'close'
+      | 'delete'
+      | 'status-open'
+      | 'status-closed',
     id: string
   ) => void;
   performTPHit: (id: string, tpIndex: 1 | 2 | 3 | 4) => void;
@@ -66,6 +73,8 @@ export function TradesPanel({
             onToggleSide={(id) => performAction('toggle-side', id)}
             onSetSLtoBE={(id) => performAction('sl-be', id)}
             onSetSLHit={(id) => performAction('sl-hit', id)}
+            onMarkClosed={(id) => performAction('status-closed', id)}
+            onMarkOpen={(id) => performAction('status-open', id)}
             onClose={(id) => performAction('close', id)}
             onSetTPHit={(id, idx) => performTPHit(id, idx)}
             compactView={compactGrid}
@@ -124,6 +133,8 @@ export function TradesPanel({
               onToggleSide={(id) => performAction('toggle-side', id)}
               onSetSLtoBE={(id) => performAction('sl-be', id)}
               onSetSLHit={(id) => performAction('sl-hit', id)}
+              onMarkClosed={(id) => performAction('status-closed', id)}
+              onMarkOpen={(id) => performAction('status-open', id)}
               onClose={(id) => performAction('close', id)}
               onSetTPHit={(id, idx) => performTPHit(id, idx)}
               compactView={compactGrid}

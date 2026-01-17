@@ -106,36 +106,114 @@
   transition: background 120ms ease, transform 120ms ease, box-shadow 120ms ease, color 120ms ease;
 }
 
-.slDisplay {
+.metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 4px 0;
+}
+
+.metricItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 84px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(34, 193, 195, 0.08), rgba(124, 92, 255, 0.04));
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 4px 14px rgba(5, 8, 21, 0.24);
+}
+
+.metricLabel {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.metricValue {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.metricPositive {
+  background: linear-gradient(180deg, rgba(74, 222, 128, 0.18), rgba(34, 193, 195, 0.04));
+  border-color: rgba(74, 222, 128, 0.35);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 6px 18px rgba(16, 185, 129, 0.25);
+}
+
+.metricPositive .metricLabel {
+  color: rgba(134, 239, 172, 0.92);
+}
+
+.metricPositive .metricValue {
+  color: #4ade80;
+}
+
+.metricNegative {
+  background: linear-gradient(180deg, rgba(251, 113, 133, 0.2), rgba(124, 92, 255, 0.03));
+  border-color: rgba(251, 113, 133, 0.42);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 6px 18px rgba(190, 24, 93, 0.2);
+}
+
+.metricNegative .metricLabel {
+  color: rgba(254, 205, 211, 0.92);
+}
+
+.metricNegative .metricValue {
+  color: #fb7185;
+}
+
+.metricsCompact {
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.metricsCompact .metricItem {
+  flex: 1 1 calc(50% - 6px);
+  min-width: 120px;
+  padding: 5px 8px;
+}
+
+.metricsCompact .metricLabel {
+  font-size: 9px;
+}
+
+.metricsCompact .metricValue {
+  font-size: 12px;
+}
+
+
+.tpLevelsCompact {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tpValues {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
   font-size: 12px;
   color: var(--muted);
-  min-width: 72px;
-  text-align: right;
 }
 
-.slZero {
-  color: #4ade80; /* green-400 */
+.tpMetaDate {
+  font-size: 12px;
+  color: var(--muted);
 }
 
-.slAlert {
-  color: #fb7185; /* red-400 */
+.actionDropdownWrap {
+  margin-left: 8px;
+  min-width: 180px;
 }
-
-/* horizontal scroll wrapper for TP buttons to keep UI usable on narrow screens */
-.tpButtons {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  flex-wrap: wrap; /* allow TP buttons to wrap to next line instead of horizontal scrolling */
-  max-width: none; /* use available space */
-  padding-bottom: 2px;
-}
-.tpButtons::-webkit-scrollbar {
-  height: 6px;
-}
-.tpButtons::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.04);
-  border-radius: 6px;
+.actionDropdownWrap select {
+  width: 100%;
 }
 
 .analysisBtn:hover {
@@ -291,6 +369,13 @@
     width: 100%;
     display: flex;
     justify-content: space-between;
+  }
+  .metrics,
+  .metricsCompact {
+    width: 100%;
+  }
+  .metricsCompact .metricItem {
+    flex: 1 1 100%;
   }
   .side,
   .status {

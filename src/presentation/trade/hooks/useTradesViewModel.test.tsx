@@ -32,6 +32,8 @@ function Host({ repo }: { repo?: Partial<TradeRepository> }) {
       </button>
       <button onClick={() => vm.performAction('toggle-side', '1')}>toggle</button>
       <button onClick={() => vm.performAction('sl-be', '1')}>sl-be</button>
+      <button onClick={() => vm.performAction('status-open', '1')}>status-open</button>
+      <button onClick={() => vm.performAction('status-closed', '1')}>status-closed</button>
       <button onClick={() => vm.performAction('delete', '1')}>delete</button>
       <div data-testid="count">{vm.positions.length}</div>
     </div>
@@ -74,6 +76,30 @@ describe('useTradesViewModel', () => {
 
     await waitFor(() => {
       expect(update).toHaveBeenCalled();
+    });
+  });
+
+  it('status open/closed actions persist', async () => {
+    const update = vi.fn().mockResolvedValue(undefined);
+    const repo = { update } as unknown as Partial<TradeRepository>;
+    render(<Host repo={repo} />);
+
+    await act(async () => {
+      screen.getByText('seed').click();
+    });
+
+    await act(async () => {
+      screen.getByText('status-closed').click();
+    });
+    await waitFor(() => {
+      expect(update).toHaveBeenCalledTimes(1);
+    });
+
+    await act(async () => {
+      screen.getByText('status-open').click();
+    });
+    await waitFor(() => {
+      expect(update).toHaveBeenCalledTimes(2);
     });
   });
 

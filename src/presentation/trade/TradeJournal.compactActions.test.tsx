@@ -5,7 +5,7 @@ import { TradeJournal } from './TradeJournal';
 import { TradeFactory } from '@/domain/trade/factories/TradeFactory';
 import type { TradeInput } from '@/domain/trade/factories/TradeFactory';
 
-describe('TradeJournal compact actions (toggle-side, sl-be, sl-hit, close)', () => {
+describe('TradeJournal compact dropdown actions', () => {
   it('executes compact action buttons and shows undo banner each time', async () => {
     const dto: TradeInput = {
       id: 'tx-compact-1',
@@ -54,27 +54,35 @@ describe('TradeJournal compact actions (toggle-side, sl-be, sl-hit, close)', () 
     // Wait for the compact item to render
     await waitFor(() => expect(screen.getByText(/COMPACT/i)).toBeTruthy());
 
+    const actionSelect = screen.getByLabelText(/Aktionen für COMPACT/i) as HTMLSelectElement;
+
     // toggle-side
-    const toggleBtn = screen.getByLabelText(/Toggle side for COMPACT/i);
-    fireEvent.click(toggleBtn);
+    fireEvent.change(actionSelect, { target: { value: 'toggle-side' } });
     await waitFor(() => expect(screen.getByText(/Undo/i)).toBeTruthy());
     fireEvent.click(screen.getByText(/Undo/i));
 
     // set SL to BE
-    const slbeBtn = screen.getByLabelText(/Set SL to BE for COMPACT/i);
-    fireEvent.click(slbeBtn);
+    fireEvent.change(actionSelect, { target: { value: 'sl-be' } });
     await waitFor(() => expect(screen.getByText(/Undo/i)).toBeTruthy());
     fireEvent.click(screen.getByText(/Undo/i));
 
     // set SL hit
-    const slhitBtn = screen.getByLabelText(/Set SL hit for COMPACT/i);
-    fireEvent.click(slhitBtn);
+    fireEvent.change(actionSelect, { target: { value: 'sl-hit' } });
     await waitFor(() => expect(screen.getByText(/Undo/i)).toBeTruthy());
     fireEvent.click(screen.getByText(/Undo/i));
 
-    // close
-    const closeBtn = screen.getByLabelText(/Filled COMPACT/i);
-    fireEvent.click(closeBtn);
+    // mark closed
+    fireEvent.change(actionSelect, { target: { value: 'status-closed' } });
+    await waitFor(() => expect(screen.getByText(/Undo/i)).toBeTruthy());
+    fireEvent.click(screen.getByText(/Undo/i));
+
+    // mark open
+    fireEvent.change(actionSelect, { target: { value: 'status-open' } });
+    await waitFor(() => expect(screen.getByText(/Undo/i)).toBeTruthy());
+    fireEvent.click(screen.getByText(/Undo/i));
+
+    // close (mark filled)
+    fireEvent.change(actionSelect, { target: { value: 'filled' } });
     await waitFor(() => expect(screen.getByText(/Undo/i)).toBeTruthy());
   });
 });
