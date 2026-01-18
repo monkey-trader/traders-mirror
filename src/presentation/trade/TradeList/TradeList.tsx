@@ -150,84 +150,76 @@ const dispatchPrefillAnalysis = (trade: TradeListItem) => {
   }
 };
 
-function AnalysisOpenButton({
-  analysisId,
-  symbol,
-  extraClass,
-}: {
-  analysisId?: string | null;
-  symbol: string;
-  extraClass?: string;
-}) {
-  if (!analysisId) return null;
+function AnalysisActionButton({ trade, extraClass }: { trade: TradeListItem; extraClass?: string }) {
   const className = [btnStyles.button, extraClass || ''].filter(Boolean).join(' ');
-  return (
-    <IconButton
-      ariaLabel={`Open analysis for ${symbol}`}
-      variant="ghost"
-      color="primary"
-      className={className}
-      title="Open analysis"
-      onClick={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        try {
-          globalThis.location.hash = `#/analysis?id=${encodeURIComponent(analysisId ?? '')}`;
-          setTimeout(() => {
-            try {
-              globalThis.dispatchEvent(
-                new CustomEvent('open-analysis', { detail: { id: analysisId } })
-              );
-            } catch {
-              /* ignore */
-            }
-          }, 50);
-        } catch {
-          /* ignore */
-        }
-      }}
-      icon={
-        <svg
-          className={styles.analysisIcon}
-          viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg"
-          aria-hidden
-        >
-          <path
-            d="M14 3h7v7h-2V6.41l-9.29 9.3-1.42-1.42L17.59 5H14V3zM5 5h6v2H7v10h10v-4h2v6H5V5z"
-            fill="currentColor"
-          />
-        </svg>
-      }
-    />
-  );
-}
+  const hasAnalysis = Boolean(trade.analysisId);
 
-function AnalysisCreateButton({ trade, extraClass }: { trade: TradeListItem; extraClass?: string }) {
-  const className = [btnStyles.button, extraClass || ''].filter(Boolean).join(' ');
+  const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (hasAnalysis && trade.analysisId) {
+      try {
+        globalThis.location.hash = `#/analysis?id=${encodeURIComponent(trade.analysisId)}`;
+        setTimeout(() => {
+          try {
+            globalThis.dispatchEvent(
+              new CustomEvent('open-analysis', { detail: { id: trade.analysisId } })
+            );
+          } catch {
+            /* ignore */
+          }
+        }, 50);
+      } catch {
+        /* ignore */
+      }
+      return;
+    }
+    dispatchPrefillAnalysis(trade);
+  };
+
+  const icon = hasAnalysis ? (
+    <svg className={styles.analysisIcon} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+      <path
+        d="M9.5 14.5 8.1 15.9a3 3 0 1 1-4.2-4.2l3-3a3 3 0 0 1 4.2 0"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="m14.5 9.5 1.4-1.4a3 3 0 0 1 4.2 4.2l-3 3a3 3 0 0 1-4.2 0"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M9 15 15 9"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  ) : (
+    <svg className={styles.analysisIcon} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+      <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="currentColor" />
+    </svg>
+  );
+
   return (
     <IconButton
-      ariaLabel={`Create analysis for ${trade.symbol}`}
+      ariaLabel={`${hasAnalysis ? 'Open' : 'Create'} analysis for ${trade.symbol}`}
       variant="ghost"
       color="primary"
       className={className}
-      title="Create analysis"
+      title={hasAnalysis ? 'Open analysis' : 'Create analysis'}
       data-testid={`create-analysis-${trade.id}`}
-      onClick={(event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        dispatchPrefillAnalysis(trade);
-      }}
-      icon={
-        <svg
-          className={styles.analysisIcon}
-          viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg"
-          aria-hidden
-        >
-          <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="currentColor" />
-        </svg>
-      }
+      icon={icon}
+      onClick={handleClick}
     />
   );
 }
@@ -515,15 +507,7 @@ export function TradeList({
                   tp4IsHit={t.tp4IsHit}
                 />
                 <div>
-                  {t.analysisId ? (
-                    <AnalysisOpenButton
-                      analysisId={t.analysisId}
-                      symbol={t.symbol}
-                      extraClass={styles.analysisBtn}
-                    />
-                  ) : (
-                    <AnalysisCreateButton trade={t} extraClass={styles.analysisBtn} />
-                  )}
+                  <AnalysisActionButton trade={t} extraClass={styles.analysisBtn} />
                 </div>
               </div>
               <div className={styles.tpLevelsCompact}>
@@ -838,15 +822,7 @@ export function TradeList({
             </div>
             <div className={styles.rowRight}>
               <div style={{ marginRight: 8 }}>
-                {t.analysisId ? (
-                  <AnalysisOpenButton
-                    analysisId={t.analysisId}
-                    symbol={t.symbol}
-                    extraClass={styles.analysisBtn}
-                  />
-                ) : (
-                  <AnalysisCreateButton trade={t} extraClass={styles.analysisBtn} />
-                )}
+                <AnalysisActionButton trade={t} extraClass={styles.analysisBtn} />
               </div>
               <div
                 className={[styles.side, sideClass].join(' ')}
