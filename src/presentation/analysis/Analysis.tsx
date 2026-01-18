@@ -543,7 +543,7 @@ function DetailLoader({
 }: {
   id: string;
   startEditingField?: string | null;
-  onCreateTrade?: (summary?: AnalysisSuggestion) => void;
+  onCreateTrade?: (summary?: AnalysisSummary) => void;
   onRequestDelete?: (id: string) => void;
 }) {
   const [analysis, setAnalysis] = useState<AnalysisDTOType | null>(null);

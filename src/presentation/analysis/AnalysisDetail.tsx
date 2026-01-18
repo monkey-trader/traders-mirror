@@ -5,6 +5,7 @@ import { IconButton } from '@/presentation/shared/components/IconButton/IconButt
 import LocalStorageTradeRepository from '@/infrastructure/trade/repositories/LocalStorageTradeRepository';
 import { useEffect, useState } from 'react';
 import { AnalysisEditor } from './AnalysisEditor';
+import type { AnalysisSummary } from '@/presentation/analysis/AnalysisList';
 import type { TimeframeInput } from '@/presentation/analysis/types';
 
 type Timeframe = 'monthly' | 'weekly' | 'daily' | '4h' | '2h' | '1h' | '15min';
@@ -31,6 +32,8 @@ type Props = {
   onSave?: (updated: AnalysisDTO) => Promise<void> | void;
   // optional field name to auto-start editing and focus that field
   startEditingField?: string;
+  onCreateTrade?: (summary?: AnalysisSummary) => void;
+  onRequestDelete?: (id: string) => void;
 };
 
 export function AnalysisDetail({ analysis, compactView = false, onSave, startEditingField }: Props) {
