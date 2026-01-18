@@ -118,6 +118,11 @@ export function useTradesViewModel({
               if (serviceRef.current) await serviceRef.current.update(domain as unknown as Trade);
               else await repoRef.current.update(domain);
               setLastStatus?.(statusMessage ?? 'Update persisted');
+              try {
+                globalThis.dispatchEvent(new CustomEvent('trades-updated'));
+              } catch {
+                /* ignore */
+              }
             } catch (err) {
               console.error('Failed to persist trade update', err);
               setLastStatus?.('Update failed');
@@ -141,6 +146,11 @@ export function useTradesViewModel({
               else if (typeof repoRef.current.update === 'function')
                 await repoRef.current.update(domain);
               setLastStatus?.(statusMessage ?? 'Restored persisted');
+                try {
+                  globalThis.dispatchEvent(new CustomEvent('trades-updated'));
+                } catch {
+                  /* ignore */
+                }
             } catch (err) {
               console.error('Failed to persist restored trade', err);
               setLastStatus?.('Restore failed');

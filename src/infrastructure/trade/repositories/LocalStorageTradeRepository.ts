@@ -518,6 +518,7 @@ export class LocalStorageTradeRepository implements TradeRepository {
         size: rt.size,
         price: rt.price,
         side: rt.side,
+        status: rt.status,
         notes: rt.notes,
         market: rt.market,
         sl: rt.sl,

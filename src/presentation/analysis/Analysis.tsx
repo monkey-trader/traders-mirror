@@ -54,6 +54,7 @@ export type AnalysisProps = {
   showFilterToolbar?: boolean;
   onVisibleCountChange?: (count: number) => void;
   onSelectionChange?: (summary?: AnalysisSummary) => void;
+  useCard?: boolean;
 };
 
 const useFirebase = (() => {
@@ -95,6 +96,7 @@ export function Analysis({
   showFilterToolbar = true,
   onVisibleCountChange,
   onSelectionChange,
+  useCard = true,
 }: AnalysisProps) {
   const isTestEnv = process.env.NODE_ENV === 'test';
   const [list, setList] = useState<AnalysisSummary[]>([]);
@@ -456,97 +458,191 @@ export function Analysis({
       ) : null}
 
       <div className={styles.listOnlyLayout}>
-        <Card className={styles.listCard} title={shouldShowToolbar ? undefined : 'Analysen'}>
-          <AnalysisList
-            items={filteredList}
-            compactView={compactView}
-            selectedId={selected}
-            onSelect={handleOpen}
-            renderActions={(summary) => {
-              // compute whether a delete op for this id is currently queued in outbox
-              let outboxHasDelete = false;
-              try {
-                const rawOut = localStorage.getItem('analysis_outbox_v1');
-                if (rawOut) {
-                  const parsed = JSON.parse(rawOut);
-                  if (Array.isArray(parsed)) {
-                    for (const it of parsed) {
-                      if (it && it.op === 'delete' && it.id === summary.id) {
-                        outboxHasDelete = true;
-                        break;
+        {useCard ? (
+          <Card className={styles.listCard} title={shouldShowToolbar ? undefined : 'Analysen'}>
+            <AnalysisList
+              items={filteredList}
+              compactView={compactView}
+              selectedId={selected}
+              onSelect={handleOpen}
+              renderActions={(summary) => {
+                // compute whether a delete op for this id is currently queued in outbox
+                let outboxHasDelete = false;
+                try {
+                  const rawOut = localStorage.getItem('analysis_outbox_v1');
+                  if (rawOut) {
+                    const parsed = JSON.parse(rawOut);
+                    if (Array.isArray(parsed)) {
+                      for (const it of parsed) {
+                        if (it && it.op === 'delete' && it.id === summary.id) {
+                          outboxHasDelete = true;
+                          break;
+                        }
                       }
                     }
                   }
+                } catch {
+                  /* ignore */
                 }
-              } catch {
-                /* ignore */
-              }
 
-              return (
-                <div className={styles.actionDropdownWrap}>
-                  <div className={styles.deleteWrap}>
-                    <IconButton
-                      ariaLabel={`Delete ${summary.symbol}`}
-                      title="Delete analysis"
-                      variant="ghost"
-                      className={styles.deleteBtn}
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        requestDelete(summary.id);
-                      }}
-                      onKeyDown={(event) => {
-                        event.stopPropagation();
-                      }}
-                      icon={
-                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-                          <path
-                            d="M6 6 18 18M18 6 6 18"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="1.9"
-                            strokeLinecap="round"
-                          />
-                        </svg>
+                return (
+                  <div className={styles.actionDropdownWrap}>
+                    <div className={styles.deleteWrap}>
+                      <IconButton
+                        ariaLabel={`Delete ${summary.symbol}`}
+                        title="Delete analysis"
+                        variant="ghost"
+                        className={styles.deleteBtn}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          requestDelete(summary.id);
+                        }}
+                        onKeyDown={(event) => {
+                          event.stopPropagation();
+                        }}
+                        icon={
+                          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                            <path
+                              d="M6 6 18 18M18 6 6 18"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="1.9"
+                              strokeLinecap="round"
+                            />
+                          </svg>
+                        }
+                      />
+                      {pendingDeletes.includes(summary.id) ? (
+                        outboxHasDelete ? (
+                          <div className={`${repoSyncStyles.chipQueued} ${styles.deleteStatus}`} aria-hidden>
+                            Wartet
+                          </div>
+                        ) : (
+                          <span className={`${repoSyncStyles.spinner} ${styles.deleteSpinner}`} aria-hidden />
+                        )
+                      ) : null}
+                    </div>
+                    <div className={styles.dropdownWrap} onClick={(event) => event.stopPropagation()}>
+                      <ActionDropdown
+                        ariaLabel={`Aktionen für ${summary.symbol}`}
+                        placeholder="Aktion"
+                        size={compactView ? 'compact' : 'default'}
+                        options={getActionOptions(summary)}
+                      />
+                    </div>
+                  </div>
+                );
+              }}
+              renderExpandedContent={(summary) => {
+                if (selected !== summary.id) return null;
+                return (
+                  <div className={styles.inlineDetail}>
+                    <React.Suspense fallback={<div className={styles.detailLoading}>Loading...</div>}>
+                      <DetailLoader
+                        id={summary.id}
+                        startEditingField={selectedFieldToFocus ?? undefined}
+                        onCreateTrade={handleCreateTradeFromSummary}
+                        onRequestDelete={requestDelete}
+                      />
+                    </React.Suspense>
+                  </div>
+                );
+              }}
+            />
+          </Card>
+        ) : (
+          <div className={styles.listCard}>
+            <AnalysisList
+              items={filteredList}
+              compactView={compactView}
+              selectedId={selected}
+              onSelect={handleOpen}
+              renderActions={(summary) => {
+                // compute whether a delete op for this id is currently queued in outbox
+                let outboxHasDelete = false;
+                try {
+                  const rawOut = localStorage.getItem('analysis_outbox_v1');
+                  if (rawOut) {
+                    const parsed = JSON.parse(rawOut);
+                    if (Array.isArray(parsed)) {
+                      for (const it of parsed) {
+                        if (it && it.op === 'delete' && it.id === summary.id) {
+                          outboxHasDelete = true;
+                          break;
+                        }
                       }
-                    />
-                    {pendingDeletes.includes(summary.id) ? (
-                      outboxHasDelete ? (
-                        <div className={`${repoSyncStyles.chipQueued} ${styles.deleteStatus}`} aria-hidden>
-                          Wartet
-                        </div>
-                      ) : (
-                        <span className={`${repoSyncStyles.spinner} ${styles.deleteSpinner}`} aria-hidden />
-                      )
-                    ) : null}
+                    }
+                  }
+                } catch {
+                  /* ignore */
+                }
+
+                return (
+                  <div className={styles.actionDropdownWrap}>
+                    <div className={styles.deleteWrap}>
+                      <IconButton
+                        ariaLabel={`Delete ${summary.symbol}`}
+                        title="Delete analysis"
+                        variant="ghost"
+                        className={styles.deleteBtn}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          requestDelete(summary.id);
+                        }}
+                        onKeyDown={(event) => {
+                          event.stopPropagation();
+                        }}
+                        icon={
+                          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                            <path
+                              d="M6 6 18 18M18 6 6 18"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="1.9"
+                              strokeLinecap="round"
+                            />
+                          </svg>
+                        }
+                      />
+                      {pendingDeletes.includes(summary.id) ? (
+                        outboxHasDelete ? (
+                          <div className={`${repoSyncStyles.chipQueued} ${styles.deleteStatus}`} aria-hidden>
+                            Wartet
+                          </div>
+                        ) : (
+                          <span className={`${repoSyncStyles.spinner} ${styles.deleteSpinner}`} aria-hidden />
+                        )
+                      ) : null}
+                    </div>
+                    <div className={styles.dropdownWrap} onClick={(event) => event.stopPropagation()}>
+                      <ActionDropdown
+                        ariaLabel={`Aktionen für ${summary.symbol}`}
+                        placeholder="Aktion"
+                        size={compactView ? 'compact' : 'default'}
+                        options={getActionOptions(summary)}
+                      />
+                    </div>
                   </div>
-                  <div className={styles.dropdownWrap} onClick={(event) => event.stopPropagation()}>
-                    <ActionDropdown
-                      ariaLabel={`Aktionen für ${summary.symbol}`}
-                      placeholder="Aktion"
-                      size={compactView ? 'compact' : 'default'}
-                      options={getActionOptions(summary)}
-                    />
+                );
+              }}
+              renderExpandedContent={(summary) => {
+                if (selected !== summary.id) return null;
+                return (
+                  <div className={styles.inlineDetail}>
+                    <React.Suspense fallback={<div className={styles.detailLoading}>Loading...</div>}>
+                      <DetailLoader
+                        id={summary.id}
+                        startEditingField={selectedFieldToFocus ?? undefined}
+                        onCreateTrade={handleCreateTradeFromSummary}
+                        onRequestDelete={requestDelete}
+                      />
+                    </React.Suspense>
                   </div>
-                </div>
-              );
-            }}
-            renderExpandedContent={(summary) => {
-              if (selected !== summary.id) return null;
-              return (
-                <div className={styles.inlineDetail}>
-                  <React.Suspense fallback={<div className={styles.detailLoading}>Loading...</div>}>
-                    <DetailLoader
-                      id={summary.id}
-                      startEditingField={selectedFieldToFocus ?? undefined}
-                      onCreateTrade={handleCreateTradeFromSummary}
-                      onRequestDelete={requestDelete}
-                    />
-                  </React.Suspense>
-                </div>
-              );
-            }}
-          />
-        </Card>
+                );
+              }}
+            />
+          </div>
+        )}
       </div>
 
       {!selected ? <div className={styles.noSelection}>Keine Analyse ausgewählt</div> : null}

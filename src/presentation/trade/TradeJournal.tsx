@@ -10,6 +10,7 @@ import { ConfirmDialog } from '@/presentation/shared/components/ConfirmDialog/Co
 import { Analysis } from '@/presentation/analysis/Analysis';
 import type { MarketValue } from '@/presentation/shared/components/MarketSelect/MarketSelect';
 import { TradeFactory } from '@/domain/trade/factories/TradeFactory';
+import LocalStorageTradeRepository from '@/infrastructure/trade/repositories/LocalStorageTradeRepository';
 import type { TradeRow } from './types';
 import { useNewTradeForm, type NewTradeFormState } from './hooks/useNewTradeForm';
 import { StatusFilters } from './components/TradeFilters/TradeFilters';
@@ -91,12 +92,22 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
     repoRef.current = repo ?? null;
   }, [repo]);
   if (!repoRef.current) {
-    // Do not auto-create adapters here to keep component testable and avoid require()/dynamic imports.
-    // Only warn once in dev
-    if (typeof process !== 'undefined' && process.env.NODE_ENV === 'development')
-      console.warn(
-        'No TradeRepository provided to TradeJournal; persistence disabled. Provide repo prop from composition root.'
-      );
+    // In non-test environments, fall back to a LocalStorageTradeRepository so actions persist
+    if (typeof process !== 'undefined' && process.env.NODE_ENV !== 'test') {
+      try {
+        repoRef.current = new LocalStorageTradeRepository();
+        // eslint-disable-next-line no-console
+        console.info('[TradeJournal] using LocalStorageTradeRepository fallback');
+      } catch {
+        // ignore if localStorage unavailable
+      }
+    } else {
+      // In test env keep null to allow test injection/mocking
+      if (typeof process !== 'undefined' && process.env.NODE_ENV === 'development')
+        console.warn(
+          'No TradeRepository provided to TradeJournal; persistence disabled. Provide repo prop from composition root.'
+        );
+    }
   }
 
   // Use view model hook to manage positions and actions
@@ -619,6 +630,7 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
                   marketFilter={analysisMarketFilter}
                   onMarketFilterChange={(value) => setAnalysisMarketFilter(value)}
                   showFilterToolbar={false}
+                  useCard={false}
                   onVisibleCountChange={setAnalysisVisibleCount}
                 />
               )}

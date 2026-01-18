@@ -119,6 +119,28 @@ describe('LocalStorageTradeRepository.toRepoTrade conversions', () => {
     }
   });
 
+  it('getAll preserves status values across reloads', async () => {
+    const key = 'mt_test_status_key';
+    window.localStorage.removeItem(key);
+    const repoWithStatus = new LocalStorageTradeRepository(key, { seedDefaults: false });
+    const trade = TradeFactory.create({
+      id: 'status-1',
+      symbol: 'BTCUSD',
+      entryDate: '2025-12-31T00:00:00Z',
+      size: 1,
+      price: 30000,
+      side: 'LONG',
+      status: 'FILLED',
+    });
+    await repoWithStatus.save(trade);
+
+    const reloaded = new LocalStorageTradeRepository(key, { seedDefaults: false });
+    const all = await reloaded.getAll();
+    expect(all).toHaveLength(1);
+    const dto = TradeFactory.toDTO(all[0]);
+    expect(dto.status).toBe('FILLED');
+  });
+
   it('constructor loads existing raw data from localStorage when present', () => {
     const raw: RepoTrade[] = [
       {

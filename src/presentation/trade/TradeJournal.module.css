@@ -1051,6 +1051,22 @@
   gap: 12px;
 }
 
+/* Reserve space for the tabs + filter controls to avoid small layout shifts when
+   switching between 'List' and 'Analyse' views. The min-width is tuned for
+   desktop; on small screens the media query below reduces the constraint. */
+.tradesControls {
+  min-width: 420px;
+}
+
+/* Wrapper around the FilterToolbar inside TradeJournal. Reserve space so the
+   filter/menu area doesn't shift when switching between List and Analyse. */
+.marketFiltersWrap {
+  min-width: 420px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
 .analysisControls {
   display: inline-flex;
   align-items: center;
@@ -1135,7 +1151,13 @@
   }
   .tradesControls {
     width: 100%;
+    min-width: 0; /* allow wrapping on small screens */
     display: flex;
+    justify-content: space-between;
+  }
+
+  .marketFiltersWrap {
+    min-width: 0; /* allow full-width wrapping on small screens */
     justify-content: space-between;
   }
 
