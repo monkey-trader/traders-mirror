@@ -368,6 +368,11 @@ export class LocalStorageTradeRepository implements TradeRepository {
       window.localStorage.setItem(this.key, JSON.stringify(this.trades));
       // eslint-disable-next-line no-console
       console.info('[LocalStorageRepo] flushed', this.trades.length, 'trades to localStorage');
+      try {
+        globalThis.dispatchEvent(new CustomEvent('trades-updated'));
+      } catch {
+        /* ignore */
+      }
     } catch (err) {
       // eslint-disable-next-line no-console
       console.warn('[LocalStorageRepo] failed to persist to localStorage', err);
@@ -492,6 +497,18 @@ export class LocalStorageTradeRepository implements TradeRepository {
 
   // Return domain Trade[] (reconstructed from stored primitives)
   async getAll(): Promise<Trade[]> {
+    // ensure we reflect the latest persisted state in localStorage
+    try {
+      const raw = window.localStorage.getItem(this.key);
+      if (raw) {
+        const parsed = JSON.parse(raw) as RepoTrade[];
+        // update in-memory cache to match persisted state
+        this.trades = parsed.map((t) => ({ ...t }));
+      }
+    } catch {
+      /* ignore reload errors and fall back to in-memory cache */
+    }
+
     // convert each RepoTrade -> Trade via TradeFactory
     return this.trades.map((rt) => {
       const input = {

@@ -4,12 +4,15 @@ import type {
 } from '@/domain/analysis/interfaces/AnalysisRepository';
 import { LocalStorageAnalysisRepository } from '@/infrastructure/analysis/repositories/LocalStorageAnalysisRepository';
 import { FirebaseAnalysisRepository } from '@/infrastructure/analysis/repositories/FirebaseAnalysisRepository';
+import LocalStorageTradeRepository from '@/infrastructure/trade/repositories/LocalStorageTradeRepository';
+import { TradeFactory } from '@/domain/trade/factories/TradeFactory';
 import { ensureFirebase, getCurrentUserId } from '@/infrastructure/firebase/client';
 import { collection, onSnapshot, query } from 'firebase/firestore';
 
 type OutboxItem = { op: 'save'; dto: AnalysisDTO } | { op: 'delete'; id: string };
 
 const OUTBOX_KEY = 'analysis_outbox_v1';
+const PENDING_DELETES_KEY = 'analysis_pending_deletes_v1';
 
 function loadOutbox(): OutboxItem[] {
   try {
@@ -30,6 +33,38 @@ function saveOutbox(items: OutboxItem[]): void {
   }
 }
 
+function loadPendingDeletes(): string[] {
+  try {
+    const raw = localStorage.getItem(PENDING_DELETES_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function savePendingDeletes(ids: string[]): void {
+  try {
+    localStorage.setItem(PENDING_DELETES_KEY, JSON.stringify(ids));
+  } catch {
+    /* ignore */
+  }
+}
+
+function addPendingDelete(id: string): void {
+  const list = loadPendingDeletes();
+  if (!list.includes(id)) {
+    list.push(id);
+    savePendingDeletes(list);
+  }
+}
+
+function removePendingDelete(id: string): void {
+  const list = loadPendingDeletes().filter((x) => x !== id);
+  savePendingDeletes(list);
+}
+
 export class HybridAnalysisRepository implements AnalysisRepository {
   private readonly local = new LocalStorageAnalysisRepository();
   private readonly remote?: FirebaseAnalysisRepository;
@@ -45,7 +80,15 @@ export class HybridAnalysisRepository implements AnalysisRepository {
           this.bootstrapped = true;
           const remoteList = await this.remote!.listAll();
           if (Array.isArray(remoteList) && remoteList.length) {
-            for (const a of remoteList) await this.local.save(a);
+            const pending = loadPendingDeletes();
+            for (const a of remoteList) {
+              try {
+                if (pending.includes(a.id)) continue; // skip items pending local deletion
+                await this.local.save(a);
+              } catch {
+                /* ignore per-item save errors */
+              }
+            }
           }
         } catch {
           /* ignore bootstrap errors */
@@ -93,9 +136,12 @@ export class HybridAnalysisRepository implements AnalysisRepository {
           onSnapshot(q, async (snap) => {
             try {
               const items = snap.docs.map((d) => d.data() as Record<string, unknown>);
+              const pending = loadPendingDeletes();
               for (const src of items) {
+                const id = String(src.id);
+                if (pending.includes(id)) continue; // skip remote items pending deletion locally
                 const dto: import('@/domain/analysis/interfaces/AnalysisRepository').AnalysisDTO = {
-                  id: String(src.id),
+                  id,
                   symbol: String(src.symbol),
                   createdAt: String(src.createdAt ?? new Date().toISOString()),
                   updatedAt: typeof src.updatedAt === 'string' ? src.updatedAt : undefined,
@@ -163,6 +209,8 @@ export class HybridAnalysisRepository implements AnalysisRepository {
     if (this.remote) {
       (async () => {
         try {
+          const pending = loadPendingDeletes();
+          if (pending.includes(id)) return; // skip refresh for items pending deletion
           const dto = await this.remote!.getById(id);
           if (dto) await this.local.save(dto);
         } catch {
@@ -181,7 +229,15 @@ export class HybridAnalysisRepository implements AnalysisRepository {
         try {
           const list = await this.remote!.listBySymbol(symbol);
           if (Array.isArray(list) && list.length) {
-            for (const a of list) await this.local.save(a);
+            const pending = loadPendingDeletes();
+            for (const a of list) {
+              try {
+                if (pending.includes(a.id)) continue;
+                await this.local.save(a);
+              } catch {
+                /* ignore per-item save errors */
+              }
+            }
             try {
               globalThis.dispatchEvent(
                 new CustomEvent('analyses-updated', { detail: { type: 'remote' } })
@@ -206,7 +262,15 @@ export class HybridAnalysisRepository implements AnalysisRepository {
         try {
           const list = await this.remote!.listAll();
           if (Array.isArray(list) && list.length) {
-            for (const a of list) await this.local.save(a);
+            const pending = loadPendingDeletes();
+            for (const a of list) {
+              try {
+                if (pending.includes(a.id)) continue;
+                await this.local.save(a);
+              } catch {
+                /* ignore per-item save errors */
+              }
+            }
             try {
               globalThis.dispatchEvent(
                 new CustomEvent('analyses-updated', { detail: { type: 'remote' } })
@@ -224,12 +288,40 @@ export class HybridAnalysisRepository implements AnalysisRepository {
   }
 
   async delete(id: string): Promise<void> {
-    // Local-first delete: remove locally immediately and queue remote delete in background
+    // Local-first delete with tombstone: mark pending-delete to avoid remote mirror re-adding
+    addPendingDelete(id);
     await this.local.delete(id);
+    // remove analysis link from any trades that reference this analysis
+    try {
+      const tradeRepo = new LocalStorageTradeRepository();
+      const trades = await tradeRepo.getAll();
+      for (const t of trades) {
+        try {
+          if (t.analysisId && t.analysisId.value === id) {
+            // create a new Trade instance with analysisId cleared and persist
+            const dto = TradeFactory.toDTO(t);
+            dto.analysisId = undefined;
+            const updatedTrade = TradeFactory.create(dto);
+            await tradeRepo.update(updatedTrade);
+          }
+        } catch {
+          /* ignore per-trade update errors */
+        }
+      }
+      try {
+        globalThis.dispatchEvent(new CustomEvent('trades-updated'));
+      } catch {
+        /* ignore */
+      }
+    } catch {
+      /* ignore trade cleanup errors */
+    }
     if (this.remote) {
       void this.trySync({ op: 'delete', id });
       return;
     }
+    // no remote configured — clear pending immediately
+    removePendingDelete(id);
   }
 
   async clear(): Promise<void> {
@@ -242,6 +334,12 @@ export class HybridAnalysisRepository implements AnalysisRepository {
     try {
       if (item.op === 'delete') {
         await this.remote.delete(item.id);
+        // remote delete succeeded — remove tombstone
+        try {
+          removePendingDelete(item.id);
+        } catch {
+          /* ignore */
+        }
       } else {
         await this.remote.save(item.dto);
       }

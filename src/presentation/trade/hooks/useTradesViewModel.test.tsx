@@ -79,6 +79,29 @@ describe('useTradesViewModel', () => {
     });
   });
 
+  it('sl-be dispatches trades-updated event', async () => {
+    const update = vi.fn().mockResolvedValue(undefined);
+    const repo = { update } as unknown as Partial<TradeRepository>;
+    render(<Host repo={repo} />);
+
+    const handler = vi.fn();
+    globalThis.addEventListener('trades-updated', handler as EventListener);
+
+    await act(async () => {
+      screen.getByText('seed').click();
+    });
+
+    await act(async () => {
+      screen.getByText('sl-be').click();
+    });
+
+    await waitFor(() => {
+      expect(handler).toHaveBeenCalled();
+    });
+
+    globalThis.removeEventListener('trades-updated', handler as EventListener);
+  });
+
   it('status open/closed actions persist', async () => {
     const update = vi.fn().mockResolvedValue(undefined);
     const repo = { update } as unknown as Partial<TradeRepository>;

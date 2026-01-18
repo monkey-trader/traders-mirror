@@ -1051,6 +1051,19 @@
   gap: 12px;
 }
 
+.analysisControls {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.analysisCreateBtn {
+  border-radius: 12px;
+  padding-inline: 16px;
+  min-width: 150px;
+  white-space: nowrap;
+}
+
 /* New: small row under the Trades title that contains the status filter pills (All/Open/Closed/Filled) */
 .tradesStatusRow {
   display: flex;
@@ -1124,6 +1137,16 @@
     width: 100%;
     display: flex;
     justify-content: space-between;
+  }
+
+  .analysisControls {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .analysisCreateBtn {
+    width: 100%;
   }
 }
 

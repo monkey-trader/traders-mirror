@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { type ReactNode } from 'react';
 import { Button } from '@/presentation/shared/components/Button/Button';
 import styles from './AnalysisList.module.css';
 
@@ -17,6 +17,8 @@ type Props = {
   onSelect?: (id: string, focusField?: string) => void;
   // legacy prop used by tests / older callers
   onOpen?: (id: string) => void;
+  renderActions?: (summary: AnalysisSummary) => ReactNode;
+  renderExpandedContent?: (summary: AnalysisSummary) => ReactNode;
 };
 
 export function AnalysisList({
@@ -25,6 +27,8 @@ export function AnalysisList({
   selectedId = null,
   onSelect,
   onOpen,
+  renderActions,
+  renderExpandedContent,
 }: Props) {
   if (!items || items.length === 0) {
     return (
@@ -82,25 +86,31 @@ export function AnalysisList({
                 >
                   {it.symbol}
                 </strong>
-                <div className={styles.headerActions}>
-                  <Button
-                    variant="ghost"
-                    className={styles.actionBtn}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (onOpen) onOpen(it.id);
-                      if (onSelect) onSelect(it.id);
-                    }}
-                  >
-                    Open
-                  </Button>
-                  {/* Delete moved to detail view; row-level delete removed */}
-                </div>
+                {renderActions ? (
+                  <div className={styles.headerActions}>{renderActions(it)}</div>
+                ) : onOpen ? (
+                  <div className={styles.headerActions}>
+                    <Button
+                      variant="ghost"
+                      className={styles.actionBtn}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onOpen?.(it.id);
+                        if (onSelect) onSelect(it.id);
+                      }}
+                    >
+                      Open
+                    </Button>
+                  </div>
+                ) : null}
               </div>
               <div className={styles.meta}>
                 <span className={styles.date}>{new Date(it.createdAt).toLocaleString()}</span>
                 {it.notes ? <p className={styles.notes}>{it.notes}</p> : null}
               </div>
+              {isSelected && renderExpandedContent ? (
+                <div className={styles.expanded}>{renderExpandedContent(it)}</div>
+              ) : null}
             </div>
           );
         })}

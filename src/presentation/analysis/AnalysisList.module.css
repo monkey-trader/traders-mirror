@@ -43,22 +43,28 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .headerActions {
   display: flex;
   gap: 8px;
   align-items: center;
+  margin-left: auto;
 }
 
 .actionBtn {
   padding: 6px 10px;
   font-size: 0.875rem;
   border-radius: 6px;
+  white-space: nowrap;
 }
 
 .symbol {
   font-size: 1rem;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .openButton {
@@ -76,4 +82,10 @@
 
 .notes {
   margin: 0.5rem 0 0 0;
+}
+
+.expanded {
+  margin-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  padding-top: 0.75rem;
 }

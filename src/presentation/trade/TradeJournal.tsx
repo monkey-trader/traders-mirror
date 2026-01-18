@@ -8,6 +8,7 @@ import styles from './TradeJournal.module.css';
 import type { TradeRepository } from '@/domain/trade/interfaces/TradeRepository';
 import { ConfirmDialog } from '@/presentation/shared/components/ConfirmDialog/ConfirmDialog';
 import { Analysis } from '@/presentation/analysis/Analysis';
+import type { AnalysisSummary } from '@/presentation/analysis/AnalysisList';
 import type { MarketValue } from '@/presentation/shared/components/MarketSelect/MarketSelect';
 import { TradeFactory } from '@/domain/trade/factories/TradeFactory';
 import type { TradeRow } from './types';
@@ -150,6 +151,20 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
   // active tab for the Trades card (list | analysis)
   const [tradesCardTab, setTradesCardTab] = useState<'list' | 'analysis'>('list');
   // Note: ultra-wide layout is now permanent (no toggle)
+
+  const [analysisMarketFilter, setAnalysisMarketFilter] = useState<'All' | 'Crypto' | 'Forex'>(
+    'All'
+  );
+  const [analysisVisibleCount, setAnalysisVisibleCount] = useState(0);
+  const [selectedAnalysisSummary, setSelectedAnalysisSummary] = useState<AnalysisSummary | undefined>(
+    undefined
+  );
+
+  useEffect(() => {
+    if (tradesCardTab !== 'analysis') {
+      setSelectedAnalysisSummary(undefined);
+    }
+  }, [tradesCardTab]);
 
   // load initial data from repo once on mount
   useEffect(() => {
@@ -340,6 +355,18 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
     setSelectedId(null);
   };
 
+  const handleQuickTradeFromSelectedAnalysis = () => {
+    if (!selectedAnalysisSummary) return;
+    void handleCreateTradeFromAnalysis({
+      analysisId: selectedAnalysisSummary.id,
+      symbol: selectedAnalysisSummary.symbol,
+      price: 0,
+      entryDate: new Date().toISOString(),
+      market: selectedAnalysisSummary.market,
+      side: 'LONG',
+    });
+  };
+
   // Listen for open-trade events from Analysis view to select the trade linked to an analysis
   useEffect(() => {
     const handler = (e: Event) => {
@@ -512,12 +539,14 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
             <div className={styles.tradesHeader}>
               <div className={styles.tradesHeaderColumn}>
                 <div className={styles.tradesTitle}>Trades</div>
-                <div className={styles.tradesStatusRow}>
-                  <StatusFilters
-                    tradeStatusFilter={tradeStatusFilter}
-                    setTradeStatusFilter={(s) => setTradeStatusFilter(s)}
-                  />
-                </div>
+                {tradesCardTab === 'list' ? (
+                  <div className={styles.tradesStatusRow}>
+                    <StatusFilters
+                      tradeStatusFilter={tradeStatusFilter}
+                      setTradeStatusFilter={(s) => setTradeStatusFilter(s)}
+                    />
+                  </div>
+                ) : null}
               </div>
               <div className={styles.tradesControls}>
                 <div className={styles.tradesTabs} role="tablist" aria-label="Trades tabs">
@@ -543,13 +572,33 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
                   </Button>
                 </div>
 
-
-
-                <MarketFilters
-                  marketFilter={marketFilter}
-                  setMarketFilter={(m) => setMarketFilter(m)}
-                  tradesCount={trades.length}
-                />
+                {tradesCardTab === 'analysis' ? (
+                  <div className={styles.analysisControls}>
+                    <MarketFilters
+                      marketFilter={analysisMarketFilter}
+                      setMarketFilter={(m) => setAnalysisMarketFilter(m)}
+                      tradesCount={analysisVisibleCount}
+                      countLabel="analyses"
+                    />
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      className={styles.analysisCreateBtn}
+                      disabled={!selectedAnalysisSummary}
+                      onClick={handleQuickTradeFromSelectedAnalysis}
+                      data-testid="analysis-quick-create"
+                    >
+                      Create Trade
+                    </Button>
+                  </div>
+                ) : (
+                  <MarketFilters
+                    marketFilter={marketFilter}
+                    setMarketFilter={(m) => setMarketFilter(m)}
+                    tradesCount={trades.length}
+                    countLabel="trades"
+                  />
+                )}
               </div>
             </div>
 
@@ -575,7 +624,14 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
                   onRequestDelete={requestDelete}
                 />
               ) : (
-                <Analysis onCreateTradeSuggestion={handleCreateTradeFromAnalysis} />
+                <Analysis
+                  onCreateTradeSuggestion={handleCreateTradeFromAnalysis}
+                  marketFilter={analysisMarketFilter}
+                  onMarketFilterChange={(value) => setAnalysisMarketFilter(value)}
+                  showFilterToolbar={false}
+                  onVisibleCountChange={setAnalysisVisibleCount}
+                  onSelectionChange={setSelectedAnalysisSummary}
+                />
               )}
             </div>
           </div>

@@ -41,15 +41,32 @@ export function ActionDropdown({
       className={className}
       aria-label={ariaLabel}
       defaultValue=""
+      onClick={(e) => e.stopPropagation()}
+      onMouseDown={(e) => e.stopPropagation()}
       onChange={(event) => {
-        const nextValue = event.target.value;
+        event.stopPropagation();
+        const nextValue = (event.target as HTMLSelectElement).value;
         if (!nextValue) {
           return;
         }
         const option = options.find((opt) => opt.value === nextValue);
-        option?.onSelect();
-        if (selectRef.current) {
-          selectRef.current.value = '';
+        if (option) {
+          // call handler asynchronously to avoid native select close/focus side-effects
+          // that can interfere with parent click handlers or portal modals
+          // small log for debugging in case users still can't trigger actions
+          // eslint-disable-next-line no-console
+          console.debug('[ActionDropdown] selected', nextValue);
+          setTimeout(() => {
+            try {
+              option.onSelect();
+            } catch (err) {
+              // eslint-disable-next-line no-console
+              console.warn('ActionDropdown option handler threw', err);
+            }
+            if (selectRef.current) {
+              selectRef.current.value = '';
+            }
+          }, 0);
         }
       }}
     >

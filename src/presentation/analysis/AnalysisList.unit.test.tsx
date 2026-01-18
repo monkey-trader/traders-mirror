@@ -50,4 +50,22 @@ describe('AnalysisList', () => {
     // at least assert that onSelect was called multiple times
     expect(onSelect.mock.calls.length).toBeGreaterThanOrEqual(2);
   });
+
+  it('renders custom actions when renderActions provided', async () => {
+    const user = userEvent.setup();
+    const actionSpy = vi.fn();
+    render(
+      <AnalysisList
+        items={sample}
+        renderActions={(summary) => (
+          <button type="button" onClick={() => actionSpy(summary.id)}>
+            Custom
+          </button>
+        )}
+      />
+    );
+    const customButtons = screen.getAllByRole('button', { name: /custom/i });
+    await user.click(customButtons[0]);
+    expect(actionSpy).toHaveBeenCalledWith('a1');
+  });
 });

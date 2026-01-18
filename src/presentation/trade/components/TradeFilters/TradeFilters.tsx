@@ -7,13 +7,15 @@ export type TradeFiltersProps = {
   tradeStatusFilter: 'ALL' | 'OPEN' | 'CLOSED' | 'FILLED';
   setTradeStatusFilter: (s: 'ALL' | 'OPEN' | 'CLOSED' | 'FILLED') => void;
   tradesCount?: number;
+  countLabel?: string;
 };
 
 export function MarketFilters({
   marketFilter,
   setMarketFilter,
   tradesCount = 0,
-}: Pick<TradeFiltersProps, 'marketFilter' | 'setMarketFilter' | 'tradesCount'>) {
+  countLabel = 'trades',
+}: Pick<TradeFiltersProps, 'marketFilter' | 'setMarketFilter' | 'tradesCount' | 'countLabel'>) {
   return (
     <div className={styles.tradesFilters}>
       <Button
@@ -34,7 +36,9 @@ export function MarketFilters({
       >
         Crypto
       </Button>
-      <div className={styles.tradesCount}>{tradesCount} trades</div>
+      <div className={styles.tradesCount}>
+        {tradesCount} {countLabel}
+      </div>
     </div>
   );
 }
@@ -81,6 +85,7 @@ export default function TradeFilters(props: TradeFiltersProps) {
         marketFilter={props.marketFilter}
         setMarketFilter={props.setMarketFilter}
         tradesCount={props.tradesCount}
+        countLabel={props.countLabel}
       />
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         <StatusFilters

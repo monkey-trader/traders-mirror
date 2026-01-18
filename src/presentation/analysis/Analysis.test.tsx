@@ -1,6 +1,6 @@
 import React from 'react';
 import { describe, it, beforeEach, expect, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import type { AnalysisDTO } from '@/domain/analysis/interfaces/AnalysisRepository';
 import { LocalStorageAnalysisRepository } from '@/infrastructure/analysis/repositories/LocalStorageAnalysisRepository';
 
@@ -50,7 +50,7 @@ describe('Analysis component', () => {
     const AnalysisModule = await import('./Analysis');
     render(<AnalysisModule.Analysis />);
 
-    await waitFor(() => expect(screen.getByText('Open')).toBeTruthy());
+    await waitFor(() => expect(screen.getByLabelText('Aktionen für BTCUSD')).toBeTruthy());
 
     const ev = new CustomEvent('open-analysis', { detail: { id: 'a1' } });
     globalThis.dispatchEvent(ev);
@@ -82,14 +82,14 @@ describe('Analysis component', () => {
     const AnalysisModule = await import('./Analysis');
     render(<AnalysisModule.Analysis />);
 
-    await waitFor(() => expect(screen.getByText('Open')).toBeTruthy());
+    await waitFor(() => expect(screen.getByLabelText('Aktionen für AAA')).toBeTruthy());
     // open detail
     globalThis.dispatchEvent(new CustomEvent('open-analysis', { detail: { id: 'd1' } }));
     await waitFor(() => expect(screen.getByTestId('analysis-detail')).toBeTruthy());
 
-    // click Delete inside AnalysisDetail to request delete
-    const delBtn = screen.getByText('Delete');
-    delBtn.click();
+    // trigger Delete via the red IconButton (same pattern as trades)
+    const deleteBtn = screen.getByLabelText('Delete AAA');
+    fireEvent.click(deleteBtn);
 
     // confirm dialog appears
     await waitFor(() => expect(screen.getByRole('dialog')).toBeTruthy());
@@ -133,7 +133,9 @@ describe('Analysis component', () => {
     render(<AnalysisModule.Analysis />);
 
     // wait for items
-    await waitFor(() => expect(screen.getAllByText('Open').length).toBeGreaterThanOrEqual(1));
+    await waitFor(() =>
+      expect(screen.getAllByLabelText(/Aktionen für/i).length).toBeGreaterThanOrEqual(1)
+    );
 
     // click Crypto filter -> only X1 remains
     screen.getByText('Crypto').click();

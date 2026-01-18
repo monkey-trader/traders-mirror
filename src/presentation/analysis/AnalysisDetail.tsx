@@ -28,21 +28,12 @@ export type AnalysisDTO = {
 type Props = {
   analysis: AnalysisDTO;
   compactView?: boolean;
-  onCreateTrade?: (analysisId: string) => void;
-  onRequestDelete?: (id: string) => void;
   onSave?: (updated: AnalysisDTO) => Promise<void> | void;
   // optional field name to auto-start editing and focus that field
   startEditingField?: string;
 };
 
-export function AnalysisDetail({
-  analysis,
-  compactView = false,
-  onCreateTrade,
-  onRequestDelete,
-  onSave,
-  startEditingField,
-}: Props) {
+export function AnalysisDetail({ analysis, compactView = false, onSave, startEditingField }: Props) {
   const normalizeMarket = (
     m?: 'Forex' | 'Crypto' | { value: string }
   ): 'Forex' | 'Crypto' | undefined => {
@@ -109,14 +100,6 @@ export function AnalysisDetail({
           {analysis.symbol}
         </h2>
         <div className={styles.actions}>
-          {/* Title is now clickable to enter edit mode; remove separate Edit button */}
-          <Button
-            variant="primary"
-            className={styles.createBtn}
-            onClick={() => onCreateTrade && onCreateTrade(analysis.id)}
-          >
-            Create Trade
-          </Button>
           {hasLinkedTrade ? (
             <IconButton
               variant="ghost"
@@ -139,7 +122,6 @@ export function AnalysisDetail({
                   /* ignore */
                 }
               }}
-              style={{ marginLeft: 8 }}
             >
               <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden>
                 <path
@@ -149,19 +131,6 @@ export function AnalysisDetail({
               </svg>
             </IconButton>
           ) : null}
-          <Button
-            variant="danger"
-            onClick={() => {
-              try {
-                if (onRequestDelete) onRequestDelete(analysis.id);
-              } catch {
-                /* ignore */
-              }
-            }}
-            style={{ marginLeft: 8 }}
-          >
-            Delete
-          </Button>
         </div>
       </div>
 
