@@ -15,6 +15,7 @@ describe('TradeFactory (factory + toDTO)', () => {
       market: 'Forex',
       sl: 240,
       tp1: 260,
+      tp1IsHit: true,
       leverage: 2,
       margin: 10,
       analysisId: 'a-1',
@@ -36,6 +37,7 @@ describe('TradeFactory (factory + toDTO)', () => {
     expect(out.market).toBe('Forex');
     expect(out.sl).toBe(dto.sl);
     expect(out.tp1).toBe(dto.tp1);
+    expect(out.tp1IsHit).toBe(true);
     expect(out.leverage).toBe(dto.leverage);
     expect(out.margin).toBe(dto.margin);
     expect(out.analysisId).toBe('A-1');

@@ -78,6 +78,18 @@ describe('useTradesViewModel', () => {
       result.current.performTPHit(row.id, 2);
     });
     expect(result.current.positions[0].status).toBe('CLOSED');
+    expect(result.current.positions[0].tp2IsHit).toBe(true);
+  });
+
+  it('performTPHit clears an existing TP flag', async () => {
+    const row = makeTradeRow({ status: 'CLOSED', tp3IsHit: true });
+    const { result } = renderHook(() => useTradesViewModel({ repoRef, tradeService }));
+    await act(async () => {
+      result.current.setPositions([row]);
+      result.current.performTPHit(row.id, 3);
+    });
+    expect(result.current.positions[0].tp3IsHit).toBeUndefined();
+    expect(result.current.positions[0].status).toBe('CLOSED');
   });
 
   it('handleInlineUpdate updates numeric fields', () => {

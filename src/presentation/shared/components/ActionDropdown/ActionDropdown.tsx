@@ -5,6 +5,7 @@ export type ActionDropdownOption = {
   value: string;
   label: string;
   onSelect: () => void;
+  variant?: 'success';
 };
 
 type Props = {
@@ -25,6 +26,10 @@ export function ActionDropdown({
   if (!options.length) {
     return null;
   }
+
+  const variantClassMap: Record<NonNullable<ActionDropdownOption['variant']>, string> = {
+    success: styles.optionSuccess,
+  };
 
   const className = [styles.select, size === 'compact' ? styles.compact : '']
     .filter(Boolean)
@@ -50,7 +55,12 @@ export function ActionDropdown({
     >
       <option value="">{placeholder}</option>
       {options.map((option) => (
-        <option key={option.value} value={option.value}>
+        <option
+          key={option.value}
+          value={option.value}
+          className={option.variant ? variantClassMap[option.variant] : undefined}
+          data-variant={option.variant ?? undefined}
+        >
           {option.label}
         </option>
       ))}

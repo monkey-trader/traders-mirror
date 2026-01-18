@@ -27,6 +27,10 @@ export class Trade {
   public readonly tp2?: Price;
   public readonly tp3?: Price;
   public readonly tp4?: Price;
+  public readonly tp1IsHit?: boolean;
+  public readonly tp2IsHit?: boolean;
+  public readonly tp3IsHit?: boolean;
+  public readonly tp4IsHit?: boolean;
   public readonly leverage?: Leverage;
   public readonly margin?: Margin;
   public readonly analysisId?: AnalysisId; // link to originating Analysis (if any)
@@ -48,6 +52,10 @@ export class Trade {
     tp2?: Price,
     tp3?: Price,
     tp4?: Price,
+    tp1IsHit?: boolean,
+    tp2IsHit?: boolean,
+    tp3IsHit?: boolean,
+    tp4IsHit?: boolean,
     leverage?: Leverage,
     margin?: Margin,
     analysisId?: AnalysisId,
@@ -68,6 +76,10 @@ export class Trade {
     this.tp2 = tp2;
     this.tp3 = tp3;
     this.tp4 = tp4;
+    this.tp1IsHit = tp1IsHit;
+    this.tp2IsHit = tp2IsHit;
+    this.tp3IsHit = tp3IsHit;
+    this.tp4IsHit = tp4IsHit;
     this.leverage = leverage;
     this.margin = margin;
     this.analysisId = analysisId;

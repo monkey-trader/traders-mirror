@@ -29,6 +29,10 @@ export type TradeInput = {
   tp2?: number;
   tp3?: number;
   tp4?: number;
+  tp1IsHit?: boolean;
+  tp2IsHit?: boolean;
+  tp3IsHit?: boolean;
+  tp4IsHit?: boolean;
   leverage?: number;
   analysisId?: string;
   userId?: string;
@@ -58,6 +62,10 @@ export class TradeFactory {
       typeof input.tp2 === 'number' ? new Price(input.tp2) : undefined,
       typeof input.tp3 === 'number' ? new Price(input.tp3) : undefined,
       typeof input.tp4 === 'number' ? new Price(input.tp4) : undefined,
+      input.tp1IsHit === true ? true : undefined,
+      input.tp2IsHit === true ? true : undefined,
+      input.tp3IsHit === true ? true : undefined,
+      input.tp4IsHit === true ? true : undefined,
       typeof input.leverage === 'number' ? new Leverage(input.leverage) : undefined,
       typeof input.margin === 'number' ? new Margin(input.margin) : undefined,
       input.analysisId ? new AnalysisId(input.analysisId) : undefined,
@@ -88,6 +96,10 @@ export class TradeFactory {
       leverage: trade.leverage?.value,
       margin: trade.margin?.value,
       slIsBE: trade.slIsBE,
+      tp1IsHit: trade.tp1IsHit,
+      tp2IsHit: trade.tp2IsHit,
+      tp3IsHit: trade.tp3IsHit,
+      tp4IsHit: trade.tp4IsHit,
       userId: trade.userId,
       analysisId: trade.analysisId?.value,
     };

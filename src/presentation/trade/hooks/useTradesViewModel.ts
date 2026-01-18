@@ -18,6 +18,23 @@ type UseTradesViewModelParams = {
   setLastStatus?: (s: string | null) => void;
 };
 
+type TpValueKey = 'tp1' | 'tp2' | 'tp3' | 'tp4';
+type TpHitFlagKey = 'tp1IsHit' | 'tp2IsHit' | 'tp3IsHit' | 'tp4IsHit';
+
+const tpValueFlagPairs: ReadonlyArray<readonly [TpValueKey, TpHitFlagKey]> = [
+  ['tp1', 'tp1IsHit'],
+  ['tp2', 'tp2IsHit'],
+  ['tp3', 'tp3IsHit'],
+  ['tp4', 'tp4IsHit'],
+];
+
+const tpHitFlagMap: Record<1 | 2 | 3 | 4, TpHitFlagKey> = {
+  1: 'tp1IsHit',
+  2: 'tp2IsHit',
+  3: 'tp3IsHit',
+  4: 'tp4IsHit',
+};
+
 export function useTradesViewModel({
   repoRef,
   tradeService,
@@ -81,6 +98,11 @@ export function useTradesViewModel({
           if (normalizedPatch.sl !== undefined) {
             normalizedPatch.slIsBE = undefined;
           }
+          tpValueFlagPairs.forEach(([valueKey, flagKey]) => {
+            if (normalizedPatch[valueKey] !== undefined) {
+              normalizedPatch[flagKey] = undefined;
+            }
+          });
           next = prev.map((p) => (p.id === id ? { ...p, ...normalizedPatch } : p));
           const updated = next.find((t) => t.id === id)!;
           void (async () => {
@@ -193,23 +215,38 @@ export function useTradesViewModel({
     [positions, repoRef, updateTradeById, setLastStatus]
   );
 
-    const performTPHit = useCallback(
-      (id: string, tpIndex?: 1 | 2 | 3 | 4) => {
-        void tpIndex;
-        const prev = positionsRef.current.find((p) => p.id === id) ?? positions.find((p) => p.id === id);
-        if (!prev) return;
-        const prevCopy = { ...prev };
-        // Mark as closed on TP hit and persist immediately
-        updateTradeById(id, { status: 'CLOSED' }, 'TP hit persisted');
-        setUndoInfo({ id, prev: prevCopy });
-        if (undoTimerRef.current) window.clearTimeout(undoTimerRef.current);
-        undoTimerRef.current = window.setTimeout(() => {
-          setUndoInfo(null);
-          undoTimerRef.current = null;
-        }, 5000) as unknown as number;
-      },
-      [positions, updateTradeById]
-    );
+  const performTPHit = useCallback(
+    (id: string, tpIndex?: 1 | 2 | 3 | 4) => {
+      const prev =
+        positionsRef.current.find((p) => p.id === id) ?? positions.find((p) => p.id === id);
+      if (!prev) return;
+      const prevCopy = { ...prev };
+      const patch: Partial<TradeRow> = {};
+      let statusMessage = 'TP hit persisted';
+
+      if (tpIndex && tpHitFlagMap[tpIndex]) {
+        const flagKey = tpHitFlagMap[tpIndex];
+        const isCurrentlyHit = Boolean(prev[flagKey]);
+        patch[flagKey] = isCurrentlyHit ? undefined : true;
+        if (isCurrentlyHit) {
+          statusMessage = 'TP marker cleared';
+        } else {
+          patch.status = 'CLOSED';
+        }
+      } else {
+        patch.status = 'CLOSED';
+      }
+
+      updateTradeById(id, patch, statusMessage);
+      setUndoInfo({ id, prev: prevCopy });
+      if (undoTimerRef.current) window.clearTimeout(undoTimerRef.current);
+      undoTimerRef.current = window.setTimeout(() => {
+        setUndoInfo(null);
+        undoTimerRef.current = null;
+      }, 5000) as unknown as number;
+    },
+    [positions, updateTradeById]
+  );
 
   const handleInlineUpdate = useCallback(
     (id: string, field: FocusField, value: number | string | undefined) => {
@@ -227,15 +264,19 @@ export function useTradesViewModel({
           break;
         case 'tp1':
           patch.tp1 = typeof value === 'number' ? value : undefined;
+          patch.tp1IsHit = undefined;
           break;
         case 'tp2':
           patch.tp2 = typeof value === 'number' ? value : undefined;
+          patch.tp2IsHit = undefined;
           break;
         case 'tp3':
           patch.tp3 = typeof value === 'number' ? value : undefined;
+          patch.tp3IsHit = undefined;
           break;
         case 'tp4':
           patch.tp4 = typeof value === 'number' ? value : undefined;
+          patch.tp4IsHit = undefined;
           break;
         case 'margin':
           patch.margin = typeof value === 'number' ? value : undefined;

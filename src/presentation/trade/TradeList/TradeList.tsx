@@ -14,6 +14,10 @@ export type TradeListItem = {
   tp2?: number;
   tp3?: number;
   tp4?: number;
+  tp1IsHit?: boolean;
+  tp2IsHit?: boolean;
+  tp3IsHit?: boolean;
+  tp4IsHit?: boolean;
   sl?: number;
   slIsBE?: boolean;
   margin?: number;
@@ -406,6 +410,12 @@ export function TradeList({
           const sideKey =
             sideRaw.toUpperCase() === 'LONG' || sideRaw.toLowerCase() === 'buy' ? 'LONG' : 'SHORT';
           const slMetric = buildSLMetric(t.sl, t.slIsBE);
+          const tpHitFlags: Record<1 | 2 | 3 | 4, boolean> = {
+            1: Boolean(t.tp1IsHit),
+            2: Boolean(t.tp2IsHit),
+            3: Boolean(t.tp3IsHit),
+            4: Boolean(t.tp4IsHit),
+          };
           const primaryMetrics: MetricDisplay[] = [
             slMetric,
             { label: 'PnL', value: formatNumber(t.pnl, 2) },
@@ -450,6 +460,7 @@ export function TradeList({
               rawValue: t.tp1,
               inputType: 'number',
               step: metricSteps.tp1,
+              accent: tpHitFlags[1] ? 'positive' : undefined,
             },
             {
               label: 'TP2',
@@ -458,6 +469,7 @@ export function TradeList({
               rawValue: t.tp2,
               inputType: 'number',
               step: metricSteps.tp2,
+              accent: tpHitFlags[2] ? 'positive' : undefined,
             },
             {
               label: 'TP3',
@@ -466,6 +478,7 @@ export function TradeList({
               rawValue: t.tp3,
               inputType: 'number',
               step: metricSteps.tp3,
+              accent: tpHitFlags[3] ? 'positive' : undefined,
             },
             {
               label: 'TP4',
@@ -474,6 +487,7 @@ export function TradeList({
               rawValue: t.tp4,
               inputType: 'number',
               step: metricSteps.tp4,
+              accent: tpHitFlags[4] ? 'positive' : undefined,
             },
           ];
           return (
@@ -495,6 +509,10 @@ export function TradeList({
                   onMarkOpen={onMarkOpen}
                   onClose={onClose}
                   onDelete={onDelete}
+                  tp1IsHit={t.tp1IsHit}
+                  tp2IsHit={t.tp2IsHit}
+                  tp3IsHit={t.tp3IsHit}
+                  tp4IsHit={t.tp4IsHit}
                 />
                 <div>
                   {t.analysisId ? (
@@ -564,6 +582,12 @@ export function TradeList({
             : styles.statusFilled;
 
         const slMetric = buildSLMetric(t.sl, t.slIsBE);
+        const tpHitFlags: Record<1 | 2 | 3 | 4, boolean> = {
+          1: Boolean(t.tp1IsHit),
+          2: Boolean(t.tp2IsHit),
+          3: Boolean(t.tp3IsHit),
+          4: Boolean(t.tp4IsHit),
+        };
         const detailMetrics: MetricDisplay[] = [
           slMetric,
           { label: 'PnL', value: formatNumber(t.pnl, 2) },
@@ -606,6 +630,7 @@ export function TradeList({
             rawValue: t.tp1,
             inputType: 'number',
             step: metricSteps.tp1,
+            accent: tpHitFlags[1] ? 'positive' : undefined,
           },
           {
             label: 'TP2',
@@ -614,6 +639,7 @@ export function TradeList({
             rawValue: t.tp2,
             inputType: 'number',
             step: metricSteps.tp2,
+            accent: tpHitFlags[2] ? 'positive' : undefined,
           },
           {
             label: 'TP3',
@@ -622,6 +648,7 @@ export function TradeList({
             rawValue: t.tp3,
             inputType: 'number',
             step: metricSteps.tp3,
+            accent: tpHitFlags[3] ? 'positive' : undefined,
           },
           {
             label: 'TP4',
@@ -630,6 +657,7 @@ export function TradeList({
             rawValue: t.tp4,
             inputType: 'number',
             step: metricSteps.tp4,
+            accent: tpHitFlags[4] ? 'positive' : undefined,
           },
         ];
 
@@ -647,6 +675,7 @@ export function TradeList({
             value: 'sl-be',
             label: 'Set SL to BE',
             onSelect: () => onSetSLtoBE(t.id),
+            variant: 'success',
           };
         }
         if (onMarkOpen) {
@@ -674,10 +703,12 @@ export function TradeList({
           (['1', '2', '3', '4'] as const).forEach((target) => {
             const idx = Number(target) as 1 | 2 | 3 | 4;
             const value = `tp-${target}` as TradeActionValue;
+            const isCurrentlyHit = tpHitFlags[idx];
             optionMap[value] = {
               value,
-              label: `Mark TP${target} hit`,
+              label: isCurrentlyHit ? `Clear TP${target} hit` : `Mark TP${target} hit`,
               onSelect: () => onSetTPHit(t.id, idx),
+              variant: isCurrentlyHit ? undefined : 'success',
             };
           });
         }

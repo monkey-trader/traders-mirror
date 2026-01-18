@@ -32,6 +32,10 @@ export type PositionCardProps = {
   onMarkClosed?: (id: string) => void;
   onMarkOpen?: (id: string) => void;
   onDelete?: (id: string) => void;
+  tp1IsHit?: boolean;
+  tp2IsHit?: boolean;
+  tp3IsHit?: boolean;
+  tp4IsHit?: boolean;
 };
 
 export function PositionCard({
@@ -51,9 +55,19 @@ export function PositionCard({
   onMarkClosed,
   onMarkOpen,
   onDelete,
+  tp1IsHit,
+  tp2IsHit,
+  tp3IsHit,
+  tp4IsHit,
 }: PositionCardProps) {
   const sideClass = side === 'LONG' ? styles.sideLong : styles.sideShort;
   const optionMap: Partial<Record<TradeActionValue, ActionDropdownOption>> = {};
+  const tpHitFlags: Record<1 | 2 | 3 | 4, boolean> = {
+    1: Boolean(tp1IsHit),
+    2: Boolean(tp2IsHit),
+    3: Boolean(tp3IsHit),
+    4: Boolean(tp4IsHit),
+  };
 
   if (onToggleSide) {
     const targetSide = side === 'LONG' ? 'SHORT' : 'LONG';
@@ -69,6 +83,7 @@ export function PositionCard({
       value: 'sl-be',
       label: 'Set SL to BE',
       onSelect: () => onSetSLtoBE(id),
+      variant: 'success',
     };
   }
 
@@ -100,10 +115,12 @@ export function PositionCard({
     (['1', '2', '3', '4'] as const).forEach((target) => {
       const idx = Number(target) as 1 | 2 | 3 | 4;
       const value = `tp-${target}` as TradeActionValue;
+      const isCurrentlyHit = tpHitFlags[idx];
       optionMap[value] = {
         value,
-        label: `Mark TP${target} hit`,
+        label: isCurrentlyHit ? `Clear TP${target} hit` : `Mark TP${target} hit`,
         onSelect: () => onSetTPHit(id, idx),
+        variant: isCurrentlyHit ? undefined : 'success',
       };
     });
   }

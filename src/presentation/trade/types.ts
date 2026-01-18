@@ -18,6 +18,10 @@ export type TradeRow = {
   tp2?: number;
   tp3?: number;
   tp4?: number;
+  tp1IsHit?: boolean;
+  tp2IsHit?: boolean;
+  tp3IsHit?: boolean;
+  tp4IsHit?: boolean;
   margin?: number;
   leverage?: number;
   userId?: string;

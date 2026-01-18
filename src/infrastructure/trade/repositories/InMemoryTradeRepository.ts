@@ -22,8 +22,13 @@ export type RepoTrade = {
   tp2?: number;
   tp3?: number;
   tp4?: number;
+  tp1IsHit?: boolean;
+  tp2IsHit?: boolean;
+  tp3IsHit?: boolean;
+  tp4IsHit?: boolean;
   margin?: number;
   leverage?: number;
+  analysisId?: string;
 };
 
 const DEFAULT_MOCK_TRADES: RepoTrade[] = [
@@ -356,8 +361,13 @@ export class InMemoryTradeRepository {
         tp2: typeof o.tp2 === 'number' ? (o.tp2 as number) : undefined,
         tp3: typeof o.tp3 === 'number' ? (o.tp3 as number) : undefined,
         tp4: typeof o.tp4 === 'number' ? (o.tp4 as number) : undefined,
+        tp1IsHit: typeof o.tp1IsHit === 'boolean' ? (o.tp1IsHit as boolean) : undefined,
+        tp2IsHit: typeof o.tp2IsHit === 'boolean' ? (o.tp2IsHit as boolean) : undefined,
+        tp3IsHit: typeof o.tp3IsHit === 'boolean' ? (o.tp3IsHit as boolean) : undefined,
+        tp4IsHit: typeof o.tp4IsHit === 'boolean' ? (o.tp4IsHit as boolean) : undefined,
         margin: typeof o.margin === 'number' ? (o.margin as number) : undefined,
         leverage: typeof o.leverage === 'number' ? (o.leverage as number) : undefined,
+        analysisId: typeof o.analysisId === 'string' ? (o.analysisId as string) : undefined,
       };
     }
 
@@ -381,8 +391,13 @@ export class InMemoryTradeRepository {
         tp2: typeof o.tp2 === 'number' ? (o.tp2 as number) : undefined,
         tp3: typeof o.tp3 === 'number' ? (o.tp3 as number) : undefined,
         tp4: typeof o.tp4 === 'number' ? (o.tp4 as number) : undefined,
+        tp1IsHit: typeof o.tp1IsHit === 'boolean' ? (o.tp1IsHit as boolean) : undefined,
+        tp2IsHit: typeof o.tp2IsHit === 'boolean' ? (o.tp2IsHit as boolean) : undefined,
+        tp3IsHit: typeof o.tp3IsHit === 'boolean' ? (o.tp3IsHit as boolean) : undefined,
+        tp4IsHit: typeof o.tp4IsHit === 'boolean' ? (o.tp4IsHit as boolean) : undefined,
         margin: typeof o.margin === 'number' ? (o.margin as number) : undefined,
         leverage: typeof o.leverage === 'number' ? (o.leverage as number) : undefined,
+        analysisId: typeof o.analysisId === 'string' ? (o.analysisId as string) : undefined,
       };
     }
 
@@ -427,6 +442,11 @@ export class InMemoryTradeRepository {
         tp2: rt.tp2,
         tp3: rt.tp3,
         tp4: rt.tp4,
+        tp1IsHit: rt.tp1IsHit,
+        tp2IsHit: rt.tp2IsHit,
+        tp3IsHit: rt.tp3IsHit,
+        tp4IsHit: rt.tp4IsHit,
+        analysisId: rt.analysisId,
         leverage: rt.leverage,
       };
       try {
