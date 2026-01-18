@@ -51,18 +51,18 @@ export function ActionDropdown({
         }
         const option = options.find((opt) => opt.value === nextValue);
         if (option) {
-          // call handler asynchronously to avoid native select close/focus side-effects
-          // that can interfere with parent click handlers or portal modals
-          // small log for debugging in case users still can't trigger actions
+          // Call the handler synchronously so tests and immediate consumers
+          // observe the action right away. Reset the select value asynchronously
+          // to avoid interfering with native select focus/close behavior.
           // eslint-disable-next-line no-console
           console.debug('[ActionDropdown] selected', nextValue);
+          try {
+            option.onSelect();
+          } catch (err) {
+            // eslint-disable-next-line no-console
+            console.warn('ActionDropdown option handler threw', err);
+          }
           setTimeout(() => {
-            try {
-              option.onSelect();
-            } catch (err) {
-              // eslint-disable-next-line no-console
-              console.warn('ActionDropdown option handler threw', err);
-            }
             if (selectRef.current) {
               selectRef.current.value = '';
             }

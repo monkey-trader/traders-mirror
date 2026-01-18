@@ -504,6 +504,8 @@ export function Analysis({
                     <DetailLoader
                       id={summary.id}
                       startEditingField={selectedFieldToFocus ?? undefined}
+                      onCreateTrade={handleCreateTradeFromSummary}
+                      onRequestDelete={requestDelete}
                     />
                   </React.Suspense>
                 </div>
@@ -533,7 +535,17 @@ export function Analysis({
   );
 }
 
-function DetailLoader({ id, startEditingField }: { id: string; startEditingField?: string | null }) {
+function DetailLoader({
+  id,
+  startEditingField,
+  onCreateTrade,
+  onRequestDelete,
+}: {
+  id: string;
+  startEditingField?: string | null;
+  onCreateTrade?: (summary?: AnalysisSuggestion) => void;
+  onRequestDelete?: (id: string) => void;
+}) {
   const [analysis, setAnalysis] = useState<AnalysisDTOType | null>(null);
 
   useEffect(() => {
@@ -566,6 +578,8 @@ function DetailLoader({ id, startEditingField }: { id: string; startEditingField
       compactView={false}
       // instruct detail/editor to start in edit mode and focus a field if requested
       startEditingField={startEditingField ?? undefined}
+      onCreateTrade={onCreateTrade}
+      onRequestDelete={onRequestDelete}
       onSave={async (updated) => {
               try {
                 await repository.save(updated as unknown as AnalysisDTOType);

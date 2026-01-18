@@ -48,12 +48,15 @@ vi.mock('@/presentation/analysis/AnalysisDetail', () => ({
 }));
 
 vi.mock('@/presentation/analysis/AnalysisList', () => ({
-  AnalysisList: ({ items, onSelect }: any) => (
+  AnalysisList: ({ items, onSelect, selectedId, renderExpandedContent }: any) => (
     <div>
       {items.map((it: any) => (
-        <button key={it.id} onClick={() => onSelect(it.id)}>
-          {it.symbol}
-        </button>
+        <div key={it.id}>
+          <button onClick={() => onSelect && onSelect(it.id)}>{it.symbol}</button>
+          {selectedId === it.id && renderExpandedContent ? (
+            <div>{renderExpandedContent(it)}</div>
+          ) : null}
+        </div>
       ))}
     </div>
   ),
@@ -100,8 +103,8 @@ describe('Analysis component', () => {
     // ensure list item exists
     await waitFor(() => expect(screen.getByText('BTCUSD')).toBeTruthy());
 
-    // dispatch open-analysis to select it
-    window.dispatchEvent(new CustomEvent('open-analysis', { detail: { id: 'a1' } }));
+    // select via the rendered list button to open detail
+    fireEvent.click(screen.getByText('BTCUSD'));
 
     // DetailLoader initially shows loading, then our stubbed AnalysisDetail with symbol
     await waitFor(() =>

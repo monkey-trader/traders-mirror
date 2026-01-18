@@ -50,8 +50,8 @@ describe('Analysis edit -> save flow', () => {
     const AnalysisModule = await import('./Analysis')
     render(<AnalysisModule.Analysis />)
 
-    // wait for list render
-    await waitFor(() => expect(screen.getAllByText('Open').length).toBeGreaterThanOrEqual(1))
+    // wait for list render (localized label)
+    await waitFor(() => expect(screen.getAllByText('Detail öffnen').length).toBeGreaterThanOrEqual(1))
 
     // open detail via event
     globalThis.dispatchEvent(new CustomEvent('open-analysis', { detail: { id: 'ea1' } }))

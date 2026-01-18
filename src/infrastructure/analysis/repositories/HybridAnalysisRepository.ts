@@ -378,6 +378,11 @@ export class HybridAnalysisRepository implements AnalysisRepository {
       try {
         if (item.op === 'delete') {
           await this.remote.delete(item.id);
+          try {
+            removePendingDelete(item.id);
+          } catch {
+            /* ignore */
+          }
         } else {
           await this.remote.save(item.dto);
         }
