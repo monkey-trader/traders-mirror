@@ -48,10 +48,36 @@ export async function loadMockAnalyses(
       } else if (typeof symbolCandidate === 'string') {
         symbolValue = symbolCandidate;
       }
+
+      // Generate rich setups (at least 3, always one fib-level with value)
+      const allSetups = [
+        { key: 'double-advantage' },
+        { key: 'ema-50-daily' },
+        { key: 'fib-level', value: '0.618 (94660.7)' },
+        { key: 'liquidity-cluster' },
+        { key: 'fair-value-gap' },
+      ];
+      // Pick 3 random setups, always include fib-level
+      const setups = [
+        allSetups[2],
+        allSetups[Math.floor(Math.random() * 2)],
+        allSetups[3 + Math.floor(Math.random() * 2)],
+      ];
+
+      // Generate all timeframes with notes and tradingViewLinks
+      const tfKeys = ['monthly','weekly','daily','4h','2h','1h','15min'];
+      const timeframes = tfKeys.map((tf, idx) => ({
+        timeframe: tf,
+        note: `${tf.toUpperCase()} note for ${symbolValue}`,
+        tradingViewLink: `https://tradingview.com/chart/${symbolValue}/${tf}?mock=${idx}`,
+      }));
+
       const input = {
         symbol: symbolValue,
         market: (tradeAs as unknown as { market?: string }).market ?? undefined,
         notes: `Mock analysis for ${symbolValue}`,
+        setups,
+        timeframes,
       };
       const a = AnalysisFactory.create(
         input as unknown as Parameters<typeof AnalysisFactory.create>[0]

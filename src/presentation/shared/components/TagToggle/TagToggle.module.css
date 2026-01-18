@@ -1,0 +1,35 @@
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35em 1.1em;
+  border-radius: 999px;
+  border: 1.5px solid var(--border, #3b4252);
+  background: rgba(34, 193, 195, 0.08);
+  color: var(--text, #e5e9f0);
+  font-size: 0.98em;
+  font-weight: 500;
+  cursor: pointer;
+  margin: 0 0.25em 0.5em 0;
+  transition: background 0.15s, border 0.15s, color 0.15s;
+  user-select: none;
+}
+
+.tag:focus {
+  outline: 2px solid var(--primary, #7c5cff);
+  outline-offset: 2px;
+}
+
+.active {
+  background: linear-gradient(90deg, #7c5cff 0%, #22c1c3 100%);
+  color: #fff;
+  border-color: #7c5cff;
+}
+
+.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.label {
+  white-space: nowrap;
+}

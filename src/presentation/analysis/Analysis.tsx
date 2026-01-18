@@ -17,6 +17,11 @@ import {
 } from '@/presentation/shared/components/ActionDropdown/ActionDropdown';
 import { IconButton } from '@/presentation/shared/components/IconButton/IconButton';
 import repoSyncStyles from '@/presentation/shared/components/RepoSyncStatus/RepoSyncStatus.module.css';
+import { AnalysisCreatePanel } from '@/presentation/analysis/AnalysisCreatePanel';
+import type { AnalysisFormValues } from '@/presentation/analysis/validation';
+import type { TimeframeInput } from '@/presentation/analysis/types';
+import { AnalysisService } from '@/application/analysis/services/AnalysisService';
+import type { AnalysisInput } from '@/domain/analysis/factories/AnalysisFactory';
 // Editor types removed
 
 const ANALYSIS_HASH_PREFIX = '#/analysis';
@@ -35,6 +40,35 @@ const extractAnalysisIdFromHash = (hash: string): string | null => {
     return null;
   }
 };
+
+const toMarketFilterValue = (input: unknown): 'All' | 'Crypto' | 'Forex' => {
+  if (!input) return 'All';
+  if (typeof input === 'string') {
+    const normalized = input.trim().toLowerCase();
+    if (normalized === 'crypto') return 'Crypto';
+    if (normalized === 'forex') return 'Forex';
+    return 'All';
+  }
+  if (typeof input === 'object') {
+    try {
+      const maybe = input as { value?: unknown };
+      if (typeof maybe.value === 'string') return toMarketFilterValue(maybe.value);
+    } catch {
+      /* ignore */
+    }
+  }
+  return 'All';
+};
+
+const dtoToSummary = (dto: AnalysisDTOType): AnalysisSummary => ({
+  id: dto.id,
+  symbol: dto.symbol,
+  createdAt: dto.createdAt,
+  notes: dto.notes,
+  market: toMarketFilterValue((dto as { market?: unknown }).market),
+});
+
+const mapDtosToSummaries = (items: AnalysisDTOType[]): AnalysisSummary[] => items.map(dtoToSummary);
 
 export type AnalysisSuggestion = {
   analysisId?: string;
@@ -88,6 +122,8 @@ const repository = (() => {
   return new HybridAnalysisRepository();
 })();
 
+const analysisService = new AnalysisService(repository);
+
 export function Analysis({
   onCreateTradeSuggestion,
   compactView = false,
@@ -109,6 +145,9 @@ export function Analysis({
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmId, setConfirmId] = useState<string | null>(null);
   const [pendingDeletes, setPendingDeletes] = useState<string[]>([]);
+  const [createPanelOpen, setCreatePanelOpen] = useState(false);
+  const [createPanelError, setCreatePanelError] = useState<string | null>(null);
+  const [createFormKey, setCreateFormKey] = useState(0);
 
   useEffect(() => {
     if (externalMarketFilter !== undefined) {
@@ -120,37 +159,11 @@ export function Analysis({
     // load existing analyses from repo (localStorage) and poll periodically
     let mounted = true;
 
-    const toMarketString = (m: unknown) => {
-      if (!m) return '';
-      if (typeof m === 'string') return m;
-      try {
-        const maybe = m as { value?: unknown };
-        if (typeof maybe.value === 'string') return maybe.value;
-      } catch {
-        /* ignore */
-      }
-      return '';
-    };
-
     const fetchList = async () => {
       try {
         const all = await repository.listAll();
         if (!mounted) return;
-        setList(
-          all.map((a) => {
-            const raw = String(toMarketString(a.market) ?? '');
-            const normalized = raw.trim().toLowerCase();
-            const marketValue =
-              normalized === 'forex' ? 'Forex' : normalized === 'crypto' ? 'Crypto' : 'All';
-            return {
-              id: a.id,
-              symbol: a.symbol,
-              createdAt: a.createdAt,
-              notes: a.notes,
-              market: marketValue,
-            };
-          })
-        );
+        setList(mapDtosToSummaries(all));
       } catch {
         /* ignore */
       }
@@ -184,33 +197,7 @@ export function Analysis({
       try {
         // ignore event details; simply reload full list to keep in sync
         const all = await repository.listAll();
-        const toMarketString = (m: unknown) => {
-          if (!m) return '';
-          if (typeof m === 'string') return m;
-          try {
-            const maybe = m as { value?: unknown };
-            if (typeof maybe.value === 'string') return maybe.value;
-          } catch {
-            /* ignore */
-          }
-          return '';
-        };
-
-        setList(
-          all.map((a) => {
-            const raw = String(toMarketString(a.market) ?? '');
-            const normalized = raw.trim().toLowerCase();
-            const marketValue =
-              normalized === 'forex' ? 'Forex' : normalized === 'crypto' ? 'Crypto' : 'All';
-            return {
-              id: a.id,
-              symbol: a.symbol,
-              createdAt: a.createdAt,
-              notes: a.notes,
-              market: marketValue,
-            };
-          })
-        );
+        setList(mapDtosToSummaries(all));
       } catch {
         /* ignore */
       }
@@ -303,33 +290,7 @@ export function Analysis({
         /* ignore */
       }
       const all = await repository.listAll();
-      const toMarketString = (m: unknown) => {
-        if (!m) return '';
-        if (typeof m === 'string') return m;
-        try {
-          const maybe = m as { value?: unknown };
-          if (typeof maybe.value === 'string') return maybe.value;
-        } catch {
-          /* ignore */
-        }
-        return '';
-      };
-
-      setList(
-        all.map((a) => {
-          const raw = String(toMarketString(a.market) ?? '');
-          const normalized = raw.trim().toLowerCase();
-          const marketValue =
-            normalized === 'forex' ? 'Forex' : normalized === 'crypto' ? 'Crypto' : 'All';
-          return {
-            id: a.id,
-            symbol: a.symbol,
-            createdAt: a.createdAt,
-            notes: a.notes,
-            market: marketValue,
-          };
-        })
-      );
+      setList(mapDtosToSummaries(all));
       if (selected === id) setSelected(null);
     } catch (err) {
       // eslint-disable-next-line no-console
@@ -349,6 +310,57 @@ export function Analysis({
   const handleMarketFilterChange = (value: 'All' | 'Crypto' | 'Forex') => {
     if (onMarketFilterChange) onMarketFilterChange(value);
     if (externalMarketFilter === undefined) setInternalMarketFilter(value);
+  };
+
+  const handleOpenCreatePanel = () => {
+    setCreatePanelError(null);
+    setCreatePanelOpen(true);
+  };
+
+  const handleCloseCreatePanel = () => {
+    setCreatePanelError(null);
+    setCreatePanelOpen(false);
+    setCreateFormKey((key) => key + 1);
+  };
+
+  const handleCreateAnalysis = async (
+    input: AnalysisFormValues & { timeframes?: TimeframeInput[] }
+  ) => {
+    setCreatePanelError(null);
+    try {
+      const payload: AnalysisInput = {
+        symbol: input.symbol,
+        notes: input.notes,
+        market: input.market,
+        timeframes: Array.isArray(input.timeframes)
+          ? input.timeframes.map((tf) => ({
+              timeframe: tf.timeframe,
+              tradingViewLink: tf.tradingViewLink,
+              note: tf.note,
+            }))
+          : input.timeframes,
+      };
+      const created = await analysisService.createAnalysis(payload);
+      const refreshed = await repository.listAll();
+      setList(mapDtosToSummaries(refreshed));
+      handleOpen(created.id, 'symbol');
+      handleCloseCreatePanel();
+      try {
+        globalThis.dispatchEvent(
+          new CustomEvent('analyses-updated', { detail: { type: 'created', id: created.id } })
+        );
+      } catch {
+        /* ignore */
+      }
+      if (typeof window !== 'undefined') {
+        const targetHash = buildAnalysisHash(created.id);
+        if (window.location.hash !== targetHash) {
+          window.location.hash = targetHash;
+        }
+      }
+    } catch {
+      setCreatePanelError('Analyse konnte nicht angelegt werden. Versuche es erneut.');
+    }
   };
 
   const shouldShowToolbar = showFilterToolbar !== false;
@@ -402,17 +414,27 @@ export function Analysis({
               </div>
               <p className={styles.headerMeta}>Gefiltert: {filterDescription}</p>
             </div>
-            {onCreateTradeSuggestion ? (
+            <div className={styles.headerActions}>
               <Button
                 type="button"
-                variant="secondary"
+                variant="primary"
                 className={styles.createBtn}
-                disabled={!selectedSummary}
-                onClick={() => handleCreateTradeFromSummary()}
+                onClick={handleOpenCreatePanel}
               >
-                Trade anlegen
+                Analyse anlegen
               </Button>
-            ) : null}
+              {onCreateTradeSuggestion ? (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className={styles.createBtn}
+                  disabled={!selectedSummary}
+                  onClick={() => handleCreateTradeFromSummary()}
+                >
+                  Trade anlegen
+                </Button>
+              ) : null}
+            </div>
           </div>
           <div className={styles.filtersRow}>
             {/* Use unified FilterToolbar to match TradeJournal layout */}
@@ -449,13 +471,22 @@ export function Analysis({
               hideMarketFilters={!isTestEnv}
               count={visibleCount}
               countLabel="analyses"
-              onCreate={() => handleCreateTradeFromSummary()}
-              disableCreate={!selectedSummary}
-              createLabel="Trade anlegen"
+              onCreate={handleOpenCreatePanel}
+              disableCreate={false}
+              createLabel="Analyse anlegen"
             />
           </div>
         </div>
       ) : null}
+
+      <AnalysisCreatePanel
+        open={createPanelOpen}
+        compactView={compactView}
+        errorMessage={createPanelError}
+        formKey={createFormKey}
+        onClose={handleCloseCreatePanel}
+        onSubmit={handleCreateAnalysis}
+      />
 
       <div className={styles.listOnlyLayout}>
         {useCard ? (
@@ -541,7 +572,7 @@ export function Analysis({
                       <DetailLoader
                         id={summary.id}
                         startEditingField={selectedFieldToFocus ?? undefined}
-                        onCreateTrade={handleCreateTradeFromSummary}
+                        /* onCreateTrade entfernt */
                         onRequestDelete={requestDelete}
                       />
                     </React.Suspense>
@@ -633,7 +664,7 @@ export function Analysis({
                       <DetailLoader
                         id={summary.id}
                         startEditingField={selectedFieldToFocus ?? undefined}
-                        onCreateTrade={handleCreateTradeFromSummary}
+                        /* onCreateTrade entfernt */
                         onRequestDelete={requestDelete}
                       />
                     </React.Suspense>
@@ -668,12 +699,12 @@ export function Analysis({
 function DetailLoader({
   id,
   startEditingField,
-  onCreateTrade,
+  // onCreateTrade entfernt
   onRequestDelete,
 }: {
   id: string;
   startEditingField?: string | null;
-  onCreateTrade?: (summary?: AnalysisSummary) => void;
+  // onCreateTrade entfernt
   onRequestDelete?: (id: string) => void;
 }) {
   const [analysis, setAnalysis] = useState<AnalysisDTOType | null>(null);
@@ -709,7 +740,6 @@ function DetailLoader({
       showSymbolTitle={false}
       // instruct detail/editor to start in edit mode and focus a field if requested
       startEditingField={startEditingField ?? undefined}
-      onCreateTrade={onCreateTrade}
       onRequestDelete={onRequestDelete}
       onSave={async (updated) => {
               try {

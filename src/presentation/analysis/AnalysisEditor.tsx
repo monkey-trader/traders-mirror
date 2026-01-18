@@ -12,12 +12,15 @@ import type { MarketValue } from '@/presentation/shared/components/MarketSelect/
 import { TimeframeWizard } from './components/TimeframeWizard/TimeframeWizard';
 
 import { validateAll } from './validation';
+import { SETUPS, type AnalysisSetup } from './setups';
+import { TagToggle } from '@/presentation/shared/components/TagToggle/TagToggle';
 type Props = {
   initial?: {
     symbol?: string;
     notes?: string;
     timeframes?: Partial<Record<string, TimeframeAnalysis>>;
     market?: 'Forex' | 'Crypto';
+    setups?: AnalysisSetup[];
   };
   onSave?: (input: AnalysisFormValues & { timeframes?: TimeframeInput[] }) => Promise<void> | void;
   // optional field to focus when the editor mounts or when changed
@@ -31,6 +34,8 @@ export function AnalysisEditor({ initial = {}, onSave, focusField }: Props) {
     () => (initial.market ?? 'Forex') as MarketValue
   );
   const [wizardMode, setWizardMode] = useState(true);
+  const [setups, setSetups] = useState<AnalysisSetup[]>(initial.setups ?? []);
+  // entfernt: fibInput, setFibInput (wird nicht mehr benötigt)
   const [timeframes, setTimeframes] = useState<TimeframeInput[]>(() => {
     const base = DEFAULT_TIMEFRAMES.map((t) => ({ timeframe: t }));
     if (initial.timeframes) {
@@ -88,7 +93,7 @@ export function AnalysisEditor({ initial = {}, onSave, focusField }: Props) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const values: AnalysisFormValues = { symbol, notes, market: market as 'Forex' | 'Crypto' };
+    const values: AnalysisFormValues = { symbol, notes, market: market as 'Forex' | 'Crypto', setups };
     const errors = validateAll(values);
     setFormErrors(errors);
     setFormSubmitted(true);
@@ -96,7 +101,7 @@ export function AnalysisEditor({ initial = {}, onSave, focusField }: Props) {
     if (!onSave) return;
     setSaving(true);
     try {
-      await onSave({ symbol, notes, timeframes, market: market as 'Forex' | 'Crypto' });
+      await onSave({ symbol, notes, timeframes, market: market as 'Forex' | 'Crypto', setups });
       // keep form values after save to avoid layout reflow; parent may clear if desired
     } finally {
       setSaving(false);
@@ -145,7 +150,51 @@ export function AnalysisEditor({ initial = {}, onSave, focusField }: Props) {
         )}
       </div>
 
+
       <Textarea label="Notes" value={notes} onChange={(e) => setNotes(e.target.value)} inputRef={notesRef} />
+
+      <div className={styles.setupsBlock} style={{ margin: '18px 0 8px 0' }}>
+        <div className={styles.setupsLabel} style={{ marginBottom: 6, fontWeight: 500 }}>
+          Setups
+        </div>
+        <div className={styles.setupsTags} style={{ display: 'flex', flexWrap: 'wrap', gap: 8, flexDirection: 'column' }}>
+          {/* Fib Level als vordefinierte TagToggles (Checkbox-Style) */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 4 }}>
+            {["0.5", "0.559", "0.618", "0.667", "0.786"].map((level) => (
+              <TagToggle
+                key={level}
+                label={`Fib ${level}`}
+                checked={setups.some(s => s.key === 'fib-level' && s.value === level)}
+                onChange={(checked) => {
+                  setSetups((prev) =>
+                    checked
+                      ? [...prev, { key: 'fib-level', value: level }]
+                      : prev.filter((s) => !(s.key === 'fib-level' && s.value === level))
+                  );
+                }}
+                className={styles.fibTag}
+              />
+            ))}
+          </div>
+          {/* Restliche Setups als einfache Toggles */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
+            {SETUPS.filter(s => s.key !== 'fib-level').map((setup) => (
+              <TagToggle
+                key={setup.key}
+                label={setup.label}
+                checked={setups.some(s => s.key === setup.key)}
+                onChange={(checked) => {
+                  setSetups((prev) =>
+                    checked
+                      ? [...prev, { key: setup.key }]
+                      : prev.filter((s) => s.key !== setup.key)
+                  );
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
 
       <div
         className={styles.timeframesHeader}

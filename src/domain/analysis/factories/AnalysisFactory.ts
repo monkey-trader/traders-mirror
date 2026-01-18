@@ -17,6 +17,9 @@ type TimeframeInput = {
   note?: string;
 };
 
+
+import type { AnalysisSetup } from '@/presentation/analysis/setups';
+
 export type AnalysisInput = {
   id?: string;
   symbol: string | TradeSymbol;
@@ -24,6 +27,7 @@ export type AnalysisInput = {
   timeframes?: TimeframeInput[] | Record<string, TimeframeInput>;
   notes?: string;
   market?: 'Forex' | 'Crypto';
+  setups?: AnalysisSetup[];
 };
 
 function buildTimeframeRecord(
@@ -71,13 +75,16 @@ export function createAnalysis(input: AnalysisInput): Analysis {
 
   const tfRecord = buildTimeframeRecord(input.timeframes as AnalysisInput['timeframes']);
 
+  // Note: setups is not yet part of the domain entity, but we pass it through in DTO
   return new Analysis(
     id,
     tradeSymbol,
     input.market,
     createdAt,
     tfRecord,
-    input.notes ? new Notes(input.notes) : undefined
+    input.notes ? new Notes(input.notes) : undefined,
+    undefined,
+    input.setups
   );
 }
 
@@ -90,6 +97,7 @@ export function analysisToDTO(analysis: Analysis): AnalysisDTO {
     updatedAt: analysis.updatedAt,
     timeframes: analysis.timeframes,
     notes: analysis.notes?.value,
+    setups: analysis.setups ?? [],
   };
 }
 

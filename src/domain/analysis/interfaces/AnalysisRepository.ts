@@ -6,6 +6,7 @@ export type TimeframeAnalysisDTO = {
   note?: string;
 };
 
+import type { AnalysisSetup } from '@/presentation/analysis/setups';
 export type AnalysisDTO = {
   id: string;
   symbol: string;
@@ -14,6 +15,7 @@ export type AnalysisDTO = {
   market?: 'Forex' | 'Crypto';
   timeframes: Record<Timeframe, TimeframeAnalysisDTO>;
   notes?: string;
+  setups?: AnalysisSetup[];
 };
 
 export type AnalysisRepository = {

@@ -1,7 +1,11 @@
+
+import type { AnalysisSetup } from './setups';
+
 export type AnalysisFormValues = {
   symbol: string;
   notes?: string;
   market?: 'Forex' | 'Crypto';
+  setups?: AnalysisSetup[];
 };
 
 export function validateAll(values: AnalysisFormValues) {

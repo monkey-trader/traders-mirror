@@ -59,9 +59,10 @@ describe('Analysis edit -> save flow', () => {
     // wait for detail to appear
     await waitFor(() => expect(screen.getByTestId('analysis-detail')).toBeTruthy())
 
-    // click title to enter edit mode (Edit button was removed)
-    const titleBtn = screen.getByLabelText(`Edit analysis ${sample.symbol}`)
-    titleBtn.click()
+
+    // click symbol in the list to enter edit mode (role=button, text=BTCUSD)
+    const symbolBtn = screen.getByRole('button', { name: sample.symbol })
+    symbolBtn.click()
 
     // editor should appear
     await waitFor(() => expect(screen.getByTestId('analysis-editor')).toBeTruthy())

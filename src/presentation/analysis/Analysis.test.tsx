@@ -173,4 +173,41 @@ describe('Analysis component', () => {
     // ensure symbol rendered
     expect(screen.getByText('OBJ')).toBeTruthy();
   });
+
+  it('allows creating a new analysis via the inline panel', async () => {
+    const savedItems: AnalysisDTO[] = [];
+    vi.spyOn(LocalStorageAnalysisRepository.prototype, 'listAll').mockImplementation(async () => [
+      ...savedItems,
+    ]);
+    vi.spyOn(LocalStorageAnalysisRepository.prototype, 'getById').mockImplementation(
+      async (id: string) => savedItems.find((item) => item.id === id) ?? null
+    );
+    vi.spyOn(LocalStorageAnalysisRepository.prototype, 'save').mockImplementation(
+      async (dto: AnalysisDTO) => {
+        const idx = savedItems.findIndex((entry) => entry.id === dto.id);
+        if (idx >= 0) {
+          savedItems[idx] = dto;
+        } else {
+          savedItems.push(dto);
+        }
+      }
+    );
+
+    const AnalysisModule = await import('./Analysis');
+    render(<AnalysisModule.Analysis />);
+
+    const createButtons = screen.getAllByText('Analyse anlegen');
+    createButtons[0].click();
+
+    await waitFor(() => expect(screen.getByTestId('analysis-create-panel')).toBeTruthy());
+
+    const symbolInput = screen.getByLabelText('Symbol');
+    fireEvent.change(symbolInput, { target: { value: 'NEWA' } });
+
+    const saveButton = screen.getByRole('button', { name: /save/i });
+    fireEvent.click(saveButton);
+
+    await waitFor(() => expect(savedItems.length).toBeGreaterThan(0));
+    await waitFor(() => expect(screen.getByText('NEWA')).toBeTruthy());
+  });
 });

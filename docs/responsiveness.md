@@ -61,5 +61,8 @@ Update 17.01.2026
 Update 09.01.2026
 - `LoginRequired` (presentation/auth): Centered card that uses spacing tokens (`--space-4/5/6`) and adapts paddings on small screens via media query. No `compactView` prop needed as it is inherently minimal and mobile-friendly.
 
+Update 18.01.2026
+- `AnalysisCreatePanel` (presentation/analysis): Inline creation surface that injects the `AnalysisEditor` directly into the Analysis screen. The panel wraps the editor with a gradient shell that relies on spacing tokens (`--space-4/5`) and exposes a `data-compact` switch so the padding collapses on tablets/phones. The shared `Button` stack inside the header automatically stretches on viewports <720px, and the associated Vitest (`Analysis.test.tsx`) asserts the workflow by simulating the compact panel submit path.
+
 Maintenance
 - Keep this document updated as new tokens or breakpoints are introduced.

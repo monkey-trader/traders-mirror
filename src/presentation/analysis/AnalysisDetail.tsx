@@ -1,11 +1,8 @@
 import React from 'react';
 import styles from './AnalysisDetail.module.css';
 import { Button } from '@/presentation/shared/components/Button/Button';
-import { IconButton } from '@/presentation/shared/components/IconButton/IconButton';
-import LocalStorageTradeRepository from '@/infrastructure/trade/repositories/LocalStorageTradeRepository';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { AnalysisEditor } from './AnalysisEditor';
-import type { AnalysisSummary } from '@/presentation/analysis/AnalysisList';
 import type { TimeframeInput } from '@/presentation/analysis/types';
 
 type Timeframe = 'monthly' | 'weekly' | 'daily' | '4h' | '2h' | '1h' | '15min';
@@ -16,6 +13,7 @@ export type TimeframeAnalysis = {
   note?: string;
 };
 
+import type { AnalysisSetup } from './setups';
 export type AnalysisDTO = {
   id: string;
   symbol: string;
@@ -24,6 +22,7 @@ export type AnalysisDTO = {
   timeframes: Record<Timeframe, TimeframeAnalysis>;
   notes?: string;
   market?: 'Forex' | 'Crypto' | { value: string };
+  setups?: AnalysisSetup[];
 };
 
 type Props = {
@@ -32,7 +31,6 @@ type Props = {
   onSave?: (updated: AnalysisDTO) => Promise<void> | void;
   // optional field name to auto-start editing and focus that field
   startEditingField?: string;
-  onCreateTrade?: (summary?: AnalysisSummary) => void;
   onRequestDelete?: (id: string) => void;
   showSymbolTitle?: boolean;
 };
@@ -55,7 +53,7 @@ export function AnalysisDetail({
     if (m === 'Forex' || m === 'Crypto') return m;
     return undefined;
   };
-  const [hasLinkedTrade, setHasLinkedTrade] = useState(false);
+  // const [hasLinkedTrade, setHasLinkedTrade] = useState(false); // entfernt, da nicht mehr benötigt
   const [editing, setEditing] = useState(false);
   const [localFocusField, setLocalFocusField] = useState<string | undefined>(undefined);
 
@@ -65,34 +63,7 @@ export function AnalysisDetail({
     }
   }, [startEditingField]);
 
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        const repo = new LocalStorageTradeRepository(undefined, { seedDefaults: false });
-        const trades = await repo.getAll();
-        if (!mounted) return;
-        const found = trades.find((t) => {
-          const aid = (t as unknown as { analysisId?: unknown }).analysisId;
-          let aidValue: string | undefined;
-          if (typeof aid === 'string') aidValue = aid;
-          else if (aid && typeof aid === 'object') {
-            const maybe = aid as Record<string, unknown>;
-            if (typeof maybe.value === 'string') aidValue = maybe.value as string;
-            else aidValue = undefined;
-          } else aidValue = undefined;
-          return aidValue === analysis.id;
-        });
-        setHasLinkedTrade(Boolean(found));
-      } catch {
-        // ignore and assume no linked trade
-        if (mounted) setHasLinkedTrade(false);
-      }
-    })();
-    return () => {
-      mounted = false;
-    };
-  }, [analysis.id]);
+  // useEffect für hasLinkedTrade entfernt
   return (
     <div className={styles.container} data-testid="analysis-detail">
       <div className={styles.header}>
@@ -111,43 +82,26 @@ export function AnalysisDetail({
             {analysis.symbol}
           </h2>
         ) : null}
-        <div className={styles.actions}>
-          {hasLinkedTrade ? (
-            <IconButton
-              variant="ghost"
-              color="primary"
-              className={styles.openTradeBtn}
-              ariaLabel={`Open trade for ${analysis.symbol}`}
-              onClick={() => {
-                try {
-                  globalThis.location.hash = '#/journal';
-                  setTimeout(() => {
-                    try {
-                      globalThis.dispatchEvent(
-                        new CustomEvent('open-trade', { detail: { analysisId: analysis.id } })
-                      );
-                    } catch {
-                      /* ignore */
-                    }
-                  }, 50);
-                } catch {
-                  /* ignore */
-                }
-              }}
-            >
-              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-                <path
-                  d="M14 3h7v7h-2V6.41l-9.29 9.3-1.42-1.42L17.59 5H14V3zM5 5h6v2H7v10h10v-4h2v6H5V5z"
-                  fill="currentColor"
-                />
-              </svg>
-            </IconButton>
-          ) : null}
-        </div>
+        {/* Action-Dropdown entfernt, keine Aktionen mehr hier */}
       </div>
 
       {!editing ? (
         <>
+          <div className={styles.metaBlock}>
+            <div><strong>Market:</strong> {normalizeMarket(analysis.market) ?? '-'}</div>
+            <div><strong>Created:</strong> {analysis.createdAt ? new Date(analysis.createdAt).toLocaleString() : '-'}</div>
+            {analysis.updatedAt && <div><strong>Updated:</strong> {new Date(analysis.updatedAt).toLocaleString()}</div>}
+          </div>
+          <div className={styles.setupsBlock}>
+            <div><strong>Setups:</strong></div>
+            <ul className={styles.setupsList}>
+              {(analysis.setups ?? []).map((setup: AnalysisSetup, i: number) => (
+                <li key={i} className={setup.key === 'fib-level' ? styles.fibTag : undefined}>
+                  {setup.key === 'fib-level' ? `Fib ${setup.value}` : setup.key}
+                </li>
+              ))}
+            </ul>
+          </div>
           <div
             className={styles.notes}
             onClick={() => {
