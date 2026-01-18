@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { TradeJournal } from '@/presentation/trade/TradeJournal';
 import { LocalStorageTradeRepository } from '@/infrastructure/trade/repositories/LocalStorageTradeRepository';
 import { TradeFactory } from '@/domain/trade/factories/TradeFactory';
@@ -24,21 +24,11 @@ describe('Create Analyse from Trade flow', () => {
     // wait for the component to mount and trades to render
     await screen.findByText(/Trading Journal/i);
 
-    // Simulate a "create analyse" request by dispatching the existing prefill-analysis event
     const domainTrades = await tradeRepo.getAll();
     const tradeDTO = TradeFactory.toDTO(domainTrades[0]);
-    await act(async () => {
-      globalThis.dispatchEvent(
-        new CustomEvent('prefill-analysis', {
-          detail: {
-            symbol: tradeDTO.symbol,
-            notes: 'From compact flow test',
-            market: tradeDTO.market,
-            tradeId: tradeDTO.id,
-          },
-        })
-      );
-    });
+
+    const createBtn = await screen.findByTestId(`create-analysis-${tradeDTO.id}`);
+    fireEvent.click(createBtn);
 
     // The AddPanel should switch to the Analysis editor with the trade data prefilled
     await screen.findByTestId('analysis-editor');

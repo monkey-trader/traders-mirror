@@ -6,6 +6,7 @@ export type TradeListItem = {
   size: number;
   price: number;
   side: string;
+  market?: 'Crypto' | 'Forex' | 'All' | string;
   status?: string;
   notes?: string;
   pnl?: number;
@@ -126,6 +127,25 @@ const buildSLMetric = (sl?: number, slIsBE?: boolean): MetricDisplay => {
   };
 };
 
+const dispatchPrefillAnalysis = (trade: TradeListItem) => {
+  try {
+    const marketValue =
+      trade.market === 'Forex' || trade.market === 'Crypto' ? trade.market : undefined;
+    globalThis.dispatchEvent(
+      new CustomEvent('prefill-analysis', {
+        detail: {
+          tradeId: trade.id,
+          symbol: trade.symbol,
+          notes: trade.notes,
+          market: marketValue,
+        },
+      })
+    );
+  } catch {
+    /* ignore */
+  }
+};
+
 function AnalysisOpenButton({
   analysisId,
   symbol,
@@ -173,6 +193,35 @@ function AnalysisOpenButton({
             d="M14 3h7v7h-2V6.41l-9.29 9.3-1.42-1.42L17.59 5H14V3zM5 5h6v2H7v10h10v-4h2v6H5V5z"
             fill="currentColor"
           />
+        </svg>
+      }
+    />
+  );
+}
+
+function AnalysisCreateButton({ trade, extraClass }: { trade: TradeListItem; extraClass?: string }) {
+  const className = [btnStyles.button, extraClass || ''].filter(Boolean).join(' ');
+  return (
+    <IconButton
+      ariaLabel={`Create analysis for ${trade.symbol}`}
+      variant="ghost"
+      color="primary"
+      className={className}
+      title="Create analysis"
+      data-testid={`create-analysis-${trade.id}`}
+      onClick={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        dispatchPrefillAnalysis(trade);
+      }}
+      icon={
+        <svg
+          className={styles.analysisIcon}
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden
+        >
+          <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="currentColor" />
         </svg>
       }
     />
@@ -447,15 +496,17 @@ export function TradeList({
                   onClose={onClose}
                   onDelete={onDelete}
                 />
-                {t.analysisId ? (
-                  <div>
+                <div>
+                  {t.analysisId ? (
                     <AnalysisOpenButton
                       analysisId={t.analysisId}
                       symbol={t.symbol}
                       extraClass={styles.analysisBtn}
                     />
-                  </div>
-                ) : null}
+                  ) : (
+                    <AnalysisCreateButton trade={t} extraClass={styles.analysisBtn} />
+                  )}
+                </div>
               </div>
               <div className={styles.tpLevelsCompact}>
                 <div className={`${styles.metrics} ${styles.metricsCompact}`}>
@@ -687,6 +738,40 @@ export function TradeList({
                   }
                 }}
               >
+                {t.analysisId && (
+                  <span className={styles.analysisLinkBadge} title="Analysis linked" aria-hidden>
+                    <svg
+                      className={styles.analysisLinkIcon}
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M9.5 14.5 8.1 15.9a3 3 0 1 1-4.2-4.2l3-3a3 3 0 0 1 4.2 0"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="m14.5 9.5 1.4-1.4a3 3 0 0 1 4.2 4.2l-3 3a3 3 0 0 1-4.2 0"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path
+                        d="M9 15 15 9"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </span>
+                )}
                 {t.symbol}
               </div>
               <div
@@ -721,15 +806,17 @@ export function TradeList({
               </div>
             </div>
             <div className={styles.rowRight}>
-              {t.analysisId ? (
-                <div style={{ marginRight: 8 }}>
+              <div style={{ marginRight: 8 }}>
+                {t.analysisId ? (
                   <AnalysisOpenButton
                     analysisId={t.analysisId}
                     symbol={t.symbol}
                     extraClass={styles.analysisBtn}
                   />
-                </div>
-              ) : null}
+                ) : (
+                  <AnalysisCreateButton trade={t} extraClass={styles.analysisBtn} />
+                )}
+              </div>
               <div
                 className={[styles.side, sideClass].join(' ')}
                 aria-label={`Side: ${sideKey}`}
@@ -757,26 +844,30 @@ export function TradeList({
                 {rawStatus || 'UNKNOWN'}
               </div>
               {onDelete && (
-                <span
-                  className={[metricClassName('negative'), styles.metricInteractive].join(' ')}
-                  role="button"
-                  tabIndex={0}
-                  aria-label={`Delete ${t.symbol}`}
+                <IconButton
+                  ariaLabel={`Delete ${t.symbol}`}
+                  title="Delete trade"
+                  variant="ghost"
+                  className={styles.deleteBtn}
                   onClick={(event) => {
                     event.stopPropagation();
                     onDelete(t.id);
                   }}
                   onKeyDown={(event) => {
-                    if (event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar') {
-                      event.preventDefault();
-                      event.stopPropagation();
-                      onDelete(t.id);
-                    }
+                    event.stopPropagation();
                   }}
-                >
-                  <span className={styles.metricLabel}>Delete</span>
-                  <span className={styles.metricValue}>Trade</span>
-                </span>
+                  icon={
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                      <path
+                        d="M6 6 18 18M18 6 6 18"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.9"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                  }
+                />
               )}
               {actionOptions.length > 0 && (
                 <div

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { vi } from 'vitest';
 
 // Ensure tests use a deterministic loadSettings implementation that reads from localStorage
@@ -35,7 +35,9 @@ describe('TradeJournal (unit)', () => {
   it('shows Load mock data button when settings allow and opens modal on click', async () => {
     window.localStorage.setItem(SETTINGS_KEY, JSON.stringify({ showLoadMockButton: true }));
 
-    render(<TradeJournal repo={noopRepo as any} />);
+    await act(async () => {
+      render(<TradeJournal repo={noopRepo as any} />);
+    });
 
     const loadButton = await screen.findByText('Load mock data');
     expect(loadButton).toBeTruthy();
@@ -49,7 +51,9 @@ describe('TradeJournal (unit)', () => {
   it('hides Load mock data button when settings disable it', async () => {
     window.localStorage.setItem(SETTINGS_KEY, JSON.stringify({ showLoadMockButton: false }));
 
-    render(<TradeJournal repo={noopRepo as any} />);
+    await act(async () => {
+      render(<TradeJournal repo={noopRepo as any} />);
+    });
 
     const maybe = screen.queryByText('Load mock data');
     expect(maybe).toBeNull();

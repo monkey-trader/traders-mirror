@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { vi } from 'vitest';
 
 // Mock TradesPanel to expose props for assertions
@@ -111,7 +111,9 @@ describe('TradeJournal additional branches', () => {
     await screen.findByText('TradesPanel.count:1');
 
     // dispatch open-trade with analysisId (normalized to uppercase by factories)
-    window.dispatchEvent(new CustomEvent('open-trade', { detail: { analysisId: 'AN1' } }));
+    await act(async () => {
+      window.dispatchEvent(new CustomEvent('open-trade', { detail: { analysisId: 'AN1' } }));
+    });
 
     // TradesPanel mock should show selected id 't1'
     await waitFor(() => expect(screen.getByText('TradesPanel.selected:t1')).toBeTruthy());
