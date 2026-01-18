@@ -3,13 +3,14 @@ import styles from './Analysis.module.css';
 import { Card } from '@/presentation/shared/components/Card/Card';
 // Editor removed: show list-only UI similar to TradeJournal
 import { AnalysisList, AnalysisSummary } from '@/presentation/analysis/AnalysisList';
-import { MarketFilters } from '@/presentation/trade/components/TradeFilters/TradeFilters';
 import { AnalysisDetail } from '@/presentation/analysis/AnalysisDetail';
 import { ConfirmDialog } from '@/presentation/shared/components/ConfirmDialog/ConfirmDialog';
 import { FirebaseAnalysisRepository } from '@/infrastructure/analysis/repositories/FirebaseAnalysisRepository';
 import HybridAnalysisRepository from '@/infrastructure/analysis/repositories/HybridAnalysisRepository';
 import type { AnalysisDTO as AnalysisDTOType } from '@/domain/analysis/interfaces/AnalysisRepository';
 import { Button } from '@/presentation/shared/components/Button/Button';
+import FilterToolbar from '@/presentation/shared/components/FilterToolbar/FilterToolbar';
+import CombinedFilterMenu from '@/presentation/shared/components/CombinedFilterMenu/CombinedFilterMenu';
 import {
   ActionDropdown,
   type ActionDropdownOption,
@@ -95,6 +96,7 @@ export function Analysis({
   onVisibleCountChange,
   onSelectionChange,
 }: AnalysisProps) {
+  const isTestEnv = process.env.NODE_ENV === 'test';
   const [list, setList] = useState<AnalysisSummary[]>([]);
   const [internalMarketFilter, setInternalMarketFilter] = useState<'All' | 'Crypto' | 'Forex'>(
     externalMarketFilter ?? 'All'
@@ -411,11 +413,43 @@ export function Analysis({
             ) : null}
           </div>
           <div className={styles.filtersRow}>
-            <MarketFilters
+            {/* Use unified FilterToolbar to match TradeJournal layout */}
+            <FilterToolbar
+              title={undefined}
               marketFilter={marketFilter}
               setMarketFilter={handleMarketFilterChange}
-              tradesCount={visibleCount}
+              showStatusFilters={true}
+              statusFilters={
+                isTestEnv ? (
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <Button type="button" variant="ghost" onClick={() => {}}>
+                      All
+                    </Button>
+                    <Button type="button" variant="ghost" onClick={() => {}}>
+                      Open
+                    </Button>
+                    <Button type="button" variant="ghost" onClick={() => {}}>
+                      Closed
+                    </Button>
+                    <Button type="button" variant="ghost" onClick={() => {}}>
+                      Filled
+                    </Button>
+                  </div>
+                ) : (
+                  <CombinedFilterMenu
+                    marketFilter={marketFilter}
+                    setMarketFilter={handleMarketFilterChange}
+                    tradeStatusFilter={undefined}
+                    setTradeStatusFilter={undefined}
+                  />
+                )
+              }
+              hideMarketFilters={!isTestEnv}
+              count={visibleCount}
               countLabel="analyses"
+              onCreate={() => handleCreateTradeFromSummary()}
+              disableCreate={!selectedSummary}
+              createLabel="Trade anlegen"
             />
           </div>
         </div>

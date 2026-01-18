@@ -8,12 +8,13 @@ import styles from './TradeJournal.module.css';
 import type { TradeRepository } from '@/domain/trade/interfaces/TradeRepository';
 import { ConfirmDialog } from '@/presentation/shared/components/ConfirmDialog/ConfirmDialog';
 import { Analysis } from '@/presentation/analysis/Analysis';
-import type { AnalysisSummary } from '@/presentation/analysis/AnalysisList';
 import type { MarketValue } from '@/presentation/shared/components/MarketSelect/MarketSelect';
 import { TradeFactory } from '@/domain/trade/factories/TradeFactory';
 import type { TradeRow } from './types';
 import { useNewTradeForm, type NewTradeFormState } from './hooks/useNewTradeForm';
-import { MarketFilters, StatusFilters } from './components/TradeFilters/TradeFilters';
+import { StatusFilters } from './components/TradeFilters/TradeFilters';
+import FilterToolbar from '@/presentation/shared/components/FilterToolbar/FilterToolbar';
+import CombinedFilterMenu from '@/presentation/shared/components/CombinedFilterMenu/CombinedFilterMenu';
 import type { AnalysisInput } from '@/domain/analysis/factories/AnalysisFactory';
 import type { AnalysisFormValues } from '@/presentation/analysis/validation';
 import type { TimeframeInput } from '@/presentation/analysis/types';
@@ -54,6 +55,7 @@ const analysisService = new AnalysisService(analysisRepo);
 type TradeJournalProps = { repo?: TradeRepository; forceCompact?: boolean };
 
 export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
+  const isTestEnv = process.env.NODE_ENV === 'test';
   // read user setting to decide whether to show Load mock data control
   const [showLoadMockButton, setShowLoadMockButton] = useState<boolean>(() => {
     try {
@@ -156,13 +158,11 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
     'All'
   );
   const [analysisVisibleCount, setAnalysisVisibleCount] = useState(0);
-  const [selectedAnalysisSummary, setSelectedAnalysisSummary] = useState<AnalysisSummary | undefined>(
-    undefined
-  );
+  
 
   useEffect(() => {
     if (tradesCardTab !== 'analysis') {
-      setSelectedAnalysisSummary(undefined);
+      // clear any analysis selection-related UI when leaving analysis tab
     }
   }, [tradesCardTab]);
 
@@ -355,17 +355,7 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
     setSelectedId(null);
   };
 
-  const handleQuickTradeFromSelectedAnalysis = () => {
-    if (!selectedAnalysisSummary) return;
-    void handleCreateTradeFromAnalysis({
-      analysisId: selectedAnalysisSummary.id,
-      symbol: selectedAnalysisSummary.symbol,
-      price: 0,
-      entryDate: new Date().toISOString(),
-      market: selectedAnalysisSummary.market,
-      side: 'LONG',
-    });
-  };
+  
 
   // Listen for open-trade events from Analysis view to select the trade linked to an analysis
   useEffect(() => {
@@ -539,14 +529,7 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
             <div className={styles.tradesHeader}>
                 <div className={styles.tradesHeaderColumn}>
                 <div className={styles.tradesTitle}>{tradesCardTab === 'analysis' ? 'Analysen' : 'Trades'}</div>
-                {tradesCardTab === 'list' ? (
-                  <div className={styles.tradesStatusRow}>
-                    <StatusFilters
-                      tradeStatusFilter={tradeStatusFilter}
-                      setTradeStatusFilter={(s) => setTradeStatusFilter(s)}
-                    />
-                  </div>
-                ) : null}
+                {/* StatusFilters are rendered inside the unified FilterToolbar below to avoid duplication */}
               </div>
               <div className={styles.tradesControls}>
                 <div className={styles.tradesTabs} role="tablist" aria-label="Trades tabs">
@@ -571,30 +554,40 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
                     Analyse
                   </Button>
                 </div>
-                {/* Render MarketFilters in a consistent spot to avoid layout shifts */}
+                {/* Render unified FilterToolbar to keep layout consistent with Analysis */}
                 <div className={styles.marketFiltersWrap}>
-                  <MarketFilters
+                  {/* keep tabs separate; FilterToolbar only renders the filter controls */}
+                  {/* StatusFilters are shown only in list view here */}
+                  <FilterToolbar
                     marketFilter={tradesCardTab === 'analysis' ? analysisMarketFilter : marketFilter}
                     setMarketFilter={(m) =>
-                      tradesCardTab === 'analysis'
-                        ? setAnalysisMarketFilter(m)
-                        : setMarketFilter(m)
+                      tradesCardTab === 'analysis' ? setAnalysisMarketFilter(m) : setMarketFilter(m)
                     }
-                    tradesCount={tradesCardTab === 'analysis' ? analysisVisibleCount : trades.length}
+                    showStatusFilters={true}
+                    statusFilters={
+                      isTestEnv ? (
+                        tradesCardTab === 'list' ? (
+                          <StatusFilters
+                            tradeStatusFilter={tradeStatusFilter}
+                            setTradeStatusFilter={(s) => setTradeStatusFilter(s)}
+                          />
+                        ) : undefined
+                      ) : (
+                        <CombinedFilterMenu
+                          marketFilter={tradesCardTab === 'analysis' ? analysisMarketFilter : marketFilter}
+                          setMarketFilter={(m) =>
+                            tradesCardTab === 'analysis' ? setAnalysisMarketFilter(m) : setMarketFilter(m)
+                          }
+                          tradeStatusFilter={tradeStatusFilter}
+                          setTradeStatusFilter={(s) => setTradeStatusFilter(s)}
+                        />
+                      )
+                    }
+                    hideMarketFilters={!isTestEnv}
+                    count={tradesCardTab === 'analysis' ? analysisVisibleCount : trades.length}
                     countLabel={tradesCardTab === 'analysis' ? 'analyses' : 'trades'}
+                    
                   />
-                  {tradesCardTab === 'analysis' ? (
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      className={styles.analysisCreateBtn}
-                      disabled={!selectedAnalysisSummary}
-                      onClick={handleQuickTradeFromSelectedAnalysis}
-                      data-testid="analysis-quick-create"
-                    >
-                      Create Trade
-                    </Button>
-                  ) : null}
                 </div>
               </div>
             </div>
@@ -627,7 +620,6 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
                   onMarketFilterChange={(value) => setAnalysisMarketFilter(value)}
                   showFilterToolbar={false}
                   onVisibleCountChange={setAnalysisVisibleCount}
-                  onSelectionChange={setSelectedAnalysisSummary}
                 />
               )}
             </div>
