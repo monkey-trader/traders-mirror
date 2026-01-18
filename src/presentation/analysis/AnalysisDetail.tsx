@@ -34,9 +34,16 @@ type Props = {
   startEditingField?: string;
   onCreateTrade?: (summary?: AnalysisSummary) => void;
   onRequestDelete?: (id: string) => void;
+  showSymbolTitle?: boolean;
 };
 
-export function AnalysisDetail({ analysis, compactView = false, onSave, startEditingField }: Props) {
+export function AnalysisDetail({
+  analysis,
+  compactView = false,
+  onSave,
+  startEditingField,
+  showSymbolTitle = true,
+}: Props) {
   const normalizeMarket = (
     m?: 'Forex' | 'Crypto' | { value: string }
   ): 'Forex' | 'Crypto' | undefined => {
@@ -89,19 +96,21 @@ export function AnalysisDetail({ analysis, compactView = false, onSave, startEdi
   return (
     <div className={styles.container} data-testid="analysis-detail">
       <div className={styles.header}>
-        <h2
-          className={styles.symbol}
-          onClick={() => {
-            setEditing(true);
-            setLocalFocusField('symbol');
-            setTimeout(() => setLocalFocusField(undefined), 200);
-          }}
-          role="button"
-          aria-label={`Edit analysis ${analysis.symbol}`}
-          style={{ cursor: 'pointer' }}
-        >
-          {analysis.symbol}
-        </h2>
+        {showSymbolTitle ? (
+          <h2
+            className={styles.symbol}
+            onClick={() => {
+              setEditing(true);
+              setLocalFocusField('symbol');
+              setTimeout(() => setLocalFocusField(undefined), 200);
+            }}
+            role="button"
+            aria-label={`Edit analysis ${analysis.symbol}`}
+            style={{ cursor: 'pointer' }}
+          >
+            {analysis.symbol}
+          </h2>
+        ) : null}
         <div className={styles.actions}>
           {hasLinkedTrade ? (
             <IconButton

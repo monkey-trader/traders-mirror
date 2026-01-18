@@ -706,6 +706,7 @@ function DetailLoader({
     <AnalysisDetail
       analysis={analysis}
       compactView={false}
+      showSymbolTitle={false}
       // instruct detail/editor to start in edit mode and focus a field if requested
       startEditingField={startEditingField ?? undefined}
       onCreateTrade={onCreateTrade}

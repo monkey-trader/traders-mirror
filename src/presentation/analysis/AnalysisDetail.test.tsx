@@ -49,6 +49,13 @@ describe('AnalysisDetail', () => {
     expect(screen.getByText('monthly note')).toBeInTheDocument();
   });
 
+  it('can hide the symbol heading when requested', () => {
+    const a = makeAnalysis();
+    render(<AnalysisDetail analysis={a} showSymbolTitle={false} />);
+
+    expect(screen.queryByRole('heading', { name: a.symbol })).toBeNull();
+  });
+
   it('respects compactView and renders all timeframe rows', () => {
     const a = makeAnalysis();
     render(<AnalysisDetail analysis={a} compactView />);
