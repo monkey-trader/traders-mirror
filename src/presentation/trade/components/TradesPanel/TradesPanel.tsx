@@ -1,15 +1,13 @@
 import React from 'react';
-import { Button } from '@/presentation/shared/components/Button/Button';
 import { TradeList } from '../../TradeList/TradeList';
-import { TradeDetailEditor } from '../../TradeDetail/TradeDetailEditor';
 import styles from '../../TradeJournal.module.css';
 import type { TradeRow } from '../../types';
-import type { TradeInput } from '@/domain/trade/factories/TradeFactory';
+import type { FocusField } from '../../TradeList/TradeList';
 
 type Props = {
   tradeListItems: TradeRow[];
   selectedId: string | null;
-  // onSelect may optionally request a specific field to focus in the detail editor
+  // onSelect may optionally request a specific field (used for inline focus cues)
   onSelect: (id: string, focusField?: string) => void;
   performAction: (
     action:
@@ -24,25 +22,8 @@ type Props = {
   ) => void;
   performTPHit: (id: string, tpIndex: 1 | 2 | 3 | 4) => void;
   compactGrid: boolean;
-  compactEditorOpen: boolean;
-  setCompactEditorOpen: (v: boolean) => void;
-  selectedTrade: TradeRow | null;
-  onEditorChange: (dto: TradeInput) => void;
-  onEditorSave: (dto: {
-    id: string;
-    symbol: string;
-    entryDate?: string;
-    size: number;
-    price: number;
-    side: string;
-    notes?: string;
-    status?: 'OPEN' | 'CLOSED' | 'FILLED';
-  }) => Promise<void>;
-  onDeleteFromEditor: (id: string) => Promise<void>; // Ensure types are preserved
-  // optional name of field to focus when editor opens
-  selectedFieldToFocus?: string | null;
-  // when true the detail view is expected to be shown in a modal by the parent
-  modalDetail?: boolean;
+  onInlineUpdate?: (id: string, field: FocusField, value: number | string | undefined) => void;
+  onRequestDelete?: (id: string) => void;
 };
 
 export function TradesPanel({
@@ -52,109 +33,27 @@ export function TradesPanel({
   performAction,
   performTPHit,
   compactGrid,
-  compactEditorOpen,
-  setCompactEditorOpen,
-  selectedTrade,
-  onEditorChange,
-  onEditorSave,
-  onDeleteFromEditor,
-  selectedFieldToFocus,
-  modalDetail = false,
+  onInlineUpdate,
+  onRequestDelete,
 }: Props) {
-  // Return only the inner panes — the parent should render the outer .listAndDetailWrap
   return (
-    <>
-      {compactGrid ? (
-        <div className={styles.leftPane}>
-          <TradeList
-            trades={tradeListItems}
-            selectedId={selectedId}
-            onSelect={onSelect}
-            onToggleSide={(id) => performAction('toggle-side', id)}
-            onSetSLtoBE={(id) => performAction('sl-be', id)}
-            onSetSLHit={(id) => performAction('sl-hit', id)}
-            onMarkClosed={(id) => performAction('status-closed', id)}
-            onMarkOpen={(id) => performAction('status-open', id)}
-            onClose={(id) => performAction('close', id)}
-            onSetTPHit={(id, idx) => performTPHit(id, idx)}
-            compactView={compactGrid}
-          />
-          <div className={styles.spacer12} />
-          {selectedTrade ? (
-            compactEditorOpen ? (
-              <div>
-                <div className={styles.compactControls}>
-                  <Button variant="ghost" onClick={() => setCompactEditorOpen(false)}>
-                    Hide details
-                  </Button>
-                </div>
-                <TradeDetailEditor
-                  trade={selectedTrade}
-                  onChange={onEditorChange}
-                  onSave={onEditorSave}
-                  onDelete={onDeleteFromEditor}
-                  compactView={compactGrid}
-                  focusField={selectedFieldToFocus}
-                />
-              </div>
-            ) : (
-              <div className={styles.compactSummary} role="region" aria-live="polite">
-                <div className={styles.compactSummaryInner}>
-                  <div>
-                    <div className={styles.strong}>{selectedTrade.symbol}</div>
-                    <div className={styles.mutedSmall}>
-                      {new Date(selectedTrade.entryDate).toLocaleString()}
-                    </div>
-                  </div>
-                  <div>
-                    <Button variant="primary" onClick={() => setCompactEditorOpen(true)}>
-                      Show details
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            )
-          ) : (
-            <div className={styles.compactPlaceholder} role="region" aria-live="polite">
-              <div className={styles.compactPlaceholderTitle}>Keine Auswahl</div>
-              <div className={styles.mutedText}>
-                Wähle einen Trade in der Liste, um die Details zu bearbeiten.
-              </div>
-            </div>
-          )}
-        </div>
-      ) : (
-        <>
-          <div className={styles.leftPane}>
-            <TradeList
-              trades={tradeListItems}
-              selectedId={selectedId}
-              onSelect={onSelect}
-              onToggleSide={(id) => performAction('toggle-side', id)}
-              onSetSLtoBE={(id) => performAction('sl-be', id)}
-              onSetSLHit={(id) => performAction('sl-hit', id)}
-              onMarkClosed={(id) => performAction('status-closed', id)}
-              onMarkOpen={(id) => performAction('status-open', id)}
-              onClose={(id) => performAction('close', id)}
-              onSetTPHit={(id, idx) => performTPHit(id, idx)}
-              compactView={compactGrid}
-            />
-          </div>
-
-          {!modalDetail && (
-            <div className={styles.rightPane}>
-              <TradeDetailEditor
-                trade={selectedTrade}
-                onChange={onEditorChange}
-                onSave={onEditorSave}
-                onDelete={onDeleteFromEditor}
-                focusField={selectedFieldToFocus}
-              />
-            </div>
-          )}
-        </>
-      )}
-    </>
+    <div className={styles.leftPane}>
+      <TradeList
+        trades={tradeListItems}
+        selectedId={selectedId}
+        onSelect={onSelect}
+        onToggleSide={(id) => performAction('toggle-side', id)}
+        onSetSLtoBE={(id) => performAction('sl-be', id)}
+        onSetSLHit={(id) => performAction('sl-hit', id)}
+        onMarkClosed={(id) => performAction('status-closed', id)}
+        onMarkOpen={(id) => performAction('status-open', id)}
+        onClose={(id) => performAction('close', id)}
+        onSetTPHit={(id, idx) => performTPHit(id, idx)}
+        onInlineUpdate={onInlineUpdate}
+        onDelete={onRequestDelete}
+        compactView={compactGrid}
+      />
+    </div>
   );
 }
 

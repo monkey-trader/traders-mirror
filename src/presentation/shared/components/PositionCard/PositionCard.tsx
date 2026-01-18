@@ -12,7 +12,8 @@ type TradeActionValue =
   | 'tp-2'
   | 'tp-3'
   | 'tp-4'
-  | 'filled';
+  | 'filled'
+  | 'delete';
 
 export type PositionCardProps = {
   id: string;
@@ -30,6 +31,7 @@ export type PositionCardProps = {
   onSetTPHit?: (id: string, tpIndex: 1 | 2 | 3 | 4) => void;
   onMarkClosed?: (id: string) => void;
   onMarkOpen?: (id: string) => void;
+  onDelete?: (id: string) => void;
 };
 
 export function PositionCard({
@@ -48,6 +50,7 @@ export function PositionCard({
   onSetTPHit,
   onMarkClosed,
   onMarkOpen,
+  onDelete,
 }: PositionCardProps) {
   const sideClass = side === 'LONG' ? styles.sideLong : styles.sideShort;
   const optionMap: Partial<Record<TradeActionValue, ActionDropdownOption>> = {};
@@ -113,6 +116,14 @@ export function PositionCard({
     };
   }
 
+  if (onDelete) {
+    optionMap.delete = {
+      value: 'delete',
+      label: 'Delete',
+      onSelect: () => onDelete(id),
+    };
+  }
+
   const orderedKeys: TradeActionValue[] = [
     'sl-be',
     'sl-hit',
@@ -123,6 +134,7 @@ export function PositionCard({
     'status-open',
     'status-closed',
     'filled',
+    'delete',
     'toggle-side',
   ];
   const actionOptions = orderedKeys

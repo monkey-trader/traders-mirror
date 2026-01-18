@@ -80,6 +80,16 @@ describe('useTradesViewModel', () => {
     expect(result.current.positions[0].status).toBe('CLOSED');
   });
 
+  it('handleInlineUpdate updates numeric fields', () => {
+    const row = makeTradeRow({ price: 1.1 });
+    const { result } = renderHook(() => useTradesViewModel({ repoRef, tradeService }));
+    act(() => {
+      result.current.setPositions([row]);
+      result.current.handleInlineUpdate(row.id, 'price', 2.5);
+    });
+    expect(result.current.positions[0].price).toBe(2.5);
+  });
+
   it('can clear undo info', () => {
     const row = makeTradeRow();
     const { result } = renderHook(() => useTradesViewModel({ repoRef, tradeService }));

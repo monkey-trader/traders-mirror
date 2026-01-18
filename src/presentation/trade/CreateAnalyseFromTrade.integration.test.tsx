@@ -1,9 +1,10 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { TradeJournal } from '@/presentation/trade/TradeJournal';
 import { LocalStorageTradeRepository } from '@/infrastructure/trade/repositories/LocalStorageTradeRepository';
+import { TradeFactory } from '@/domain/trade/factories/TradeFactory';
 
-// Integration test: Create Analyse from Trade Detail -> prefill AddPanel -> save -> link trade
+// Integration test: prefill AddPanel via prefill-analysis event -> save -> link trade
 
 describe('Create Analyse from Trade flow', () => {
   it('prefills Add Analysis and links created analysis to trade', async () => {
@@ -23,25 +24,27 @@ describe('Create Analyse from Trade flow', () => {
     // wait for the component to mount and trades to render
     await screen.findByText(/Trading Journal/i);
 
-    // click the expand/details button for the first trade to open the detail view
-    const expandBtns = await screen.findAllByRole('button', { name: /Toggle details for/i });
-    const expandBtn = expandBtns[0];
-    fireEvent.click(expandBtn);
+    // Simulate a "create analyse" request by dispatching the existing prefill-analysis event
+    const domainTrades = await tradeRepo.getAll();
+    const tradeDTO = TradeFactory.toDTO(domainTrades[0]);
+    await act(async () => {
+      globalThis.dispatchEvent(
+        new CustomEvent('prefill-analysis', {
+          detail: {
+            symbol: tradeDTO.symbol,
+            notes: 'From compact flow test',
+            market: tradeDTO.market,
+            tradeId: tradeDTO.id,
+          },
+        })
+      );
+    });
 
-    // After expanding, click the 'Show details' button to open the editor
-    const showDetails = await screen.findByText('Show details');
-    fireEvent.click(showDetails);
-
-    // Click Create Analyse button in detail view
-    const createBtn = await screen.findByText('Create Analyse');
-    fireEvent.click(createBtn);
-
-    // The AddPanel should open the Analysis editor
+    // The AddPanel should switch to the Analysis editor with the trade data prefilled
     await screen.findByTestId('analysis-editor');
 
-    // The symbol input should be prefilled
     const symbolInput = screen.getByLabelText('Symbol') as HTMLInputElement;
-    expect(symbolInput.value).toBeTruthy();
+    expect(symbolInput.value).toBe(tradeDTO.symbol);
 
     // Click Save on Analysis editor
     const saveBtn = screen.getByText('Save');
@@ -53,7 +56,8 @@ describe('Create Analyse from Trade flow', () => {
       expect(raw2).toBeTruthy();
       const parsed2 = JSON.parse(raw2 as string);
       expect(Array.isArray(parsed2)).toBe(true);
-      expect(parsed2[0].analysisId).toBeTruthy();
+      const linked = parsed2.find((t: { id: string }) => t.id === tradeDTO.id);
+      expect(linked?.analysisId).toBeTruthy();
     });
   });
 });

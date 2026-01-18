@@ -140,6 +140,25 @@
   font-variant-numeric: tabular-nums;
 }
 
+.metricInteractive {
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.metricInteractive:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.35);
+}
+
+.metricInteractive:active {
+  transform: translateY(0);
+}
+
+.metricInteractive:focus-visible {
+  outline: 2px solid rgba(124, 92, 255, 0.4);
+  outline-offset: 2px;
+}
+
 .metricPositive {
   background: linear-gradient(180deg, rgba(74, 222, 128, 0.18), rgba(34, 193, 195, 0.04));
   border-color: rgba(74, 222, 128, 0.35);

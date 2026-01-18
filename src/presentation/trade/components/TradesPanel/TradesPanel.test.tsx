@@ -1,13 +1,18 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import TradesPanel from './TradesPanel';
 import type { TradeRow } from '../../types';
 
-vi.mock('../../TradeList/TradeList', () => ({
-  TradeList: (props: { trades: TradeRow[]; onSelect: (id: string) => void }) => {
-    const { trades, onSelect } = props;
+const tradeListMock = vi.fn(
+  (props: {
+    trades: TradeRow[];
+    onSelect: (id: string) => void;
+    onInlineUpdate?: (id: string, field: string, value: number | string | undefined) => void;
+    onDelete?: (id: string) => void;
+  }) => {
+    const { trades, onSelect, onInlineUpdate, onDelete } = props;
     return (
       <div>
         {trades.map((t: TradeRow) => (
@@ -15,26 +20,15 @@ vi.mock('../../TradeList/TradeList', () => ({
             {t.symbol}
           </button>
         ))}
+        <button onClick={() => onInlineUpdate?.('inline-id', 'price', 123)}>inline-edit</button>
+        <button onClick={() => onDelete?.('inline-id')}>inline-delete</button>
       </div>
     );
-  },
-}));
+  }
+);
 
-vi.mock('../../TradeDetail/TradeDetailEditor', () => ({
-  TradeDetailEditor: (props: {
-    trade?: TradeRow;
-    onSave?: (t: unknown) => Promise<void> | void;
-    onDelete?: (id: string) => Promise<void> | void;
-  }) => {
-    const { trade, onSave, onDelete } = props;
-    return (
-      <div>
-        <div>Editor: {trade?.symbol}</div>
-        <button onClick={() => onSave?.(trade)}>save</button>
-        <button onClick={() => onDelete?.(trade?.id ?? '')}>delete</button>
-      </div>
-    );
-  },
+vi.mock('../../TradeList/TradeList', () => ({
+  TradeList: (props: any) => tradeListMock(props),
 }));
 
 describe('TradesPanel', () => {
@@ -50,48 +44,51 @@ describe('TradesPanel', () => {
     pnl: 0,
   };
 
-  it('shows compact summary and opens editor when Show details clicked', async () => {
-    const setCompactEditorOpen = vi.fn();
-    render(
-      <TradesPanel
-        tradeListItems={[baseTrade]}
-        selectedId={baseTrade.id}
-        onSelect={() => {}}
-        performAction={() => {}}
-        compactGrid={true}
-        compactEditorOpen={false}
-        setCompactEditorOpen={setCompactEditorOpen}
-        selectedTrade={baseTrade}
-        onEditorChange={() => {}}
-        onEditorSave={async () => {}}
-        onDeleteFromEditor={async () => {}}
-      />
-    );
-
-    const matches = screen.getAllByText('SOL');
-    expect(matches.length).toBeGreaterThanOrEqual(1);
-    const btn = screen.getByRole('button', { name: /Show details/i });
-    await userEvent.click(btn);
-    expect(setCompactEditorOpen).toHaveBeenCalledWith(true);
+  beforeEach(() => {
+    tradeListMock.mockClear();
   });
 
-  it('renders TradeDetailEditor when compactEditorOpen is true', () => {
+  it('forwards selection and inline update handlers to TradeList', async () => {
+    const handleSelect = vi.fn();
+    const handleInline = vi.fn();
+    const handleDelete = vi.fn();
+
     render(
       <TradesPanel
         tradeListItems={[baseTrade]}
         selectedId={baseTrade.id}
-        onSelect={() => {}}
+        onSelect={handleSelect}
         performAction={() => {}}
-        compactGrid={true}
-        compactEditorOpen={true}
-        setCompactEditorOpen={() => {}}
-        selectedTrade={baseTrade}
-        onEditorChange={() => {}}
-        onEditorSave={async () => {}}
-        onDeleteFromEditor={async () => {}}
+        performTPHit={() => {}}
+        compactGrid={false}
+        onInlineUpdate={handleInline}
+        onRequestDelete={handleDelete}
       />
     );
 
-    expect(screen.getByText(/Editor: SOL/)).toBeTruthy();
+    await userEvent.click(screen.getByText('SOL'));
+    expect(handleSelect).toHaveBeenCalledWith(baseTrade.id);
+
+    await userEvent.click(screen.getByText('inline-edit'));
+    expect(handleInline).toHaveBeenCalledWith('inline-id', 'price', 123);
+
+    await userEvent.click(screen.getByText('inline-delete'));
+    expect(handleDelete).toHaveBeenCalledWith('inline-id');
+  });
+
+  it('sets compactView on TradeList when compactGrid is true', () => {
+    render(
+      <TradesPanel
+        tradeListItems={[baseTrade]}
+        selectedId={null}
+        onSelect={() => {}}
+        performAction={() => {}}
+        performTPHit={() => {}}
+        compactGrid={true}
+      />
+    );
+
+    const lastCall = tradeListMock.mock.calls.at(-1)?.[0];
+    expect(lastCall?.compactView).toBe(true);
   });
 });

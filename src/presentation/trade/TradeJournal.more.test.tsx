@@ -6,12 +6,12 @@ import { vi } from 'vitest';
 // Mock TradesPanel to expose props for assertions
 vi.mock('./components/TradesPanel/TradesPanel', () => ({
   __esModule: true,
-  default: ({ compactGrid, selectedId, onDeleteFromEditor, tradeListItems }: any) => (
+  default: ({ compactGrid, selectedId, onRequestDelete, tradeListItems }: any) => (
     <div>
       <div>TradesPanel.compact:{String(compactGrid)}</div>
       <div>TradesPanel.selected:{selectedId ?? 'none'}</div>
       <div>TradesPanel.count:{(tradeListItems && tradeListItems.length) ?? 0}</div>
-      <button onClick={() => onDeleteFromEditor && onDeleteFromEditor('t1')}>panel-delete</button>
+      <button onClick={() => onRequestDelete && onRequestDelete('t1')}>panel-delete</button>
     </div>
   ),
 }));

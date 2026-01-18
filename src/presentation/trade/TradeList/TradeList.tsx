@@ -20,6 +20,8 @@ export type TradeListItem = {
   analysisId?: string; // optional link to originating analysis
 };
 
+import { useEffect, useState } from 'react';
+import type { ChangeEvent, KeyboardEvent, MouseEvent } from 'react';
 import styles from './TradeList.module.css';
 import btnStyles from '@/presentation/shared/components/Button/Button.module.css';
 import { IconButton } from '@/presentation/shared/components/IconButton/IconButton';
@@ -55,10 +57,50 @@ const formatSize = (value?: number): string =>
 
 type MetricAccent = 'positive' | 'negative';
 
+const numericEditableFields: ReadonlySet<FocusField> = new Set<FocusField>([
+  'price',
+  'size',
+  'sl',
+  'tp1',
+  'tp2',
+  'tp3',
+  'tp4',
+  'margin',
+  'leverage',
+]);
+
+const metricSteps: Partial<Record<FocusField, string>> = {
+  price: '0.0001',
+  size: '0.01',
+  sl: '0.0001',
+  tp1: '0.0001',
+  tp2: '0.0001',
+  tp3: '0.0001',
+  tp4: '0.0001',
+  margin: '0.01',
+  leverage: '0.1',
+};
+
+export type FocusField =
+  | 'entryDate'
+  | 'size'
+  | 'price'
+  | 'sl'
+  | 'tp1'
+  | 'tp2'
+  | 'tp3'
+  | 'tp4'
+  | 'margin'
+  | 'leverage';
+
 type MetricDisplay = {
   label: string;
   value: string;
+  rawValue?: number | string;
   accent?: MetricAccent;
+  focusField?: FocusField;
+  inputType?: 'number' | 'text' | 'datetime-local';
+  step?: string;
 };
 
 const buildSLMetric = (sl?: number, slIsBE?: boolean): MetricDisplay => {
@@ -77,6 +119,10 @@ const buildSLMetric = (sl?: number, slIsBE?: boolean): MetricDisplay => {
     label: 'SL',
     value,
     accent,
+    focusField: 'sl',
+    rawValue: slIsBE ? 0 : sl,
+    inputType: 'number',
+    step: '0.0001',
   };
 };
 
@@ -146,6 +192,8 @@ export type TradeListProps = {
   onMarkClosed?: (id: string) => void;
   onMarkOpen?: (id: string) => void;
   onClose?: (id: string) => void;
+  onDelete?: (id: string) => void;
+  onInlineUpdate?: (id: string, field: FocusField, value: number | string | undefined) => void;
   compactView?: boolean;
 };
 
@@ -161,6 +209,8 @@ export function TradeList({
   onMarkClosed,
   onMarkOpen,
   onClose,
+  onDelete,
+  onInlineUpdate,
 }: TradeListProps) {
   const metricClassName = (accent?: MetricAccent): string =>
     [
@@ -170,6 +220,134 @@ export function TradeList({
     ]
       .filter(Boolean)
       .join(' ');
+
+  const [editing, setEditing] = useState<{ id: string; field: FocusField; value: string } | null>(
+    null
+  );
+
+  useEffect(() => {
+    if (!editing) return;
+    const stillExists = trades.some((trade) => trade.id === editing.id);
+    if (!stillExists) setEditing(null);
+  }, [editing, trades]);
+
+  const parseValueForField = (field: FocusField, value: string): number | string | undefined => {
+    if (numericEditableFields.has(field)) {
+      if (value.trim() === '') return undefined;
+      const parsed = Number(value);
+      if (Number.isNaN(parsed)) return undefined;
+      return parsed;
+    }
+    if (field === 'entryDate') {
+      return value;
+    }
+    return value;
+  };
+
+  const commitInlineEdit = () => {
+    if (!editing) return;
+    if (!onInlineUpdate) {
+      setEditing(null);
+      return;
+    }
+    const parsed = parseValueForField(editing.field, editing.value);
+    onInlineUpdate(editing.id, editing.field, parsed);
+    setEditing(null);
+  };
+
+  const cancelInlineEdit = () => setEditing(null);
+
+  const startInlineEdit = (tradeId: string, field: FocusField, rawValue?: number | string) => {
+    const initialValue =
+      rawValue === undefined || rawValue === null ? '' : typeof rawValue === 'number' ? `${rawValue}` : rawValue;
+    setEditing({ id: tradeId, field, value: initialValue });
+  };
+
+  const handleInlineInputChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const next = event.target.value;
+    setEditing((prev) => (prev ? { ...prev, value: next } : prev));
+  };
+
+  const handleInlineInputKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      commitInlineEdit();
+    } else if (event.key === 'Escape') {
+      event.preventDefault();
+      cancelInlineEdit();
+    }
+  };
+
+  const renderMetricTile = (
+    trade: TradeListItem,
+    metric: MetricDisplay,
+    className: string,
+    interactive: boolean
+  ) => {
+    const isEditingMetric =
+      interactive && editing && editing.id === trade.id && editing.field === metric.focusField;
+
+    if (isEditingMetric && metric.focusField) {
+      const inputType = metric.inputType ?? (numericEditableFields.has(metric.focusField) ? 'number' : 'text');
+      const ariaLabel = `${metric.label} editor for ${trade.symbol}`;
+      return (
+        <span key={`${trade.id}-${metric.label}`} className={`${className} ${styles.metricEditing}`}>
+          <span className={styles.metricLabel}>{metric.label}</span>
+          <input
+            autoFocus
+            aria-label={ariaLabel}
+            className={styles.metricInput}
+            type={inputType}
+            value={editing?.value ?? ''}
+            onChange={handleInlineInputChange}
+            onKeyDown={handleInlineInputKeyDown}
+            onBlur={commitInlineEdit}
+            step={inputType === 'number' ? metric.step : undefined}
+          />
+        </span>
+      );
+    }
+
+    return (
+      <span
+        key={`${trade.id}-${metric.label}`}
+        className={className}
+        role={interactive ? 'button' : undefined}
+        tabIndex={interactive ? 0 : undefined}
+        aria-label={interactive ? `Edit ${metric.label}` : undefined}
+        onClick={(event) => interactive && handleMetricClick(event, trade.id, metric)}
+        onKeyDown={(event) => interactive && handleMetricKeyDown(event, trade.id, metric)}
+      >
+        <span className={styles.metricLabel}>{metric.label}</span>
+        <span className={styles.metricValue}>{metric.value}</span>
+      </span>
+    );
+  };
+
+  const handleMetricClick = (
+    event: MouseEvent<HTMLSpanElement>,
+    tradeId: string,
+    metric: MetricDisplay
+  ) => {
+    if (!metric.focusField) return;
+    event.stopPropagation();
+    onSelect(tradeId, metric.focusField);
+    startInlineEdit(tradeId, metric.focusField, metric.rawValue);
+  };
+
+  const handleMetricKeyDown = (
+    event: KeyboardEvent<HTMLSpanElement>,
+    tradeId: string,
+    metric: MetricDisplay
+  ) => {
+    if (!metric.focusField) return;
+    if (event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar') {
+      event.preventDefault();
+      event.stopPropagation();
+      onSelect(tradeId, metric.focusField);
+      startInlineEdit(tradeId, metric.focusField, metric.rawValue);
+    }
+  };
 
   if (compactView) {
     return (
@@ -182,16 +360,72 @@ export function TradeList({
           const primaryMetrics: MetricDisplay[] = [
             slMetric,
             { label: 'PnL', value: formatNumber(t.pnl, 2) },
-            { label: 'Entry', value: formatNumber(t.price, 4) },
-            { label: 'Size', value: formatSize(t.size) },
-            { label: 'Margin', value: formatNumber(t.margin, 2) },
-            { label: 'Leverage', value: formatLeverage(t.leverage) },
+            {
+              label: 'Entry',
+              value: formatNumber(t.price, 4),
+              focusField: 'price',
+              rawValue: t.price,
+              inputType: 'number',
+              step: metricSteps.price,
+            },
+            {
+              label: 'Size',
+              value: formatSize(t.size),
+              focusField: 'size',
+              rawValue: t.size,
+              inputType: 'number',
+              step: metricSteps.size,
+            },
+            {
+              label: 'Margin',
+              value: formatNumber(t.margin, 2),
+              focusField: 'margin',
+              rawValue: t.margin,
+              inputType: 'number',
+              step: metricSteps.margin,
+            },
+            {
+              label: 'Leverage',
+              value: formatLeverage(t.leverage),
+              focusField: 'leverage',
+              rawValue: t.leverage,
+              inputType: 'number',
+              step: metricSteps.leverage,
+            },
           ];
           const secondaryMetrics: MetricDisplay[] = [
-            { label: 'TP1', value: formatNumber(t.tp1, 2) },
-            { label: 'TP2', value: formatNumber(t.tp2, 2) },
-            { label: 'TP3', value: formatNumber(t.tp3, 2) },
-            { label: 'TP4', value: formatNumber(t.tp4, 2) },
+            {
+              label: 'TP1',
+              value: formatNumber(t.tp1, 2),
+              focusField: 'tp1',
+              rawValue: t.tp1,
+              inputType: 'number',
+              step: metricSteps.tp1,
+            },
+            {
+              label: 'TP2',
+              value: formatNumber(t.tp2, 2),
+              focusField: 'tp2',
+              rawValue: t.tp2,
+              inputType: 'number',
+              step: metricSteps.tp2,
+            },
+            {
+              label: 'TP3',
+              value: formatNumber(t.tp3, 2),
+              focusField: 'tp3',
+              rawValue: t.tp3,
+              inputType: 'number',
+              step: metricSteps.tp3,
+            },
+            {
+              label: 'TP4',
+              value: formatNumber(t.tp4, 2),
+              focusField: 'tp4',
+              rawValue: t.tp4,
+              inputType: 'number',
+              step: metricSteps.tp4,
+            },
           ];
           return (
             <div key={t.id} className={styles.compactItem}>
@@ -211,6 +445,7 @@ export function TradeList({
                   onMarkClosed={onMarkClosed}
                   onMarkOpen={onMarkOpen}
                   onClose={onClose}
+                  onDelete={onDelete}
                 />
                 {t.analysisId ? (
                   <div>
@@ -224,20 +459,28 @@ export function TradeList({
               </div>
               <div className={styles.tpLevelsCompact}>
                 <div className={`${styles.metrics} ${styles.metricsCompact}`}>
-                  {primaryMetrics.map((metric) => (
-                    <span key={`${t.id}-${metric.label}`} className={metricClassName(metric.accent)}>
-                      <span className={styles.metricLabel}>{metric.label}</span>
-                      <span className={styles.metricValue}>{metric.value}</span>
-                    </span>
-                  ))}
+                  {primaryMetrics.map((metric) => {
+                    const interactive = Boolean(metric.focusField);
+                    const className = [
+                      metricClassName(metric.accent),
+                      interactive ? styles.metricInteractive : '',
+                    ]
+                      .filter(Boolean)
+                      .join(' ');
+                    return renderMetricTile(t, metric, className, interactive);
+                  })}
                 </div>
                 <div className={`${styles.metrics} ${styles.metricsCompact}`}>
-                  {secondaryMetrics.map((metric) => (
-                    <span key={`${t.id}-${metric.label}`} className={metricClassName(metric.accent)}>
-                      <span className={styles.metricLabel}>{metric.label}</span>
-                      <span className={styles.metricValue}>{metric.value}</span>
-                    </span>
-                  ))}
+                  {secondaryMetrics.map((metric) => {
+                    const interactive = Boolean(metric.focusField);
+                    const className = [
+                      metricClassName(metric.accent),
+                      interactive ? styles.metricInteractive : '',
+                    ]
+                      .filter(Boolean)
+                      .join(' ');
+                    return renderMetricTile(t, metric, className, interactive);
+                  })}
                 </div>
                 <div className={styles.tpMetaDate}>
                   {new Date(t.entryDate).toLocaleDateString()}
@@ -273,14 +516,70 @@ export function TradeList({
         const detailMetrics: MetricDisplay[] = [
           slMetric,
           { label: 'PnL', value: formatNumber(t.pnl, 2) },
-          { label: 'Entry', value: formatNumber(t.price, 4) },
-          { label: 'Size', value: formatSize(t.size) },
-          { label: 'Margin', value: formatNumber(t.margin, 2) },
-          { label: 'Leverage', value: formatLeverage(t.leverage) },
-          { label: 'TP1', value: formatNumber(t.tp1, 2) },
-          { label: 'TP2', value: formatNumber(t.tp2, 2) },
-          { label: 'TP3', value: formatNumber(t.tp3, 2) },
-          { label: 'TP4', value: formatNumber(t.tp4, 2) },
+          {
+            label: 'Entry',
+            value: formatNumber(t.price, 4),
+            focusField: 'price',
+            rawValue: t.price,
+            inputType: 'number',
+            step: metricSteps.price,
+          },
+          {
+            label: 'Size',
+            value: formatSize(t.size),
+            focusField: 'size',
+            rawValue: t.size,
+            inputType: 'number',
+            step: metricSteps.size,
+          },
+          {
+            label: 'Margin',
+            value: formatNumber(t.margin, 2),
+            focusField: 'margin',
+            rawValue: t.margin,
+            inputType: 'number',
+            step: metricSteps.margin,
+          },
+          {
+            label: 'Leverage',
+            value: formatLeverage(t.leverage),
+            focusField: 'leverage',
+            rawValue: t.leverage,
+            inputType: 'number',
+            step: metricSteps.leverage,
+          },
+          {
+            label: 'TP1',
+            value: formatNumber(t.tp1, 2),
+            focusField: 'tp1',
+            rawValue: t.tp1,
+            inputType: 'number',
+            step: metricSteps.tp1,
+          },
+          {
+            label: 'TP2',
+            value: formatNumber(t.tp2, 2),
+            focusField: 'tp2',
+            rawValue: t.tp2,
+            inputType: 'number',
+            step: metricSteps.tp2,
+          },
+          {
+            label: 'TP3',
+            value: formatNumber(t.tp3, 2),
+            focusField: 'tp3',
+            rawValue: t.tp3,
+            inputType: 'number',
+            step: metricSteps.tp3,
+          },
+          {
+            label: 'TP4',
+            value: formatNumber(t.tp4, 2),
+            focusField: 'tp4',
+            rawValue: t.tp4,
+            inputType: 'number',
+            step: metricSteps.tp4,
+          },
         ];
 
         const optionMap: Partial<Record<TradeActionValue, ActionDropdownOption>> = {};
@@ -409,12 +708,16 @@ export function TradeList({
                 {new Date(t.entryDate).toLocaleDateString()}
               </div>
               <div className={styles.metrics} role="group" aria-label={`Kennzahlen für ${t.symbol}`}>
-                {detailMetrics.map((metric) => (
-                  <span key={`${t.id}-${metric.label}`} className={metricClassName(metric.accent)}>
-                    <span className={styles.metricLabel}>{metric.label}</span>
-                    <span className={styles.metricValue}>{metric.value}</span>
-                  </span>
-                ))}
+                {detailMetrics.map((metric) => {
+                  const interactive = Boolean(metric.focusField);
+                  const className = [
+                    metricClassName(metric.accent),
+                    interactive ? styles.metricInteractive : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' ');
+                  return renderMetricTile(t, metric, className, interactive);
+                })}
               </div>
             </div>
             <div className={styles.rowRight}>
@@ -453,6 +756,28 @@ export function TradeList({
               >
                 {rawStatus || 'UNKNOWN'}
               </div>
+              {onDelete && (
+                <span
+                  className={[metricClassName('negative'), styles.metricInteractive].join(' ')}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Delete ${t.symbol}`}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    onDelete(t.id);
+                  }}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar') {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      onDelete(t.id);
+                    }
+                  }}
+                >
+                  <span className={styles.metricLabel}>Delete</span>
+                  <span className={styles.metricValue}>Trade</span>
+                </span>
+              )}
               {actionOptions.length > 0 && (
                 <div
                   className={styles.actionDropdownWrap}

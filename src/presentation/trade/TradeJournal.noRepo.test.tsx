@@ -17,8 +17,8 @@ describe('TradeJournal without repo (local fallback)', () => {
     const symbolInput = screen.getByLabelText(/Symbol/i);
     const priceInput = screen.getByLabelText(/Entry Price/i);
     const sizeInput = screen.getByLabelText(/Position Size/i);
-    const marginInput = screen.getByLabelText(/Margin/i);
-    const leverageInput = screen.getByLabelText(/Leverage/i);
+    const marginInput = screen.getByLabelText(/Margin/i, { selector: 'input' });
+    const leverageInput = screen.getByLabelText(/Leverage/i, { selector: 'input' });
     const slInput = screen.getByLabelText(/Stop Loss/i);
 
     await user.clear(symbolInput);

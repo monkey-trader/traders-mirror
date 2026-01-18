@@ -88,12 +88,26 @@ describe('TradeList', () => {
     const onSelect = vi.fn();
     render(<TradeList trades={[trade]} onSelect={onSelect} compactView />);
 
-    // TP1 placeholder
-    expect(screen.getByText(/TP1: -/)).toBeTruthy();
-    // TP3 should show the number
-    expect(screen.getByText(/TP3: 3/)).toBeTruthy();
+    const tp1Metric = screen.getByRole('button', { name: 'Edit TP1' });
+    expect(tp1Metric).toBeTruthy();
+    expect(tp1Metric.textContent).toContain('TP1');
+    expect(tp1Metric.textContent).toContain('-');
+
+    const tp3Metric = screen.getByRole('button', { name: 'Edit TP3' });
+    expect(tp3Metric.textContent).toContain('3.00');
     // Analysis open button exists
     expect(screen.getByLabelText(`Open analysis for ${trade.symbol}`)).toBeTruthy();
+  });
+
+  it('metric tiles trigger focusable selection when clicked', () => {
+    const onSelect = vi.fn();
+    const trade = sampleTrade({ id: 'metric-1', price: 94652.1234, size: 20 });
+    render(<TradeList trades={[trade]} onSelect={onSelect} />);
+
+    const entryMetric = screen.getByRole('button', { name: 'Edit Entry' });
+    fireEvent.click(entryMetric);
+
+    expect(onSelect).toHaveBeenCalledWith('metric-1', 'price');
   });
 
   it('renders LONG and SHORT badges with normalized labels and classes', () => {

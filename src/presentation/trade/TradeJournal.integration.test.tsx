@@ -8,7 +8,7 @@ describe('TradeJournal Integration', () => {
   it('allows creating, editing, filtering, and deleting trades (desktop)', async () => {
     const repo = new InMemoryTradeRepository();
     await act(async () => {
-      render(<TradeJournal repo={repo} />);
+      render(<TradeJournal repo={repo} forceCompact={false} />);
     });
     await screen.findByText(/Trading Journal/i);
 
@@ -19,13 +19,25 @@ describe('TradeJournal Integration', () => {
       fireEvent.change(screen.getByLabelText(/Symbol/i), { target: { value: newSymbol } });
       fireEvent.change(screen.getByLabelText(/Entry Price/i), { target: { value: '1.118' } });
       fireEvent.change(screen.getByLabelText(/Position Size/i), { target: { value: '12000' } });
-      fireEvent.change(screen.getByLabelText(/Margin/i), { target: { value: '110' } });
-      fireEvent.change(screen.getByLabelText(/Leverage/i), { target: { value: '20' } });
+      fireEvent.change(screen.getByLabelText(/Margin/i, { selector: 'input' }), {
+        target: { value: '110' },
+      });
+      fireEvent.change(screen.getByLabelText(/Leverage/i, { selector: 'input' }), {
+        target: { value: '20' },
+      });
       fireEvent.change(screen.getByLabelText(/Stop Loss/i), { target: { value: '1.112' } });
-      fireEvent.change(screen.getByLabelText(/TP1/i), { target: { value: '1.112' } });
-      fireEvent.change(screen.getByLabelText(/TP2/i), { target: { value: '1.108' } });
-      fireEvent.change(screen.getByLabelText(/TP3/i), { target: { value: '1.102' } });
-      fireEvent.change(screen.getByLabelText(/TP4/i), { target: { value: '1.098' } });
+      fireEvent.change(screen.getByLabelText(/TP1/i, { selector: 'input' }), {
+        target: { value: '1.112' },
+      });
+      fireEvent.change(screen.getByLabelText(/TP2/i, { selector: 'input' }), {
+        target: { value: '1.108' },
+      });
+      fireEvent.change(screen.getByLabelText(/TP3/i, { selector: 'input' }), {
+        target: { value: '1.102' },
+      });
+      fireEvent.change(screen.getByLabelText(/TP4/i, { selector: 'input' }), {
+        target: { value: '1.098' },
+      });
       fireEvent.change(screen.getByLabelText(/Notes/i), { target: { value: 'Breakdown' } });
     });
     // Submit form directly (more reliable in happy-dom than clicking submit button)
@@ -88,33 +100,37 @@ describe('TradeJournal Integration', () => {
       expect(clicked).toBe(true);
     }
 
-    // If compact summary was shown, click the 'Show details' button to render the full editor
-    const showDetailsBtn = screen.queryByRole('button', { name: /show details/i });
-    if (showDetailsBtn) fireEvent.click(showDetailsBtn);
+    // Inline edit the Entry metric instead of opening the removed detail screen
+    const activeRow = screen.getByRole('listitem', {
+      name: new RegExp(`Select ${newSymbol}`, 'i'),
+    });
+    const metricsGroup = within(activeRow).getByRole('group', {
+      name: new RegExp(`Kennzahlen für ${newSymbol}`, 'i'),
+    });
+    const entryMetricBtn = within(metricsGroup).getByRole('button', { name: /Edit Entry/i });
+    fireEvent.click(entryMetricBtn);
+    const entryInput = await screen.findByLabelText(
+      new RegExp(`Entry editor for ${newSymbol}`, 'i')
+    );
+    fireEvent.change(entryInput as HTMLInputElement, { target: { value: '1.1200' } });
+    fireEvent.blur(entryInput as HTMLInputElement);
+    await screen.findAllByText(/1\.1200/);
 
-    // Now the editor should be visible in the right pane — find the Price input by aria-label
-    // Use findByLabelText which waits for the element to appear
-    const priceInput = await screen
-      .findByLabelText('Price', {}, { timeout: 2000 })
-      .catch(async (err) => {
-        // Debug: dump some DOM for inspection
-        // eslint-disable-next-line no-console
-        console.error('DEBUG DOM snapshot:', document.body.innerHTML.slice(0, 2000));
-        throw err;
-      });
-    fireEvent.change(priceInput as HTMLInputElement, { target: { value: '1.120' } });
-    fireEvent.click(screen.getByRole('button', { name: /Save now/i }));
-    await screen.findByDisplayValue('1.120');
-
-    // Filter by status
-    fireEvent.click(screen.getByRole('button', { name: /Open/i }));
+    // Filter by status using the actual filter button (not the status badges in each row)
+    const openFilterButton = screen
+      .getAllByRole('button', { name: /^Open$/i })
+      .find((btn) => btn.tagName === 'BUTTON');
+    expect(openFilterButton).toBeDefined();
+    fireEvent.click(openFilterButton as HTMLButtonElement);
     // After filtering, ensure our unique symbol still appears
     expect((await screen.findAllByText(newSymbol)).length).toBeGreaterThan(0);
 
-    // Delete the trade
-    // After deletion, expect the count of our symbol to decrease
+    // Delete the trade via the inline delete control
     const beforeCount = (await screen.findAllByText(newSymbol)).length;
-    fireEvent.click(screen.getByRole('button', { name: /Delete/i }));
+    const deleteBtn = screen.getByRole('button', {
+      name: new RegExp(`Delete ${newSymbol}`, 'i'),
+    });
+    fireEvent.click(deleteBtn);
     fireEvent.click(screen.getByRole('button', { name: /Ja/i })); // Confirm dialog
     await waitFor(() =>
       expect((screen.queryAllByText(newSymbol).length || 0) < beforeCount).toBeTruthy()
@@ -125,14 +141,19 @@ describe('TradeJournal Integration', () => {
     const repo = new InMemoryTradeRepository();
     render(<TradeJournal repo={repo} forceCompact />);
     await screen.findByText(/Trading Journal/i);
+    const compactSymbol = 'GBPUSD-COMPACT';
 
     // Add a new trade (open modal if needed)
     await act(async () => {
-      fireEvent.change(screen.getByLabelText(/Symbol/i), { target: { value: 'GBPUSD' } });
+      fireEvent.change(screen.getByLabelText(/Symbol/i), { target: { value: compactSymbol } });
       fireEvent.change(screen.getByLabelText(/Entry Price/i), { target: { value: '1.250' } });
       fireEvent.change(screen.getByLabelText(/Position Size/i), { target: { value: '10000' } });
-      fireEvent.change(screen.getByLabelText(/Margin/i), { target: { value: '100' } });
-      fireEvent.change(screen.getByLabelText(/Leverage/i), { target: { value: '10' } });
+      fireEvent.change(screen.getByLabelText(/Margin/i, { selector: 'input' }), {
+        target: { value: '100' },
+      });
+      fireEvent.change(screen.getByLabelText(/Leverage/i, { selector: 'input' }), {
+        target: { value: '10' },
+      });
       fireEvent.change(screen.getByLabelText(/Stop Loss/i), { target: { value: '1.200' } });
     });
     // Submit form directly (more reliable in happy-dom)
@@ -142,17 +163,23 @@ describe('TradeJournal Integration', () => {
     });
 
     // Trade should appear in the compact list
-    await screen.findAllByText('GBPUSD');
-    // Es gibt mehrere GBPUSD, daher explizit alle prüfen
-    expect(screen.getAllByText('GBPUSD').length).toBeGreaterThan(0);
+    await screen.findAllByText(compactSymbol);
+    expect(screen.getAllByText(compactSymbol).length).toBeGreaterThan(0);
 
-    // Expand details in compact mode
-    const expandBtns = await screen.findAllByLabelText(/Toggle details for/i);
-    fireEvent.click(expandBtns[0]);
-    const show = await screen.findByRole('button', { name: /show details/i });
-    fireEvent.click(show);
-    const save = await screen.findByRole('button', { name: /save now/i });
-    expect(save).toBeDefined();
+    // Expand details for the newly created trade and ensure inline metric editing is available
+    const tradeCard = await screen.findByRole('group', { name: compactSymbol });
+    const toggleBtn = within(tradeCard).getByRole('button', {
+      name: new RegExp(`Toggle details for ${compactSymbol}`, 'i'),
+    });
+    fireEvent.click(toggleBtn);
+    const compactItem = tradeCard.parentElement?.parentElement as HTMLElement | null;
+    expect(compactItem).not.toBeNull();
+    const compactEntryBtn = await within(compactItem as HTMLElement).findByRole('button', {
+      name: /Edit Entry/i,
+    });
+    fireEvent.click(compactEntryBtn);
+    const inlineInput = await screen.findByLabelText(/Entry editor for/i);
+    expect(inlineInput).toBeInTheDocument();
   });
 
   it('shows validation errors for missing required fields', async () => {
@@ -189,8 +216,12 @@ describe('TradeJournal Integration', () => {
       fireEvent.change(screen.getByLabelText(/Symbol/i), { target: { value: 'UNDOUSD' } });
       fireEvent.change(screen.getByLabelText(/Entry Price/i), { target: { value: '1.000' } });
       fireEvent.change(screen.getByLabelText(/Position Size/i), { target: { value: '1000' } });
-      fireEvent.change(screen.getByLabelText(/Margin/i), { target: { value: '10' } });
-      fireEvent.change(screen.getByLabelText(/Leverage/i), { target: { value: '1' } });
+      fireEvent.change(screen.getByLabelText(/Margin/i, { selector: 'input' }), {
+        target: { value: '10' },
+      });
+      fireEvent.change(screen.getByLabelText(/Leverage/i, { selector: 'input' }), {
+        target: { value: '1' },
+      });
       fireEvent.change(screen.getByLabelText(/Stop Loss/i), { target: { value: '0.900' } });
     });
     // Submit form directly
@@ -208,7 +239,8 @@ describe('TradeJournal Integration', () => {
     expect(undoBtns.length).toBeGreaterThan(0);
     fireEvent.click(undoBtns[0]);
     // Trade sollte wieder erscheinen
-    expect(await screen.findByText('UNDOUSD')).toBeDefined();
+    const restoredSymbols = await screen.findAllByText('UNDOUSD');
+    expect(restoredSymbols.length).toBeGreaterThan(0);
   });
 
   it('prefills new trade form from analysis tab', async () => {

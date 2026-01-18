@@ -7,11 +7,9 @@ import { SideValue } from '@/presentation/shared/components/SideSelect/SideSelec
 import styles from './TradeJournal.module.css';
 import type { TradeRepository } from '@/domain/trade/interfaces/TradeRepository';
 import { ConfirmDialog } from '@/presentation/shared/components/ConfirmDialog/ConfirmDialog';
-import modalStyles from '@/presentation/shared/components/ConfirmDialog/ConfirmDialog.module.css';
 import { Analysis } from '@/presentation/analysis/Analysis';
 import type { MarketValue } from '@/presentation/shared/components/MarketSelect/MarketSelect';
 import { TradeFactory } from '@/domain/trade/factories/TradeFactory';
-import type { TradeInput } from '@/domain/trade/factories/TradeFactory';
 import type { TradeRow } from './types';
 import { useNewTradeForm, type NewTradeFormState } from './hooks/useNewTradeForm';
 import { MarketFilters, StatusFilters } from './components/TradeFilters/TradeFilters';
@@ -25,7 +23,6 @@ import { loadSettings } from '@/presentation/settings/settingsStorage';
 import MockLoaderModal from './components/MockLoaderModal/MockLoaderModal';
 import TradesPanel from './components/TradesPanel/TradesPanel';
 import { useTradesViewModel } from './hooks/useTradesViewModel';
-import { TradeDetailEditor } from './TradeDetail/TradeDetailEditor';
 
 // Analysis link helpers
 import { FirebaseAnalysisRepository } from '@/infrastructure/analysis/repositories/FirebaseAnalysisRepository';
@@ -106,8 +103,7 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
     setPositions,
     performAction,
     performTPHit,
-    handleEditorChange,
-    handleEditorSave,
+    handleInlineUpdate,
     undoInfo,
     handleUndo,
     updateTradeById,
@@ -150,19 +146,6 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
 
   // selected trade id for left-right layout
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [detailModalOpen, setDetailModalOpen] = useState<boolean>(false);
-  const [selectedFieldToFocus, setSelectedFieldToFocus] = useState<string | null>(null);
-
-  // clear requested focus shortly after it's set to avoid repeated focusing
-  useEffect(() => {
-    if (!selectedFieldToFocus) return;
-    const t = setTimeout(() => setSelectedFieldToFocus(null), 400);
-    return () => clearTimeout(t);
-  }, [selectedFieldToFocus]);
-
-  // Keep modal centered by default; no anchored positioning required.
-  // compact editor open state (mobile UX): default closed, open on selection
-  const [compactEditorOpen, setCompactEditorOpen] = useState<boolean>(false);
 
   // active tab for the Trades card (list | analysis)
   const [tradesCardTab, setTradesCardTab] = useState<'list' | 'analysis'>('list');
@@ -372,7 +355,6 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
             setMarketFilter(found.market ?? 'All');
             setSelectedId(found.id);
             // open editor on small screens
-            if (isMobile) setCompactEditorOpen(true);
           } else {
             // If not found yet, poll a few times in case positions load shortly
             let attempts = 0;
@@ -384,7 +366,6 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
                 setTradesCardTab('list');
                 setMarketFilter(f.market ?? 'All');
                 setSelectedId(f.id);
-                if (isMobile) setCompactEditorOpen(true);
               } else if (attempts < maxAttempts) {
                 setTimeout(tryFind, 150);
               }
@@ -410,32 +391,9 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
       : typeof process !== 'undefined' &&
         (process.env.REACT_APP_DEBUG_UI === 'true' || process.env.NODE_ENV === 'development');
 
-  // compute the selected trade DTO once to avoid inline IIFE in JSX (linting + readability)
-  const selectedPos = positions.find((p) => p.id === selectedId);
-  const selectedTrade = selectedPos
-    ? {
-        id: selectedPos.id,
-        symbol: selectedPos.symbol,
-        entryDate: selectedPos.entryDate,
-        size: selectedPos.size,
-        price: selectedPos.price,
-        side: selectedPos.side,
-        status: selectedPos.status,
-        notes: selectedPos.notes,
-        tp1: selectedPos.tp1,
-        tp2: selectedPos.tp2,
-        tp3: selectedPos.tp3,
-        tp4: selectedPos.tp4,
-        margin: selectedPos.margin,
-        leverage: selectedPos.leverage,
-        sl: selectedPos.sl,
-        slIsBE: selectedPos.slIsBE,
-      }
-    : null;
-
   // provide a request-based delete handler for the editor that shows a confirmation dialog.
   // the actual deletion is performed by `performAction('delete', id)` when the user confirms.
-  const requestDeleteFromEditor = (id: string): Promise<void> => {
+  const requestDelete = (id: string): Promise<void> => {
     setConfirmTradeId(id);
     setConfirmAction('delete');
     setConfirmOpen(true);
@@ -550,7 +508,7 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
         </div>
 
         <div className={styles.right}>
-          <div className={`${styles.cardFullBleedTrade} ${styles.tradesArea} ${styles.ultraWide}`.trim()}>
+          <div className={`${styles.cardFullBleedTrade} ${styles.tradesArea}`.trim()}>
             <div className={styles.tradesHeader}>
               <div className={styles.tradesHeaderColumn}>
                 <div className={styles.tradesTitle}>Trades</div>
@@ -585,7 +543,7 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
                   </Button>
                 </div>
 
-                {/* UltraWide is now the default fixed layout; toggle removed */}
+
 
                 <MarketFilters
                   marketFilter={marketFilter}
@@ -595,27 +553,26 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
               </div>
             </div>
 
-            <div className={styles.listAndDetailWrap}>
+            <div
+              className={[
+                styles.listAndDetailWrap,
+                tradesCardTab === 'list' ? styles.listOnly : '',
+              ]
+                .filter(Boolean)
+                .join(' ')}
+            >
               {tradesCardTab === 'list' ? (
                 <TradesPanel
                   tradeListItems={tradeListItems}
                   selectedId={selectedId}
-                  onSelect={(id, focusField) => {
+                  onSelect={(id) => {
                     setSelectedId(id);
-                    setSelectedFieldToFocus(focusField ?? null);
-                    if (!compactGrid) setDetailModalOpen(true);
                   }}
                   performAction={performAction}
                   performTPHit={performTPHit}
                   compactGrid={compactGrid}
-                  compactEditorOpen={compactEditorOpen}
-                  setCompactEditorOpen={setCompactEditorOpen}
-                  selectedTrade={selectedTrade as unknown as TradeRow}
-                  onEditorChange={handleEditorChange}
-                  onEditorSave={handleEditorSave}
-                  onDeleteFromEditor={requestDeleteFromEditor}
-                  selectedFieldToFocus={selectedFieldToFocus}
-                  modalDetail={true}
+                  onInlineUpdate={handleInlineUpdate}
+                  onRequestDelete={requestDelete}
                 />
               ) : (
                 <Analysis onCreateTradeSuggestion={handleCreateTradeFromAnalysis} />
@@ -644,50 +601,6 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
         setPositions={setPositions}
         analysisService={analysisService}
       />
-
-      {/* Detail modal (shows trade editor in a modal when requested) */}
-      {detailModalOpen && selectedTrade && (
-        <div className={modalStyles.backdrop} role="dialog" aria-modal="true">
-          <div
-            className={modalStyles.dialog}
-            style={{
-              width: '760px',
-              maxWidth: '96vw',
-              margin: '6vh auto',
-              maxHeight: '80vh',
-              overflow: 'auto',
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div style={{ fontWeight: 800 }}>{selectedTrade.symbol}</div>
-              <div>
-                <button
-                  type="button"
-                  onClick={() => setDetailModalOpen(false)}
-                  style={{ background: 'transparent', border: 'none', color: 'var(--muted)', cursor: 'pointer' }}
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-            <div style={{ marginTop: 12 }}>
-              <TradeDetailEditor
-                trade={selectedTrade}
-                onChange={handleEditorChange}
-                onSave={async (dto: TradeInput) => {
-                  await handleEditorSave(dto);
-                  setDetailModalOpen(false);
-                }}
-                onDelete={async (id: string) => {
-                  await requestDeleteFromEditor(id);
-                  setDetailModalOpen(false);
-                }}
-                focusField={selectedFieldToFocus}
-              />
-            </div>
-          </div>
-        </div>
-      )}
 
       {undoInfo && (
         <div className={styles.undoBanner}>

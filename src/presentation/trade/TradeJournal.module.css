@@ -21,6 +21,12 @@
   width: 100%;
 }
 
+.listOnly,
+.cardFullBleedTrade .listOnly,
+.tradesArea .listOnly {
+  grid-template-columns: 1fr !important;
+}
+
 /* When used inside a full-bleed Card we want the left list to claim more horizontal space
    so trades can show more fields and badges without excessive wrapping. This class is
    applied to the Card via the `className` prop from TradeJournal. */
