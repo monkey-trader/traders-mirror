@@ -537,8 +537,8 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
         <div className={styles.right}>
           <div className={`${styles.cardFullBleedTrade} ${styles.tradesArea}`.trim()}>
             <div className={styles.tradesHeader}>
-              <div className={styles.tradesHeaderColumn}>
-                <div className={styles.tradesTitle}>Trades</div>
+                <div className={styles.tradesHeaderColumn}>
+                <div className={styles.tradesTitle}>{tradesCardTab === 'analysis' ? 'Analysen' : 'Trades'}</div>
                 {tradesCardTab === 'list' ? (
                   <div className={styles.tradesStatusRow}>
                     <StatusFilters
@@ -571,15 +571,19 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
                     Analyse
                   </Button>
                 </div>
-
-                {tradesCardTab === 'analysis' ? (
-                  <div className={styles.analysisControls}>
-                    <MarketFilters
-                      marketFilter={analysisMarketFilter}
-                      setMarketFilter={(m) => setAnalysisMarketFilter(m)}
-                      tradesCount={analysisVisibleCount}
-                      countLabel="analyses"
-                    />
+                {/* Render MarketFilters in a consistent spot to avoid layout shifts */}
+                <div className={styles.marketFiltersWrap}>
+                  <MarketFilters
+                    marketFilter={tradesCardTab === 'analysis' ? analysisMarketFilter : marketFilter}
+                    setMarketFilter={(m) =>
+                      tradesCardTab === 'analysis'
+                        ? setAnalysisMarketFilter(m)
+                        : setMarketFilter(m)
+                    }
+                    tradesCount={tradesCardTab === 'analysis' ? analysisVisibleCount : trades.length}
+                    countLabel={tradesCardTab === 'analysis' ? 'analyses' : 'trades'}
+                  />
+                  {tradesCardTab === 'analysis' ? (
                     <Button
                       type="button"
                       variant="secondary"
@@ -590,15 +594,8 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
                     >
                       Create Trade
                     </Button>
-                  </div>
-                ) : (
-                  <MarketFilters
-                    marketFilter={marketFilter}
-                    setMarketFilter={(m) => setMarketFilter(m)}
-                    tradesCount={trades.length}
-                    countLabel="trades"
-                  />
-                )}
+                  ) : null}
+                </div>
               </div>
             </div>
 

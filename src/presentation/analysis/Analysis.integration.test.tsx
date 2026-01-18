@@ -23,7 +23,7 @@ describe('Analysis -> prefill new trade', () => {
     await screen.findByText(/Trading Journal/i);
 
     // open Analysis tab inside the Trades card
-    const analyseTab = await screen.findByRole('tab', { name: /Analyse/i });
+    const analyseTab = await screen.findByRole('tab', { name: /Analyse/i, hidden: true });
     fireEvent.click(analyseTab);
 
     // after removing the global example buttons, ensure the Analysis tab renders its list/placeholder

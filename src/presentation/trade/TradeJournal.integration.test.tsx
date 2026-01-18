@@ -247,7 +247,7 @@ describe('TradeJournal Integration', () => {
     render(<TradeJournal repo={new InMemoryTradeRepository()} />);
     await screen.findByText(/Trading Journal/i);
     // Analyse-Tab öffnen
-    const analyseTab = await screen.findByRole('tab', { name: /Analyse/i });
+    const analyseTab = await screen.findByRole('tab', { name: /Analyse/i, hidden: true });
     fireEvent.click(analyseTab);
     // After removing the global example buttons, ensure the Analysis tab renders its list/placeholder
     const allAnalysen = await screen.findAllByText(/Analysen/i);

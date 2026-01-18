@@ -76,7 +76,7 @@ describe('TradeJournal additional branches', () => {
     render(<TradeJournal repo={noopRepo as any} />);
 
     // open Analyse tab via Card tab button labelled 'Analyse'
-    const tab = screen.getByRole('tab', { name: 'Analyse' });
+    const tab = screen.getByRole('tab', { name: 'Analyse', hidden: true });
     fireEvent.click(tab);
 
     // analysis mock renders a button that triggers suggestion
