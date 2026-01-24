@@ -10,6 +10,7 @@ import type { TradeRepository } from '@/domain/trade/interfaces/TradeRepository'
 import type { Trade } from '@/domain/trade/entities/Trade';
 import { TradeId } from '@/domain/trade/valueObjects/TradeId';
 import { AnalysisId } from '@/domain/trade/valueObjects/AnalysisId';
+import type { ConfluenceOption } from '@/presentation/trade/components/ConfluenceModal';
 
 export type NewTradeFormState = {
   symbol: string;
@@ -29,7 +30,7 @@ export type NewTradeFormState = {
   tp4?: number;
   margin?: number;
   leverage?: number;
-  confluence?: { timeframe?: string; type: string }[];
+  confluence?: ConfluenceOption[];
 };
 
 export function useNewTradeForm(options: {
