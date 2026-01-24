@@ -3,10 +3,10 @@
 
 .container {
   padding: 1.5rem 1.25rem;
-  background: linear-gradient(120deg, rgba(28,28,36,0.98) 80%, rgba(38,38,48,0.92) 100%);
+  background: linear-gradient(120deg, rgba(28, 28, 36, 0.98) 80%, rgba(38, 38, 48, 0.92) 100%);
   border-radius: 18px;
-  box-shadow: 0 2px 16px 0 rgba(20,20,30,0.13);
-  border: 1.5px solid rgba(80,80,120,0.10);
+  box-shadow: 0 2px 16px 0 rgba(20, 20, 30, 0.13);
+  border: 1.5px solid rgba(80, 80, 120, 0.1);
   margin-bottom: 2rem;
 }
 
@@ -23,14 +23,14 @@
   font-weight: 700;
   letter-spacing: 0.01em;
   color: var(--color-primary, #7c5aff);
-  text-shadow: 0 1px 8px rgba(124,90,255,0.08);
+  text-shadow: 0 1px 8px rgba(124, 90, 255, 0.08);
 }
 
 .notes {
   margin-top: 0.75rem;
   color: var(--color-muted, #b0b4c0);
   font-size: 1.05rem;
-  background: rgba(60,55,80,0.22);
+  background: rgba(60, 55, 80, 0.22);
   border-radius: 8px;
   padding: 0.5rem 0.75rem;
   min-height: 2.2em;
@@ -46,11 +46,11 @@
 
 .tf {
   padding: 0.85rem 1rem 0.7rem 1rem;
-  border: 1.5px solid rgba(124,90,255,0.10);
+  border: 1.5px solid rgba(124, 90, 255, 0.1);
   border-radius: 10px;
-  background: linear-gradient(120deg, rgba(60,55,80,0.22) 80%, rgba(124,90,255,0.04) 100%);
+  background: linear-gradient(120deg, rgba(60, 55, 80, 0.22) 80%, rgba(124, 90, 255, 0.04) 100%);
   color: var(--color-text, #e6edf3);
-  box-shadow: 0 1px 8px 0 rgba(124,90,255,0.04);
+  box-shadow: 0 1px 8px 0 rgba(124, 90, 255, 0.04);
 }
 
 .tfHeader {
@@ -66,11 +66,11 @@
   font-weight: 600;
   border-radius: 6px;
   padding: 0.1em 0.5em;
-  background: rgba(124,90,255,0.08);
+  background: rgba(124, 90, 255, 0.08);
   transition: background 0.18s;
 }
 .link:hover {
-  background: rgba(124,90,255,0.18);
+  background: rgba(124, 90, 255, 0.18);
 }
 
 .tvIcon {
@@ -88,7 +88,7 @@
 }
 .metaBlock {
   margin-bottom: 0.7rem;
-  background: rgba(60,55,80,0.18);
+  background: rgba(60, 55, 80, 0.18);
   border-radius: 8px;
   padding: 0.5rem 0.75rem 0.4rem 0.75rem;
   font-size: 1.04rem;
@@ -99,7 +99,7 @@
 }
 .setupsBlock {
   margin-bottom: 0.7rem;
-  background: rgba(60,55,80,0.18);
+  background: rgba(60, 55, 80, 0.18);
   border-radius: 8px;
   padding: 0.5rem 0.75rem 0.4rem 0.75rem;
   font-size: 1.04rem;
@@ -114,13 +114,15 @@
   list-style: none;
 }
 .fibTag {
-  background: rgba(124,90,255,0.13);
-  color: #7c5aff;
-  border-radius: 6px;
-  padding: 0.1em 0.7em;
-  font-weight: 600;
-  font-size: 0.98em;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 0.08em 0.55em;
+  font-weight: 500;
+  font-size: 0.93em;
   letter-spacing: 0.01em;
+  box-shadow: none;
+  border: 1px solid rgba(255, 255, 255, 0.07);
 }
 
 .actions {

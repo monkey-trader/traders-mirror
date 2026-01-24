@@ -1,13 +1,13 @@
-import React from 'react'
-import styles from './CombinedFilterMenu.module.css'
-import { Button } from '@/presentation/shared/components/Button/Button'
+import React from 'react';
+import styles from './CombinedFilterMenu.module.css';
+import { Button } from '@/presentation/shared/components/Button/Button';
 
 type Props = {
-  marketFilter: 'All' | 'Crypto' | 'Forex'
-  setMarketFilter: (m: 'All' | 'Crypto' | 'Forex') => void
-  tradeStatusFilter?: 'ALL' | 'OPEN' | 'CLOSED' | 'FILLED'
-  setTradeStatusFilter?: (s: 'ALL' | 'OPEN' | 'CLOSED' | 'FILLED') => void
-}
+  marketFilter: 'All' | 'Crypto' | 'Forex';
+  setMarketFilter: (m: 'All' | 'Crypto' | 'Forex') => void;
+  tradeStatusFilter?: 'ALL' | 'OPEN' | 'CLOSED' | 'FILLED';
+  setTradeStatusFilter?: (s: 'ALL' | 'OPEN' | 'CLOSED' | 'FILLED') => void;
+};
 
 export function CombinedFilterMenu({
   marketFilter,
@@ -49,7 +49,7 @@ export function CombinedFilterMenu({
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-export default CombinedFilterMenu
+export default CombinedFilterMenu;

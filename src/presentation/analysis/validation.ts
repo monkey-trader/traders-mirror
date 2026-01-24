@@ -1,4 +1,3 @@
-
 import type { AnalysisSetup } from './setups';
 
 export type AnalysisFormValues = {

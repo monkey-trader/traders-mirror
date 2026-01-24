@@ -149,6 +149,8 @@ export function Analysis({
   const [createPanelError, setCreatePanelError] = useState<string | null>(null);
   const [createFormKey, setCreateFormKey] = useState(0);
 
+  // ConfluenceWizard removed
+
   useEffect(() => {
     if (externalMarketFilter !== undefined) {
       setInternalMarketFilter(externalMarketFilter);
@@ -295,8 +297,7 @@ export function Analysis({
     } catch (err) {
       // eslint-disable-next-line no-console
       console.warn('Failed to delete analysis', err);
-    }
-    finally {
+    } finally {
       // remove pending state regardless of success/failure
       setPendingDeletes((p) => p.filter((x) => x !== id));
     }
@@ -316,6 +317,8 @@ export function Analysis({
     setCreatePanelError(null);
     setCreatePanelOpen(true);
   };
+
+  // ConfluenceWizard handlers removed
 
   const handleCloseCreatePanel = () => {
     setCreatePanelError(null);
@@ -423,6 +426,7 @@ export function Analysis({
               >
                 Analyse anlegen
               </Button>
+              {/* Confluence Wizard removed */}
               {onCreateTradeSuggestion ? (
                 <Button
                   type="button"
@@ -488,6 +492,8 @@ export function Analysis({
         onSubmit={handleCreateAnalysis}
       />
 
+      {/* ConfluenceWizard removed */}
+
       <div className={styles.listOnlyLayout}>
         {useCard ? (
           <Card className={styles.listCard} title={shouldShowToolbar ? undefined : 'Analysen'}>
@@ -545,15 +551,24 @@ export function Analysis({
                       />
                       {pendingDeletes.includes(summary.id) ? (
                         outboxHasDelete ? (
-                          <div className={`${repoSyncStyles.chipQueued} ${styles.deleteStatus}`} aria-hidden>
+                          <div
+                            className={`${repoSyncStyles.chipQueued} ${styles.deleteStatus}`}
+                            aria-hidden
+                          >
                             Wartet
                           </div>
                         ) : (
-                          <span className={`${repoSyncStyles.spinner} ${styles.deleteSpinner}`} aria-hidden />
+                          <span
+                            className={`${repoSyncStyles.spinner} ${styles.deleteSpinner}`}
+                            aria-hidden
+                          />
                         )
                       ) : null}
                     </div>
-                    <div className={styles.dropdownWrap} onClick={(event) => event.stopPropagation()}>
+                    <div
+                      className={styles.dropdownWrap}
+                      onClick={(event) => event.stopPropagation()}
+                    >
                       <ActionDropdown
                         ariaLabel={`Aktionen für ${summary.symbol}`}
                         placeholder="Aktion"
@@ -568,7 +583,9 @@ export function Analysis({
                 if (selected !== summary.id) return null;
                 return (
                   <div className={styles.inlineDetail}>
-                    <React.Suspense fallback={<div className={styles.detailLoading}>Loading...</div>}>
+                    <React.Suspense
+                      fallback={<div className={styles.detailLoading}>Loading...</div>}
+                    >
                       <DetailLoader
                         id={summary.id}
                         startEditingField={selectedFieldToFocus ?? undefined}
@@ -637,15 +654,24 @@ export function Analysis({
                       />
                       {pendingDeletes.includes(summary.id) ? (
                         outboxHasDelete ? (
-                          <div className={`${repoSyncStyles.chipQueued} ${styles.deleteStatus}`} aria-hidden>
+                          <div
+                            className={`${repoSyncStyles.chipQueued} ${styles.deleteStatus}`}
+                            aria-hidden
+                          >
                             Wartet
                           </div>
                         ) : (
-                          <span className={`${repoSyncStyles.spinner} ${styles.deleteSpinner}`} aria-hidden />
+                          <span
+                            className={`${repoSyncStyles.spinner} ${styles.deleteSpinner}`}
+                            aria-hidden
+                          />
                         )
                       ) : null}
                     </div>
-                    <div className={styles.dropdownWrap} onClick={(event) => event.stopPropagation()}>
+                    <div
+                      className={styles.dropdownWrap}
+                      onClick={(event) => event.stopPropagation()}
+                    >
                       <ActionDropdown
                         ariaLabel={`Aktionen für ${summary.symbol}`}
                         placeholder="Aktion"
@@ -660,7 +686,9 @@ export function Analysis({
                 if (selected !== summary.id) return null;
                 return (
                   <div className={styles.inlineDetail}>
-                    <React.Suspense fallback={<div className={styles.detailLoading}>Loading...</div>}>
+                    <React.Suspense
+                      fallback={<div className={styles.detailLoading}>Loading...</div>}
+                    >
                       <DetailLoader
                         id={summary.id}
                         startEditingField={selectedFieldToFocus ?? undefined}
@@ -742,8 +770,8 @@ function DetailLoader({
       startEditingField={startEditingField ?? undefined}
       onRequestDelete={onRequestDelete}
       onSave={async (updated) => {
-              try {
-                await repository.save(updated as unknown as AnalysisDTOType);
+        try {
+          await repository.save(updated as unknown as AnalysisDTOType);
           // refresh local copy from repo to reflect any normalization
           const refreshed = await repository.getById(updated.id);
           if (refreshed) {
@@ -755,7 +783,9 @@ function DetailLoader({
             }
             // dispatch global update so list reloads
             try {
-              globalThis.dispatchEvent(new CustomEvent('analyses-updated', { detail: { type: 'local' } }));
+              globalThis.dispatchEvent(
+                new CustomEvent('analyses-updated', { detail: { type: 'local' } })
+              );
             } catch {
               /* ignore */
             }

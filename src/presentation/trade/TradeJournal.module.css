@@ -92,18 +92,18 @@
 
 /* Minimal styles for the toggle button shown in the trades controls */
 .ultraWideToggle {
-  background: rgba(255,255,255,0.03);
+  background: rgba(255, 255, 255, 0.03);
   color: var(--muted);
-  border: 1px solid rgba(255,255,255,0.03);
+  border: 1px solid rgba(255, 255, 255, 0.03);
   padding: 6px 10px;
   border-radius: 8px;
   cursor: pointer;
 }
 
 .ultraWideToggleActive {
-  background: linear-gradient(90deg, rgba(34,193,195,0.14), rgba(124,92,255,0.12));
+  background: linear-gradient(90deg, rgba(34, 193, 195, 0.14), rgba(124, 92, 255, 0.12));
   color: var(--text);
-  border: 1px solid rgba(34,193,195,0.18);
+  border: 1px solid rgba(34, 193, 195, 0.18);
 }
 
 /* Further tighten paddings inside ultraWide to free up more horizontal space */
@@ -1124,15 +1124,15 @@
 .tradesTabActive {
   color: var(--text);
   /* stronger accent for active tab: subtle gradient + soft glow to match pill style */
-  background: linear-gradient(90deg, rgba(34,193,195,0.10), rgba(124,92,255,0.08));
-  border-color: rgba(34,193,195,0.18);
-  box-shadow: 0 6px 18px rgba(34,193,195,0.06), 0 0 0 1px rgba(124,92,255,0.04) inset;
+  background: linear-gradient(90deg, rgba(34, 193, 195, 0.1), rgba(124, 92, 255, 0.08));
+  border-color: rgba(34, 193, 195, 0.18);
+  box-shadow: 0 6px 18px rgba(34, 193, 195, 0.06), 0 0 0 1px rgba(124, 92, 255, 0.04) inset;
   transform: translateY(-1px);
 }
 
 .tradesTab:focus-visible,
 .tradesTabActive:focus-visible {
-  outline: 3px solid rgba(124,92,255,0.12);
+  outline: 3px solid rgba(124, 92, 255, 0.12);
   outline-offset: 3px;
 }
 

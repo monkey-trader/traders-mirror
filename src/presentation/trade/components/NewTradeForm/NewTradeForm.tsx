@@ -8,6 +8,8 @@ import MarketSelect, {
 } from '@/presentation/shared/components/MarketSelect/MarketSelect';
 import { StatusSelect } from '@/presentation/shared/components/StatusSelect/StatusSelect';
 import styles from './NewTradeForm.module.css';
+import { SetupSelector } from '../SetupSelector';
+import type { ConfluenceOption } from '../ConfluenceModal';
 
 export type NewTradeFormState = {
   symbol: string;
@@ -26,6 +28,8 @@ export type NewTradeFormState = {
   margin?: number;
   market?: MarketValue;
   analysisId?: string; // optional originating analysis id
+  fibLevel?: string | null;
+  confluence?: ConfluenceOption[];
 };
 
 export type NewTradeFormProps = {
@@ -162,6 +166,17 @@ export function NewTradeForm({
                   {formErrors.symbol}
                 </div>
               )}
+            </div>
+
+            {/* SetupSelector: SK Entry & Confluence */}
+            <div className={styles.newTradeField}>
+              <SetupSelector
+                selectedFibLevel={form.fibLevel ?? null}
+                selectedConfluence={form.confluence ?? []}
+                onChange={(fibLevel: string | null, confluence: ConfluenceOption[]) => {
+                  onChangeForm({ fibLevel, confluence });
+                }}
+              />
             </div>
 
             <div className={styles.newTradeField}>

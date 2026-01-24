@@ -65,7 +65,7 @@ export async function loadMockAnalyses(
       ];
 
       // Generate all timeframes with notes and tradingViewLinks
-      const tfKeys = ['monthly','weekly','daily','4h','2h','1h','15min'];
+      const tfKeys = ['monthly', 'weekly', 'daily', '4h', '2h', '1h', '15min'];
       const timeframes = tfKeys.map((tf, idx) => ({
         timeframe: tf,
         note: `${tf.toUpperCase()} note for ${symbolValue}`,

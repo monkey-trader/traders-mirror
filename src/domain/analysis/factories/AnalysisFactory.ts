@@ -17,7 +17,6 @@ type TimeframeInput = {
   note?: string;
 };
 
-
 import type { AnalysisSetup } from '@/presentation/analysis/setups';
 
 export type AnalysisInput = {

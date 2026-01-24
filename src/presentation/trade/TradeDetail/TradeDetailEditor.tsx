@@ -341,7 +341,9 @@ export function TradeDetailEditor({
           type="number"
           ref={slRef}
           value={typeof local.sl === 'number' ? local.sl : local.slIsBE ? 0 : ''}
-          onChange={(e) => fieldChange('sl', e.target.value === '' ? undefined : Number(e.target.value))}
+          onChange={(e) =>
+            fieldChange('sl', e.target.value === '' ? undefined : Number(e.target.value))
+          }
           onBlur={handleBlurOrSave}
         />
         {errors.sl && <div className={styles.fieldError}>{errors.sl}</div>}

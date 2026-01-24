@@ -8,7 +8,13 @@ export type TextareaProps = React.TextareaHTMLAttributes<HTMLTextAreaElement> & 
   inputRef?: React.Ref<HTMLTextAreaElement>;
 };
 
-export function Textarea({ label, className = '', hasError = false, inputRef, ...rest }: TextareaProps) {
+export function Textarea({
+  label,
+  className = '',
+  hasError = false,
+  inputRef,
+  ...rest
+}: TextareaProps) {
   const cls = [styles.textarea, hasError ? styles.textareaError : '', className]
     .filter(Boolean)
     .join(' ');

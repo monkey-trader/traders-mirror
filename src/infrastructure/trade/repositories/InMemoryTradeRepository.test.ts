@@ -94,6 +94,6 @@ describe('InMemoryTradeRepository', () => {
     // Save using save() path
     await repo.save(fakeTrade);
     const all = await repo.getAll();
-    expect(all.find((t) => t.id === 'vo1' || t.symbol.value === 'VOUSD')).toBeDefined();
+    expect(all.find((t) => idOf(t.id) === 'vo1' || t.symbol.value === 'VOUSD')).toBeDefined();
   });
 });
