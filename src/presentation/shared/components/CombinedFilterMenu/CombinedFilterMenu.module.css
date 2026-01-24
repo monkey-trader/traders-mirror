@@ -9,7 +9,8 @@
   color: var(--muted, #9aa0a6);
   margin-bottom: 4px;
 }
-.statusGroup, .marketGroup {
+.statusGroup,
+.marketGroup {
   display: flex;
   flex-direction: column;
 }

@@ -14,6 +14,8 @@ import LocalStorageTradeRepository from '@/infrastructure/trade/repositories/Loc
 import type { TradeRow } from './types';
 import { useNewTradeForm, type NewTradeFormState } from './hooks/useNewTradeForm';
 import { StatusFilters } from './components/TradeFilters/TradeFilters';
+
+// ...other imports and type definitions...
 import FilterToolbar from '@/presentation/shared/components/FilterToolbar/FilterToolbar';
 import CombinedFilterMenu from '@/presentation/shared/components/CombinedFilterMenu/CombinedFilterMenu';
 import type { AnalysisInput } from '@/domain/analysis/factories/AnalysisFactory';
@@ -26,6 +28,7 @@ import { loadSettings } from '@/presentation/settings/settingsStorage';
 import MockLoaderModal from './components/MockLoaderModal/MockLoaderModal';
 import TradesPanel from './components/TradesPanel/TradesPanel';
 import { useTradesViewModel } from './hooks/useTradesViewModel';
+// ConfluenceWizard removed from TradeJournal; modal will host the wizard instead
 
 // Analysis link helpers
 import { FirebaseAnalysisRepository } from '@/infrastructure/analysis/repositories/FirebaseAnalysisRepository';
@@ -84,6 +87,8 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
 
   // modal state for loading mock data
   const [mockModalOpen, setMockModalOpen] = useState(false);
+
+  // ConfluenceWizard state and handlers removed; modal will include wizard
 
   // repository instance must be injected via props (composition root). Do not require() here.
   const repoRef = useRef<TradeRepository | null>(repo ?? null);
@@ -169,7 +174,6 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
     'All'
   );
   const [analysisVisibleCount, setAnalysisVisibleCount] = useState(0);
-  
 
   useEffect(() => {
     if (tradesCardTab !== 'analysis') {
@@ -265,10 +269,14 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
   // Trades nach Markt filtern (berechnet aus editierbaren Positionen)
   const trades = (() => {
     let filtered = positions;
-    if (marketFilter !== 'All') filtered = filtered.filter((t) => t.market === marketFilter);
-    if (tradeStatusFilter === 'OPEN') filtered = filtered.filter((t) => t.status === 'OPEN');
-    if (tradeStatusFilter === 'CLOSED') filtered = filtered.filter((t) => t.status === 'CLOSED');
-    if (tradeStatusFilter === 'FILLED') filtered = filtered.filter((t) => t.status === 'FILLED');
+    if (marketFilter !== 'All')
+      filtered = filtered.filter((t: TradeRow) => t.market === marketFilter);
+    if (tradeStatusFilter === 'OPEN')
+      filtered = filtered.filter((t: TradeRow) => t.status === 'OPEN');
+    if (tradeStatusFilter === 'CLOSED')
+      filtered = filtered.filter((t: TradeRow) => t.status === 'CLOSED');
+    if (tradeStatusFilter === 'FILLED')
+      filtered = filtered.filter((t: TradeRow) => t.status === 'FILLED');
     return filtered;
   })();
 
@@ -366,8 +374,6 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
     setSelectedId(null);
   };
 
-  
-
   // Listen for open-trade events from Analysis view to select the trade linked to an analysis
   useEffect(() => {
     const handler = (e: Event) => {
@@ -376,7 +382,7 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
         if (detail && typeof detail.analysisId === 'string') {
           const aid = detail.analysisId as string;
           // try to find a trade with this analysisId
-          const found = positions.find((p) => p.analysisId === aid);
+          const found = positions.find((p: TradeRow) => p.analysisId === aid);
           if (found) {
             // switch to trades list and select the trade
             setTradesCardTab('list');
@@ -389,7 +395,7 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
             const maxAttempts = 5;
             const tryFind = () => {
               attempts += 1;
-              const f = positions.find((p) => p.analysisId === aid);
+              const f = positions.find((p: TradeRow) => p.analysisId === aid);
               if (f) {
                 setTradesCardTab('list');
                 setMarketFilter(f.market ?? 'All');
@@ -419,6 +425,8 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
       : typeof process !== 'undefined' &&
         (process.env.REACT_APP_DEBUG_UI === 'true' || process.env.NODE_ENV === 'development');
 
+  // ConfluenceWizard entfernt
+
   // provide a request-based delete handler for the editor that shows a confirmation dialog.
   // the actual deletion is performed by `performAction('delete', id)` when the user confirms.
   const requestDelete = (id: string): Promise<void> => {
@@ -438,6 +446,7 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
               Load mock data
             </Button>
           )}
+          {/* Confluence Wizard removed; wizard moved into modal implementation */}
         </div>
       </div>
 
@@ -470,11 +479,9 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
       {/* containerRef wraps the grid so we can detect available width */}
       <div
         ref={containerRef}
-        className={
-          `${compactGrid ? `${styles.grid} ${styles.gridCompact}` : `${styles.grid}`} ${
-            styles.fullScreen
-          } ${tradesCardTab === 'analysis' ? styles.analysisActive : ''}`.trim()
-        }
+        className={`${compactGrid ? `${styles.grid} ${styles.gridCompact}` : `${styles.grid}`} ${
+          styles.fullScreen
+        } ${tradesCardTab === 'analysis' ? styles.analysisActive : ''}`.trim()}
       >
         <div className={styles.left}>
           <AddPanel
@@ -508,7 +515,7 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
                   notes: input.notes,
                   market: input.market ?? undefined,
                   timeframes: Array.isArray(input.timeframes)
-                    ? input.timeframes.map((tf) => ({
+                    ? input.timeframes.map((tf: TimeframeInput) => ({
                         timeframe: tf.timeframe,
                         tradingViewLink: tf.tradingViewLink,
                         note: tf.note,
@@ -538,8 +545,10 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
         <div className={styles.right}>
           <div className={`${styles.cardFullBleedTrade} ${styles.tradesArea}`.trim()}>
             <div className={styles.tradesHeader}>
-                <div className={styles.tradesHeaderColumn}>
-                <div className={styles.tradesTitle}>{tradesCardTab === 'analysis' ? 'Analysen' : 'Trades'}</div>
+              <div className={styles.tradesHeaderColumn}>
+                <div className={styles.tradesTitle}>
+                  {tradesCardTab === 'analysis' ? 'Analysen' : 'Trades'}
+                </div>
                 {/* StatusFilters are rendered inside the unified FilterToolbar below to avoid duplication */}
               </div>
               <div className={styles.tradesControls}>
@@ -559,7 +568,9 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
                     role="tab"
                     aria-selected={tradesCardTab === 'analysis'}
                     variant={tradesCardTab === 'analysis' ? 'primary' : 'ghost'}
-                    className={tradesCardTab === 'analysis' ? styles.tradesTabActive : styles.tradesTab}
+                    className={
+                      tradesCardTab === 'analysis' ? styles.tradesTabActive : styles.tradesTab
+                    }
                     onClick={() => setTradesCardTab('analysis')}
                   >
                     Analyse
@@ -570,7 +581,9 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
                   {/* keep tabs separate; FilterToolbar only renders the filter controls */}
                   {/* StatusFilters are shown only in list view here */}
                   <FilterToolbar
-                    marketFilter={tradesCardTab === 'analysis' ? analysisMarketFilter : marketFilter}
+                    marketFilter={
+                      tradesCardTab === 'analysis' ? analysisMarketFilter : marketFilter
+                    }
                     setMarketFilter={(m) =>
                       tradesCardTab === 'analysis' ? setAnalysisMarketFilter(m) : setMarketFilter(m)
                     }
@@ -580,34 +593,39 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
                         tradesCardTab === 'list' ? (
                           <StatusFilters
                             tradeStatusFilter={tradeStatusFilter}
-                            setTradeStatusFilter={(s) => setTradeStatusFilter(s)}
+                            setTradeStatusFilter={(s: 'ALL' | 'OPEN' | 'CLOSED' | 'FILLED') =>
+                              setTradeStatusFilter(s)
+                            }
                           />
                         ) : undefined
                       ) : (
                         <CombinedFilterMenu
-                          marketFilter={tradesCardTab === 'analysis' ? analysisMarketFilter : marketFilter}
-                          setMarketFilter={(m) =>
-                            tradesCardTab === 'analysis' ? setAnalysisMarketFilter(m) : setMarketFilter(m)
+                          marketFilter={
+                            tradesCardTab === 'analysis' ? analysisMarketFilter : marketFilter
                           }
+                          setMarketFilter={(m: string) => {
+                            const normalized = m === '' ? 'All' : (m as 'All' | 'Crypto' | 'Forex');
+                            return tradesCardTab === 'analysis'
+                              ? setAnalysisMarketFilter(normalized)
+                              : setMarketFilter(normalized);
+                          }}
                           tradeStatusFilter={tradeStatusFilter}
-                          setTradeStatusFilter={(s) => setTradeStatusFilter(s)}
+                          setTradeStatusFilter={(s: 'ALL' | 'OPEN' | 'CLOSED' | 'FILLED') =>
+                            setTradeStatusFilter(s)
+                          }
                         />
                       )
                     }
                     hideMarketFilters={!isTestEnv}
                     count={tradesCardTab === 'analysis' ? analysisVisibleCount : trades.length}
                     countLabel={tradesCardTab === 'analysis' ? 'analyses' : 'trades'}
-                    
                   />
                 </div>
               </div>
             </div>
 
             <div
-              className={[
-                styles.listAndDetailWrap,
-                tradesCardTab === 'list' ? styles.listOnly : '',
-              ]
+              className={[styles.listAndDetailWrap, tradesCardTab === 'list' ? styles.listOnly : '']
                 .filter(Boolean)
                 .join(' ')}
             >
@@ -615,7 +633,7 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
                 <TradesPanel
                   tradeListItems={tradeListItems}
                   selectedId={selectedId}
-                  onSelect={(id) => {
+                  onSelect={(id: string) => {
                     setSelectedId(id);
                   }}
                   performAction={performAction}

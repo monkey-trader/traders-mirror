@@ -146,11 +146,11 @@ export function useTradesViewModel({
               else if (typeof repoRef.current.update === 'function')
                 await repoRef.current.update(domain);
               setLastStatus?.(statusMessage ?? 'Restored persisted');
-                try {
-                  globalThis.dispatchEvent(new CustomEvent('trades-updated'));
-                } catch {
-                  /* ignore */
-                }
+              try {
+                globalThis.dispatchEvent(new CustomEvent('trades-updated'));
+              } catch {
+                /* ignore */
+              }
             } catch (err) {
               console.error('Failed to persist restored trade', err);
               setLastStatus?.('Restore failed');

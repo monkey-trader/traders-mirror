@@ -6,7 +6,7 @@ import { TradeSymbol } from '@/domain/analysis/valueObjects/TradeSymbol';
 
 describe('Analysis Entity', () => {
   it('requires id, symbol and createdAt', () => {
-    const full = AnalysisFactory.create({ id: 'a', symbol: 'EURUSD' });
+    const full = AnalysisFactory.create({ id: 'a', symbol: 'EURUSD', notes: 'note' });
     const newSymbol = new TradeSymbol('EURUSD');
     expect(
       () =>
@@ -35,17 +35,18 @@ describe('Analysis Entity', () => {
   });
 
   it('creates with valid data', () => {
-    const full = AnalysisFactory.create({ id: 'a', symbol: 'EURUSD' });
+    const full = AnalysisFactory.create({ id: 'a', symbol: 'EURUSD', notes: 'note' });
     const a = new Analysis(
       new AnalysisId('id1'),
       full.symbol,
       full.market,
       full.createdAt,
       full.timeframes,
-      'note'
+      full.notes
     );
     expect(a.id.value).toBe('ID1');
     expect(a.symbol.value).toBe('EURUSD');
-    expect(a.notes).toBe('note');
+    expect(a.notes).toBeTruthy();
+    expect(a.notes?.value).toBe('note');
   });
 });

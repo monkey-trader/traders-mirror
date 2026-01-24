@@ -115,7 +115,7 @@ describe('FirebaseAuthRepository (env + SDK interactions mocked)', () => {
       email: 'x@y',
       photoURL: null,
     });
-    expect(received?.id).toBe('user-xyz');
+    expect((received as any)?.id).toBe('user-xyz');
     expect(typeof unsub).toBe('function');
   });
 

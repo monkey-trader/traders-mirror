@@ -57,8 +57,7 @@ const formatLeverage = (value?: number): string => {
   return `${value.toFixed(fractionDigits)}x`;
 };
 
-const formatSize = (value?: number): string =>
-  typeof value === 'number' ? value.toString() : '-';
+const formatSize = (value?: number): string => (typeof value === 'number' ? value.toString() : '-');
 
 type MetricAccent = 'positive' | 'negative';
 
@@ -150,7 +149,13 @@ const dispatchPrefillAnalysis = (trade: TradeListItem) => {
   }
 };
 
-function AnalysisActionButton({ trade, extraClass }: { trade: TradeListItem; extraClass?: string }) {
+function AnalysisActionButton({
+  trade,
+  extraClass,
+}: {
+  trade: TradeListItem;
+  extraClass?: string;
+}) {
   const className = [btnStyles.button, extraClass || ''].filter(Boolean).join(' ');
   const hasAnalysis = Boolean(trade.analysisId);
 
@@ -178,7 +183,12 @@ function AnalysisActionButton({ trade, extraClass }: { trade: TradeListItem; ext
   };
 
   const icon = hasAnalysis ? (
-    <svg className={styles.analysisIcon} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+    <svg
+      className={styles.analysisIcon}
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+    >
       <path
         d="M9.5 14.5 8.1 15.9a3 3 0 1 1-4.2-4.2l3-3a3 3 0 0 1 4.2 0"
         fill="none"
@@ -205,7 +215,12 @@ function AnalysisActionButton({ trade, extraClass }: { trade: TradeListItem; ext
       />
     </svg>
   ) : (
-    <svg className={styles.analysisIcon} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+    <svg
+      className={styles.analysisIcon}
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+    >
       <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="currentColor" />
     </svg>
   );
@@ -304,7 +319,11 @@ export function TradeList({
 
   const startInlineEdit = (tradeId: string, field: FocusField, rawValue?: number | string) => {
     const initialValue =
-      rawValue === undefined || rawValue === null ? '' : typeof rawValue === 'number' ? `${rawValue}` : rawValue;
+      rawValue === undefined || rawValue === null
+        ? ''
+        : typeof rawValue === 'number'
+        ? `${rawValue}`
+        : rawValue;
     setEditing({ id: tradeId, field, value: initialValue });
   };
 
@@ -333,10 +352,14 @@ export function TradeList({
       interactive && editing && editing.id === trade.id && editing.field === metric.focusField;
 
     if (isEditingMetric && metric.focusField) {
-      const inputType = metric.inputType ?? (numericEditableFields.has(metric.focusField) ? 'number' : 'text');
+      const inputType =
+        metric.inputType ?? (numericEditableFields.has(metric.focusField) ? 'number' : 'text');
       const ariaLabel = `${metric.label} editor for ${trade.symbol}`;
       return (
-        <span key={`${trade.id}-${metric.label}`} className={`${className} ${styles.metricEditing}`}>
+        <span
+          key={`${trade.id}-${metric.label}`}
+          className={`${className} ${styles.metricEditing}`}
+        >
           <span className={styles.metricLabel}>{metric.label}</span>
           <input
             autoFocus
@@ -807,7 +830,11 @@ export function TradeList({
               >
                 {new Date(t.entryDate).toLocaleDateString()}
               </div>
-              <div className={styles.metrics} role="group" aria-label={`Kennzahlen für ${t.symbol}`}>
+              <div
+                className={styles.metrics}
+                role="group"
+                aria-label={`Kennzahlen für ${t.symbol}`}
+              >
                 {detailMetrics.map((metric) => {
                   const interactive = Boolean(metric.focusField);
                   const className = [
@@ -882,10 +909,7 @@ export function TradeList({
                   onClick={(event) => event.stopPropagation()}
                   onKeyDown={(event) => event.stopPropagation()}
                 >
-                  <ActionDropdown
-                    options={actionOptions}
-                    ariaLabel={`Aktionen für ${t.symbol}`}
-                  />
+                  <ActionDropdown options={actionOptions} ariaLabel={`Aktionen für ${t.symbol}`} />
                 </div>
               )}
             </div>

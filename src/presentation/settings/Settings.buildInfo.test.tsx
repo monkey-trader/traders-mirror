@@ -19,7 +19,9 @@ beforeEach(() => {
   }
   if (typeof window !== 'undefined')
     delete (window as Window & { __BUILD_INFO__?: unknown }).__BUILD_INFO__;
-  // @ts-expect-error allow reassignment for tests
+  // allow reassignment for tests
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
   global.fetch = vi.fn();
 });
 

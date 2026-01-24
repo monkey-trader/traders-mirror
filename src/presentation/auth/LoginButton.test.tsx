@@ -3,7 +3,7 @@ import { LoginButton } from './LoginButton';
 import { AuthProvider } from './AuthProvider';
 
 const mockSignIn = vi.fn();
-const mockContext = {
+const mockContext: any = {
   user: null,
   loading: false,
   signIn: mockSignIn,
@@ -15,7 +15,7 @@ const mockContext = {
 vi.mock('./AuthProvider', async (orig) => {
   const actual = await orig();
   return {
-    ...actual,
+    ...(actual as any),
     useAuth: () => mockContext,
   };
 });

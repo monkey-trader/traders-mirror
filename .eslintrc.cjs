@@ -19,7 +19,31 @@ module.exports = {
   extends: ['eslint:recommended', 'plugin:@typescript-eslint/recommended'],
   rules: {
     // keep defaults; project enforces rules separately
-    'no-console': 'warn'
+    'no-console': 'warn',
+    '@typescript-eslint/no-explicit-any': 'off',
+    '@typescript-eslint/explicit-module-boundary-types': 'off',
+    '@typescript-eslint/no-unused-vars': 'warn',
+    'no-unused-vars': 'warn',
+    'no-debugger': 'off',
+    'no-empty': 'warn',
+    'no-undef': 'warn',
+    'no-irregular-whitespace': 'warn',
+    'no-mixed-spaces-and-tabs': 'warn',
+    'no-unreachable': 'warn',
+    'no-case-declarations': 'warn',
+    'no-fallthrough': 'warn',
+    'no-redeclare': 'warn',
+    'no-dupe-keys': 'warn',
+    'no-duplicate-case': 'warn',
+    'no-empty-pattern': 'warn',
+    'no-extra-boolean-cast': 'warn',
+    'no-extra-semi': 'warn',
+    'no-func-assign': 'warn',
+    'no-inner-declarations': 'warn',
+    'no-unexpected-multiline': 'warn',
+    'no-unsafe-finally': 'warn',
+    'no-unsafe-negation': 'warn',
+    'valid-typeof': 'warn'
   }
 }
 

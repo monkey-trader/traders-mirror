@@ -1,28 +1,39 @@
 .tag {
   display: inline-flex;
   align-items: center;
-  padding: 0.35em 1.1em;
+  justify-content: center;
+  min-width: 88px;
+  height: 28px;
+  padding: 0 12px;
   border-radius: 999px;
-  border: 1.5px solid var(--border, #3b4252);
-  background: rgba(34, 193, 195, 0.08);
-  color: var(--text, #e5e9f0);
-  font-size: 0.98em;
-  font-weight: 500;
+  border: 1.2px solid var(--glass-strong, rgba(255, 255, 255, 0.06));
+  background: var(--glass);
+  color: var(--muted);
+  font-size: 0.95em;
+  font-weight: 600;
   cursor: pointer;
-  margin: 0 0.25em 0.5em 0;
-  transition: background 0.15s, border 0.15s, color 0.15s;
+  margin: 0 0.18em 0.3em 0;
+  transition: background 0.15s, color 0.15s, border 0.15s;
   user-select: none;
+  box-shadow: none;
+  outline: none;
 }
 
 .tag:focus {
-  outline: 2px solid var(--primary, #7c5cff);
+  outline: 2px solid var(--color-primary, #00bcd4);
   outline-offset: 2px;
 }
 
 .active {
-  background: linear-gradient(90deg, #7c5cff 0%, #22c1c3 100%);
-  color: #fff;
-  border-color: #7c5cff;
+  background: var(--glass);
+  color: #bfa100;
+  border: 1.2px solid #bfa100;
+  box-shadow: none;
+}
+
+.active .label {
+  padding-left: 1.6em;
+  position: relative;
 }
 
 .disabled {
@@ -32,4 +43,5 @@
 
 .label {
   white-space: nowrap;
+  padding-left: 0;
 }

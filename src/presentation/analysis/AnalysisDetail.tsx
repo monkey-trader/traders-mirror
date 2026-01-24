@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './AnalysisDetail.module.css';
 import { Button } from '@/presentation/shared/components/Button/Button';
-import { useState } from 'react';
 import { AnalysisEditor } from './AnalysisEditor';
 import type { TimeframeInput } from '@/presentation/analysis/types';
+// import { ConfluenceWizard } from '@/presentation/confluenceWizard/ConfluenceWizard';
 
 type Timeframe = 'monthly' | 'weekly' | 'daily' | '4h' | '2h' | '1h' | '15min';
 
@@ -42,11 +42,35 @@ export function AnalysisDetail({
   startEditingField,
   showSymbolTitle = true,
 }: Props) {
+  const [hasLinkedTrade, setHasLinkedTrade] = useState(false);
+  // ConfluenceWizard entfernt
+  useEffect(() => {
+    // Check for linked trade in localStorage
+    try {
+      const raw = localStorage.getItem('mt_trades_v1');
+      if (raw) {
+        const trades = JSON.parse(raw);
+        setHasLinkedTrade(
+          Array.isArray(trades) &&
+            trades.some((t) => t.analysisId === analysis.id && t.symbol === analysis.symbol)
+        );
+      } else {
+        setHasLinkedTrade(false);
+      }
+    } catch {
+      setHasLinkedTrade(false);
+    }
+  }, [analysis.id, analysis.symbol]);
   const normalizeMarket = (
     m?: 'Forex' | 'Crypto' | { value: string }
   ): 'Forex' | 'Crypto' | undefined => {
     if (!m) return undefined;
-    if (typeof m === 'object' && m && 'value' in m && typeof (m as Record<string, unknown>).value === 'string') {
+    if (
+      typeof m === 'object' &&
+      m &&
+      'value' in m &&
+      typeof (m as Record<string, unknown>).value === 'string'
+    ) {
       const v = (m as Record<string, unknown>).value as string;
       return v === 'Forex' || v === 'Crypto' ? (v as 'Forex' | 'Crypto') : undefined;
     }
@@ -66,6 +90,8 @@ export function AnalysisDetail({
   // useEffect für hasLinkedTrade entfernt
   return (
     <div className={styles.container} data-testid="analysis-detail">
+      {/* ConfluenceWizard entfernt */}
+
       <div className={styles.header}>
         {showSymbolTitle ? (
           <h2
@@ -87,13 +113,38 @@ export function AnalysisDetail({
 
       {!editing ? (
         <>
+          {hasLinkedTrade && (
+            <Button
+              type="button"
+              onClick={() => {
+                window.location.hash = '#/journal';
+                setTimeout(() => {
+                  window.dispatchEvent(new Event('hashchange'));
+                }, 10);
+              }}
+              aria-label={`Open trade for ${analysis.symbol}`}
+            >
+              Open trade for {analysis.symbol}
+            </Button>
+          )}
           <div className={styles.metaBlock}>
-            <div><strong>Market:</strong> {normalizeMarket(analysis.market) ?? '-'}</div>
-            <div><strong>Created:</strong> {analysis.createdAt ? new Date(analysis.createdAt).toLocaleString() : '-'}</div>
-            {analysis.updatedAt && <div><strong>Updated:</strong> {new Date(analysis.updatedAt).toLocaleString()}</div>}
+            <div>
+              <strong>Market:</strong> {normalizeMarket(analysis.market) ?? '-'}
+            </div>
+            <div>
+              <strong>Created:</strong>{' '}
+              {analysis.createdAt ? new Date(analysis.createdAt).toLocaleString() : '-'}
+            </div>
+            {analysis.updatedAt && (
+              <div>
+                <strong>Updated:</strong> {new Date(analysis.updatedAt).toLocaleString()}
+              </div>
+            )}
           </div>
           <div className={styles.setupsBlock}>
-            <div><strong>Setups:</strong></div>
+            <div>
+              <strong>Setups:</strong>
+            </div>
             <ul className={styles.setupsList}>
               {(analysis.setups ?? []).map((setup: AnalysisSetup, i: number) => (
                 <li key={i} className={setup.key === 'fib-level' ? styles.fibTag : undefined}>
@@ -118,7 +169,10 @@ export function AnalysisDetail({
 
           <div className={styles.timeframes}>
             {Object.values(analysis.timeframes).map((tf) => (
-              <div key={tf.timeframe} className={`${styles.tf} ${compactView ? styles.compact : ''}`}>
+              <div
+                key={tf.timeframe}
+                className={`${styles.tf} ${compactView ? styles.compact : ''}`}
+              >
                 <div className={styles.tfHeader}>
                   <strong>{tf.timeframe.toUpperCase()}</strong>
                   {tf.tradingViewLink ? (
@@ -184,7 +238,9 @@ export function AnalysisDetail({
             focusField={startEditingField ?? localFocusField}
             onSave={async (values) => {
               // map timeframes array back to record keyed by timeframe
-              const tfRecord: Record<Timeframe, TimeframeAnalysis> = (values.timeframes || []).reduce(
+              const tfRecord: Record<Timeframe, TimeframeAnalysis> = (
+                values.timeframes || []
+              ).reduce(
                 (acc: Record<string, TimeframeAnalysis>, t: TimeframeInput) => ({
                   ...acc,
                   [t.timeframe]: {
@@ -200,11 +256,16 @@ export function AnalysisDetail({
                 ...analysis,
                 symbol: values.symbol ?? analysis.symbol,
                 notes: values.notes ?? analysis.notes,
-                timeframes: Object.keys(tfRecord).length ? (tfRecord as Record<Timeframe, TimeframeAnalysis>) : analysis.timeframes,
+                timeframes: Object.keys(tfRecord).length
+                  ? (tfRecord as Record<Timeframe, TimeframeAnalysis>)
+                  : analysis.timeframes,
                 updatedAt: new Date().toISOString(),
                 market:
                   (values.market as 'Forex' | 'Crypto') ??
-                  normalizeMarket((analysis as unknown as { market?: 'Forex' | 'Crypto' | { value: string } }).market),
+                  normalizeMarket(
+                    (analysis as unknown as { market?: 'Forex' | 'Crypto' | { value: string } })
+                      .market
+                  ),
               };
               try {
                 if (onSave) await onSave(updated);

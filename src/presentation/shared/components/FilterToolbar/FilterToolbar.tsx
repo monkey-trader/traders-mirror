@@ -1,24 +1,24 @@
-import React from 'react'
-import styles from './FilterToolbar.module.css'
-import { MarketFilters } from '@/presentation/trade/components/TradeFilters/TradeFilters'
-import { Button } from '@/presentation/shared/components/Button/Button'
+import React from 'react';
+import styles from './FilterToolbar.module.css';
+import { MarketFilters } from '@/presentation/trade/components/TradeFilters/TradeFilters';
+import { Button } from '@/presentation/shared/components/Button/Button';
 
 type Props = {
-  title?: string
-  count?: number
-  countLabel?: string
-  showStatusFilters?: boolean
-  statusFilters?: React.ReactNode
-  hideMarketFilters?: boolean
-  tradeStatusFilter?: 'ALL' | 'OPEN' | 'CLOSED' | 'FILLED'
-  setTradeStatusFilter?: (s: 'ALL' | 'OPEN' | 'CLOSED' | 'FILLED') => void
-  marketFilter: 'All' | 'Crypto' | 'Forex'
-  setMarketFilter: (m: 'All' | 'Crypto' | 'Forex') => void
-  onCreate?: () => void
-  createLabel?: string
-  disableCreate?: boolean
-  compact?: boolean
-}
+  title?: string;
+  count?: number;
+  countLabel?: string;
+  showStatusFilters?: boolean;
+  statusFilters?: React.ReactNode;
+  hideMarketFilters?: boolean;
+  tradeStatusFilter?: 'ALL' | 'OPEN' | 'CLOSED' | 'FILLED';
+  setTradeStatusFilter?: (s: 'ALL' | 'OPEN' | 'CLOSED' | 'FILLED') => void;
+  marketFilter: 'All' | 'Crypto' | 'Forex';
+  setMarketFilter: (m: 'All' | 'Crypto' | 'Forex') => void;
+  onCreate?: () => void;
+  createLabel?: string;
+  disableCreate?: boolean;
+  compact?: boolean;
+};
 
 export function FilterToolbar({
   title,
@@ -40,13 +40,17 @@ export function FilterToolbar({
         <div className={styles.left}>
           <div className={styles.title}>{title}</div>
           {typeof count === 'number' ? (
-            <div className={styles.countBadge}>{count} {countLabel}</div>
+            <div className={styles.countBadge}>
+              {count} {countLabel}
+            </div>
           ) : null}
         </div>
       ) : null}
 
       <div className={styles.right}>
-        {showStatusFilters && statusFilters ? <div className={styles.statusWrap}>{statusFilters}</div> : null}
+        {showStatusFilters && statusFilters ? (
+          <div className={styles.statusWrap}>{statusFilters}</div>
+        ) : null}
 
         {!hideMarketFilters ? (
           <div className={styles.marketWrap}>
@@ -68,7 +72,7 @@ export function FilterToolbar({
         ) : null}
       </div>
     </div>
-  )
+  );
 }
 
-export default FilterToolbar
+export default FilterToolbar;

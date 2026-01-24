@@ -4,7 +4,7 @@ import { useToast } from '@/presentation/shared/components/Toast/ToastProvider';
 
 type SyncStatus = 'local' | 'online' | 'queued';
 
-type RepoSyncEventDetail = {
+export type RepoSyncEventDetail = {
   feature: 'trade' | 'analysis';
   status: SyncStatus;
   queuedCount?: number;

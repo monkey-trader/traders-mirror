@@ -10,6 +10,7 @@ import type { TradeRepository } from '@/domain/trade/interfaces/TradeRepository'
 import type { Trade } from '@/domain/trade/entities/Trade';
 import { TradeId } from '@/domain/trade/valueObjects/TradeId';
 import { AnalysisId } from '@/domain/trade/valueObjects/AnalysisId';
+import type { ConfluenceOption } from '@/presentation/trade/components/ConfluenceModal';
 
 export type NewTradeFormState = {
   symbol: string;
@@ -29,6 +30,7 @@ export type NewTradeFormState = {
   tp4?: number;
   margin?: number;
   leverage?: number;
+  confluence?: ConfluenceOption[];
 };
 
 export function useNewTradeForm(options: {
@@ -60,6 +62,7 @@ export function useNewTradeForm(options: {
     market: 'Crypto',
     notes: '',
     analysisId: undefined,
+    confluence: [],
   });
 
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
@@ -98,6 +101,7 @@ export function useNewTradeForm(options: {
       leverage: undefined,
       margin: undefined,
       analysisId: undefined,
+      confluence: [],
     });
     setFormErrors({});
     setTouched({});
@@ -159,6 +163,7 @@ export function useNewTradeForm(options: {
         status: form.status,
         pnl: 0,
         ...(form.analysisId ? { analysisId: new AnalysisId(form.analysisId).value } : {}),
+        ...(form.confluence && form.confluence.length > 0 ? { confluence: form.confluence } : {}),
       } as TradeRow;
 
       try {

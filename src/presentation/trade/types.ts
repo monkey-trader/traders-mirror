@@ -25,4 +25,5 @@ export type TradeRow = {
   margin?: number;
   leverage?: number;
   userId?: string;
+  confluence?: { timeframe?: string; type: string }[];
 };

@@ -11,6 +11,7 @@ const tradeListMock = vi.fn(
     onSelect: (id: string) => void;
     onInlineUpdate?: (id: string, field: string, value: number | string | undefined) => void;
     onDelete?: (id: string) => void;
+    compactView?: boolean;
   }) => {
     const { trades, onSelect, onInlineUpdate, onDelete } = props;
     return (

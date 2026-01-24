@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { ProtectedRoute } from './ProtectedRoute';
 import { AuthProvider } from './AuthProvider';
 
-const mockContext = {
+const mockContext: any = {
   user: null,
   loading: false,
   signIn: vi.fn(),
@@ -12,7 +12,7 @@ const mockContext = {
 vi.mock('./AuthProvider', async (orig) => {
   const actual = await orig();
   return {
-    ...actual,
+    ...(actual as any),
     useAuth: () => mockContext,
   };
 });

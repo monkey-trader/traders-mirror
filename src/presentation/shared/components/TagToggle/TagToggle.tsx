@@ -18,7 +18,9 @@ export function TagToggle({ label, checked, onChange, disabled, className }: Tag
         checked ? styles.active : '',
         disabled ? styles.disabled : '',
         className ?? '',
-      ].filter(Boolean).join(' ')}
+      ]
+        .filter(Boolean)
+        .join(' ')}
       aria-pressed={checked}
       aria-label={label}
       disabled={disabled}

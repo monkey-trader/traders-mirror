@@ -1,11 +1,11 @@
 // Jest compatibility shim for tests that import from 'vitest'.
 // Maps commonly used Vitest APIs to Jest equivalents so CRA's Jest runner can execute them.
 
-export const describe = global.describe;
-export const it = global.it;
-export const expect = global.expect;
-export const beforeEach = global.beforeEach;
-export const afterEach = global.afterEach;
+export const describe = (global as any).describe;
+export const it = (global as any).it;
+export const expect = (global as any).expect;
+export const beforeEach = (global as any).beforeEach;
+export const afterEach = (global as any).afterEach;
 
 // Provide a minimal 'vi' with the subset of APIs used in this repo's tests.
 // Uses available Jest globals when present; otherwise falls back to no-ops.
