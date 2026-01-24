@@ -41,7 +41,9 @@ describe('Analysis edit -> save flow', () => {
     const listAllSpy = vi
       .spyOn(LocalStorageAnalysisRepository.prototype, 'listAll')
       .mockResolvedValue([sample as unknown as AnalysisDTO]);
-    vi.spyOn(LocalStorageAnalysisRepository.prototype, 'getById').mockResolvedValue(sample as unknown as AnalysisDTO);
+    vi.spyOn(LocalStorageAnalysisRepository.prototype, 'getById').mockResolvedValue(
+      sample as unknown as AnalysisDTO
+    );
 
     const saveSpy = vi.spyOn(LocalStorageAnalysisRepository.prototype, 'save').mockResolvedValue();
 

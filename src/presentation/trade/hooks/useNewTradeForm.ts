@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { useCallback, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { EntryDate } from '@/domain/trade/valueObjects/EntryDate';
 import { TradeFactory } from '@/domain/trade/factories/TradeFactory';
 import { validateNewTrade } from '@/presentation/trade/validation';

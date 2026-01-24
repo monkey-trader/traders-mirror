@@ -39,19 +39,7 @@ export type ConfluenceModalProps = {
   onConfirm?: () => void;
 };
 
-const EMA_OPTIONS = ['EMA-50 Weekly', 'EMA-50 Daily', 'EMA-50 4H', 'EMA-200'];
-const DAILY_OPTIONS = ['50% Wicks im Daily'];
-const CONFLUENCE_OPTIONS = [
-  'Doppelter Vorteil',
-  'Fair Value Gaps',
-  'CME-Close',
-  'Liquidität cluster',
-  'Einzelne Liqui Level',
-];
-
-function toggle(arr: string[], value: string) {
-  return arr.includes(value) ? arr.filter((v) => v !== value) : [...arr, value];
-}
+// Note: Keep option lists next to the UI that uses them (TIMEFRAME_OPTIONS, WEITERE_CONFLUENCE).
 
 export const ConfluenceModal = ({
   open,

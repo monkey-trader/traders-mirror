@@ -13,7 +13,11 @@ module.exports = {
     browser: true,
     node: true,
     es2021: true,
-    jest: true
+    jest: true,
+  },
+  globals: {
+    // vitest global used across unit tests
+    vi: 'readonly',
   },
   plugins: ['@typescript-eslint'],
   extends: ['eslint:recommended', 'plugin:@typescript-eslint/recommended'],
@@ -56,6 +60,13 @@ module.exports.overrides = [
     parserOptions: {
       project: './tsconfig.test.json',
       createDefaultProgram: true,
+    },
+    rules: {
+      // Test files use the test runner globals and TypeScript types; avoid false-positive
+      // `no-undef` warnings coming from type-only symbols like `NodeJS` or `vi`.
+      'no-undef': 'off',
+      '@typescript-eslint/no-unused-vars': ['warn', { 'argsIgnorePattern': '^_' }],
+      'no-unused-vars': ['warn', { 'argsIgnorePattern': '^_' }],
     },
   },
   // Disable `no-require-imports` for the shared id generator because it
