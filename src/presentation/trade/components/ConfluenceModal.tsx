@@ -7,12 +7,12 @@ export type ConfluenceOption = {
   type: typeof ALLOWED_CONFLUENCES[number] | typeof ALLOWED_EXTRA_CONFLUENCES[number];
 };
 
-const TIMEFRAMES = ALLOWED_TIMEFRAMES.slice() as readonly string[];
-const TYPES = ALLOWED_CONFLUENCES.slice() as readonly string[];
+const TIMEFRAMES = ALLOWED_TIMEFRAMES.slice() as readonly (typeof ALLOWED_TIMEFRAMES)[number][];
+const TYPES = ALLOWED_CONFLUENCES.slice() as readonly (typeof ALLOWED_CONFLUENCES)[number][];
 const WEITERE_CONFLUENCE: ConfluenceOption[] = ALLOWED_EXTRA_CONFLUENCES.map((t) => ({ type: t }));
 
 // Alle Optionen für die Zeitbereiche generieren
-const TIMEFRAME_OPTIONS: { [key: string]: ConfluenceOption[] } = {};
+const TIMEFRAME_OPTIONS: Partial<Record<(typeof ALLOWED_TIMEFRAMES)[number], ConfluenceOption[]>> = {};
 for (const tf of TIMEFRAMES) {
   TIMEFRAME_OPTIONS[tf] = TYPES.map((type) => ({ timeframe: tf, type }));
 }
@@ -65,7 +65,7 @@ export const ConfluenceModal = ({
           <div className={styles.section} key={tf}>
             <div className={styles.title}>{tf}</div>
             <div className={styles.chipRow}>
-              {TIMEFRAME_OPTIONS[tf].map((opt) => (
+              {(TIMEFRAME_OPTIONS[tf] ?? []).map((opt) => (
                 <Switch
                   key={opt.type + '-' + tf}
                   label={opt.type}
