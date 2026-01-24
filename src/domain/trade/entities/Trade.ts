@@ -35,6 +35,7 @@ export class Trade {
   public readonly margin?: Margin;
   public readonly analysisId?: AnalysisId; // link to originating Analysis (if any)
   public readonly userId?: string;
+  public readonly confluence?: { timeframe?: string; type: string }[];
 
   constructor(
     id: TradeId,
@@ -59,7 +60,8 @@ export class Trade {
     leverage?: Leverage,
     margin?: Margin,
     analysisId?: AnalysisId,
-    userId?: string
+    userId?: string,
+    confluence?: { timeframe?: string; type: string }[]
   ) {
     this.id = id;
     this.symbol = symbol;
@@ -84,5 +86,6 @@ export class Trade {
     this.margin = margin;
     this.analysisId = analysisId;
     this.userId = userId;
+    this.confluence = confluence;
   }
 }

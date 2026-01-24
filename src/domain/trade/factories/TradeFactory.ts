@@ -36,6 +36,7 @@ export type TradeInput = {
   leverage?: number;
   analysisId?: string;
   userId?: string;
+  confluence?: { timeframe?: string; type: string }[];
 };
 
 export class TradeFactory {
@@ -69,7 +70,8 @@ export class TradeFactory {
       typeof input.leverage === 'number' ? new Leverage(input.leverage) : undefined,
       typeof input.margin === 'number' ? new Margin(input.margin) : undefined,
       input.analysisId ? new AnalysisId(input.analysisId) : undefined,
-      input.userId
+      input.userId,
+      input.confluence
     );
   }
 
@@ -102,6 +104,7 @@ export class TradeFactory {
       tp4IsHit: trade.tp4IsHit,
       userId: trade.userId,
       analysisId: trade.analysisId?.value,
+      confluence: trade.confluence,
     };
   }
 }
