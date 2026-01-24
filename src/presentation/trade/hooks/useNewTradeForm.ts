@@ -23,6 +23,7 @@ export type NewTradeFormState = {
   market: MarketValue | '';
   notes?: string;
   analysisId?: string | undefined;
+  fibLevel?: string | null;
   sl?: number;
   tp1?: number;
   tp2?: number;
@@ -62,6 +63,7 @@ export function useNewTradeForm(options: {
     market: 'Crypto',
     notes: '',
     analysisId: undefined,
+    fibLevel: undefined,
     confluence: [],
   });
 
@@ -101,6 +103,7 @@ export function useNewTradeForm(options: {
       leverage: undefined,
       margin: undefined,
       analysisId: undefined,
+      fibLevel: undefined,
       confluence: [],
     });
     setFormErrors({});
@@ -163,6 +166,7 @@ export function useNewTradeForm(options: {
         status: form.status,
         pnl: 0,
         ...(form.analysisId ? { analysisId: new AnalysisId(form.analysisId).value } : {}),
+        ...(form.fibLevel ? { entry: form.fibLevel } : {}),
         ...(form.confluence && form.confluence.length > 0 ? { confluence: form.confluence } : {}),
       } as TradeRow;
 

@@ -2,6 +2,7 @@ import React from 'react';
 import styles from './FibLevelModal.module.css';
 import { Button } from '@/presentation/shared/components/Button/Button';
 import { TagToggle } from '@/presentation/shared/components/TagToggle/TagToggle';
+import { ALLOWED_FIB_LEVELS } from '@/domain/trade/valueObjects/FibLevel';
 
 export type FibLevelModalProps = {
   open: boolean;
@@ -11,7 +12,7 @@ export type FibLevelModalProps = {
   onConfirm?: () => void;
 };
 
-const FIB_LEVELS = ['Fib 0.5', 'Fib 0.559', 'Fib 0.618', 'Fib 0.667', 'Fib 0.786'];
+const FIB_LEVELS = ALLOWED_FIB_LEVELS.slice() as readonly string[];
 
 export function FibLevelModal({ open, selectedFibLevel, onChange, onClose }: FibLevelModalProps) {
   const [internalSelection, setInternalSelection] = React.useState<string | null>(selectedFibLevel);

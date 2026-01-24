@@ -1,29 +1,18 @@
 import React from 'react';
+import { ALLOWED_TIMEFRAMES, ALLOWED_CONFLUENCES, ALLOWED_EXTRA_CONFLUENCES } from '@/domain/trade/valueObjects/Confluence';
 
 // Neue Typen für strukturierte Auswahl
 export type ConfluenceOption = {
-  timeframe?: 'Monthly' | 'Weekly' | 'Daily' | '4H' | '2H' | '1H';
-  type:
-    | '50% Wick'
-    | '50 EMA'
-    | '200 EMA'
-    | 'FVG'
-    | 'Liquidität cluster'
-    | 'CME Close'
-    | 'Doppelter Vorteil'
-    | 'Einzelne Liq. Level';
+  timeframe?: typeof ALLOWED_TIMEFRAMES[number];
+  type: typeof ALLOWED_CONFLUENCES[number] | typeof ALLOWED_EXTRA_CONFLUENCES[number];
 };
 
-const TIMEFRAMES = ['Monthly', 'Weekly', 'Daily', '4H', '2H', '1H'] as const;
-const TYPES = ['50% Wick', '50 EMA', '200 EMA', 'FVG', 'Liquidität cluster'] as const;
-const WEITERE_CONFLUENCE: ConfluenceOption[] = [
-  { type: 'CME Close' },
-  { type: 'Doppelter Vorteil' },
-  { type: 'Einzelne Liq. Level' },
-];
+const TIMEFRAMES = ALLOWED_TIMEFRAMES.slice() as readonly (typeof ALLOWED_TIMEFRAMES)[number][];
+const TYPES = ALLOWED_CONFLUENCES.slice() as readonly (typeof ALLOWED_CONFLUENCES)[number][];
+const WEITERE_CONFLUENCE: ConfluenceOption[] = ALLOWED_EXTRA_CONFLUENCES.map((t) => ({ type: t }));
 
 // Alle Optionen für die Zeitbereiche generieren
-const TIMEFRAME_OPTIONS: { [key: string]: ConfluenceOption[] } = {};
+const TIMEFRAME_OPTIONS: Partial<Record<(typeof ALLOWED_TIMEFRAMES)[number], ConfluenceOption[]>> = {};
 for (const tf of TIMEFRAMES) {
   TIMEFRAME_OPTIONS[tf] = TYPES.map((type) => ({ timeframe: tf, type }));
 }
@@ -76,7 +65,7 @@ export const ConfluenceModal = ({
           <div className={styles.section} key={tf}>
             <div className={styles.title}>{tf}</div>
             <div className={styles.chipRow}>
-              {TIMEFRAME_OPTIONS[tf].map((opt) => (
+              {(TIMEFRAME_OPTIONS[tf] ?? []).map((opt) => (
                 <Switch
                   key={opt.type + '-' + tf}
                   label={opt.type}

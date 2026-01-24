@@ -11,11 +11,14 @@ import { TradeId } from '../valueObjects/TradeId';
 import { AnalysisId } from '../valueObjects/AnalysisId';
 import { Status } from '../valueObjects/Status';
 import { Notes } from '../valueObjects/Notes';
+import { FibLevel } from '../valueObjects/FibLevel';
+import { Confluence, ConfluencePrimitive } from '../valueObjects/Confluence';
 
 export type TradeInput = {
   id: string;
   symbol: string;
   entryDate?: string;
+  entry?: string;
   size: number;
   price: number;
   side: string;
@@ -71,7 +74,11 @@ export class TradeFactory {
       typeof input.margin === 'number' ? new Margin(input.margin) : undefined,
       input.analysisId ? new AnalysisId(input.analysisId) : undefined,
       input.userId,
-      input.confluence
+        input.entry ? new FibLevel(input.entry) : undefined,
+        // convert primitives to VO instances
+        Array.isArray(input.confluence)
+          ? input.confluence.map((c: ConfluencePrimitive) => Confluence.fromPrimitive(c))
+          : undefined
     );
   }
 
@@ -104,7 +111,8 @@ export class TradeFactory {
       tp4IsHit: trade.tp4IsHit,
       userId: trade.userId,
       analysisId: trade.analysisId?.value,
-      confluence: trade.confluence,
+      confluence: trade.confluence ? trade.confluence.map((c) => c.toPrimitive()) : undefined,
+      entry: trade.entry?.value,
     };
   }
 }

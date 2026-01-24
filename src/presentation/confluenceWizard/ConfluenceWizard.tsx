@@ -2,18 +2,11 @@ import React, { useState } from 'react';
 import styles from './ConfluenceWizard.module.css';
 import { Card } from '@/presentation/shared/components/Card/Card';
 import { Button } from '@/presentation/shared/components/Button/Button';
+import { ALLOWED_TIMEFRAMES, ALLOWED_CONFLUENCES, ALLOWED_EXTRA_CONFLUENCES } from '@/domain/trade/valueObjects/Confluence';
 
-const TIMEFRAMES = ['Monthly', 'Weekly', 'Daily', '4H', '2H', '1H'];
-const CONFLUENCE_OPTIONS = [
-  '50% Wick',
-  '50 EMA',
-  '200 EMA',
-  'FVG',
-  'Liquidität cluster',
-  'Bärische Divergenzen',
-  'Bullische Divergenzen',
-];
-const EXTRA_OPTIONS = ['CME Close', 'Doppelter Vorteil', 'Einzelne Liq. Level'];
+const TIMEFRAMES = ALLOWED_TIMEFRAMES.slice();
+const CONFLUENCE_OPTIONS = ALLOWED_CONFLUENCES.slice() as readonly string[];
+const EXTRA_OPTIONS = ALLOWED_EXTRA_CONFLUENCES.slice() as readonly string[];
 
 type TFSelection = { confluence: Record<string, boolean>; extra: Record<string, boolean> };
 
