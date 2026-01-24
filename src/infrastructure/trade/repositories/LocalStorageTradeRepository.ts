@@ -17,6 +17,7 @@ export type RepoTrade = {
   pnl: number;
   notes?: string;
   entry?: string;
+  confluence?: { timeframe?: string; type: string }[];
   sl?: number;
   slIsBE?: boolean;
   tp1?: number;
@@ -407,6 +408,7 @@ export class LocalStorageTradeRepository implements TradeRepository {
           entryDateVO && typeof entryDateVO === 'object' && 'value' in entryDateVO
             ? String((entryDateVO as Record<string, unknown>).value)
             : String(entryDateVO ?? new Date().toISOString()),
+        confluence: (o.confluence as { timeframe?: string; type: string }[] | undefined) ?? undefined,
         size:
           this.isObject(o.size) && 'value' in (o.size as Record<string, unknown>)
             ? Number((o.size as Record<string, unknown>).value)
@@ -447,6 +449,7 @@ export class LocalStorageTradeRepository implements TradeRepository {
         market: (o.market as RepoTrade['market']) ?? 'All',
         symbol: String(o.symbol),
         entryDate: String(o.entryDate),
+        confluence: (o.confluence as { timeframe?: string; type: string }[] | undefined) ?? undefined,
         size: Number(o.size as number),
         price: Number(o.price as number),
         side: (o.side as RepoTrade['side']) ?? 'LONG',

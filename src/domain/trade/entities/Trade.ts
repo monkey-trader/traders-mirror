@@ -10,6 +10,8 @@ import { TradeId } from '../valueObjects/TradeId';
 import { AnalysisId } from '../valueObjects/AnalysisId';
 import { Status } from '../valueObjects/Status';
 import { Notes } from '../valueObjects/Notes';
+import { FibLevel } from '../valueObjects/FibLevel';
+import { Confluence } from '../valueObjects/Confluence';
 
 export class Trade {
   public readonly id: TradeId;
@@ -35,7 +37,8 @@ export class Trade {
   public readonly margin?: Margin;
   public readonly analysisId?: AnalysisId; // link to originating Analysis (if any)
   public readonly userId?: string;
-  public readonly confluence?: { timeframe?: string; type: string }[];
+  public readonly entry?: FibLevel;
+  public readonly confluence?: Confluence[];
 
   constructor(
     id: TradeId,
@@ -61,7 +64,8 @@ export class Trade {
     margin?: Margin,
     analysisId?: AnalysisId,
     userId?: string,
-    confluence?: { timeframe?: string; type: string }[]
+    entry?: FibLevel,
+    confluence?: Confluence[]
   ) {
     this.id = id;
     this.symbol = symbol;
@@ -86,6 +90,7 @@ export class Trade {
     this.margin = margin;
     this.analysisId = analysisId;
     this.userId = userId;
+    this.entry = entry;
     this.confluence = confluence;
   }
 }
