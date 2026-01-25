@@ -7,7 +7,7 @@ import { FirebaseAnalysisRepository } from '@/infrastructure/analysis/repositori
 import LocalStorageTradeRepository from '@/infrastructure/trade/repositories/LocalStorageTradeRepository';
 import { TradeFactory } from '@/domain/trade/factories/TradeFactory';
 import { ensureFirebase, getCurrentUserId } from '@/infrastructure/firebase/client';
-import { collection, onSnapshot, query } from 'firebase/firestore';
+import { collection, onSnapshot, query, where, getDocs, updateDoc, deleteField } from 'firebase/firestore';
 
 type OutboxItem = { op: 'save'; dto: AnalysisDTO } | { op: 'delete'; id: string };
 
@@ -297,7 +297,8 @@ export class HybridAnalysisRepository implements AnalysisRepository {
       const trades = await tradeRepo.getAll();
       for (const t of trades) {
         try {
-          if (t.analysisId && t.analysisId.value === id) {
+          // compare normalized AnalysisId values (AnalysisId stores uppercase trimmed value)
+          if (t.analysisId && t.analysisId.value === String(id).trim().toUpperCase()) {
             // create a new Trade instance with analysisId cleared and persist
             const dto = TradeFactory.toDTO(t);
             dto.analysisId = undefined;
@@ -315,6 +316,79 @@ export class HybridAnalysisRepository implements AnalysisRepository {
       }
     } catch {
       /* ignore trade cleanup errors */
+    }
+    // If we have a remote configured (Firebase), also clear analysisId on remote trade docs
+    try {
+      if (this.remote) {
+        try {
+          const { db } = ensureFirebase();
+          const uid = getCurrentUserId();
+          if (uid) {
+            const tradesCol = collection(db, 'users', uid, 'trades');
+            const q = query(tradesCol, where('analysisId', '==', id));
+            const snap = await getDocs(q as any);
+            for (const d of snap.docs) {
+              try {
+                await updateDoc(d.ref, { analysisId: deleteField() });
+              } catch {
+                /* ignore per-doc update errors */
+              }
+            }
+            try {
+              globalThis.dispatchEvent(new CustomEvent('trades-updated'));
+            } catch {
+              /* ignore */
+            }
+          }
+        } catch {
+          /* ignore firebase errors */
+        }
+      }
+    } catch {
+      /* ignore */
+    }
+    // As a safety-net: directly clean any lingering analysisId fields in localStorage
+    try {
+      const key = 'mt_trades_v1';
+      const raw = typeof window !== 'undefined' ? window.localStorage.getItem(key) : null;
+      if (raw) {
+        try {
+          const parsed = JSON.parse(raw) as Array<Record<string, unknown>>;
+          const normalizedId = String(id).trim().toUpperCase();
+          let changed = false;
+          const cleaned = parsed.map((item) => {
+            if (item && typeof item === 'object' && 'analysisId' in item && item.analysisId) {
+              try {
+                if (String(item.analysisId).trim().toUpperCase() === normalizedId) {
+                  const copy = { ...item };
+                  delete copy.analysisId;
+                  changed = true;
+                  return copy;
+                }
+              } catch {
+                /* ignore per-item parse errors */
+              }
+            }
+            return item;
+          });
+          if (changed) {
+            try {
+              window.localStorage.setItem(key, JSON.stringify(cleaned));
+              try {
+                globalThis.dispatchEvent(new CustomEvent('trades-updated'));
+              } catch {
+                /* ignore */
+              }
+            } catch {
+              /* ignore persistence errors */
+            }
+          }
+        } catch {
+          /* ignore JSON parse errors */
+        }
+      }
+    } catch {
+      /* ignore safety-net errors */
     }
     if (this.remote) {
       void this.trySync({ op: 'delete', id });

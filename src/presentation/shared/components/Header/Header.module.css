@@ -51,8 +51,8 @@
   cursor: pointer;
 }
 .login {
-  background: linear-gradient(180deg, #ffd27a 0%, #ffb84e 100%);
-  color: #1a1400;
+  background: linear-gradient(180deg, var(--color-primary) 0%, var(--color-primary) 100%);
+  color: var(--text);
 }
 .logout {
   background: linear-gradient(180deg, #ff7a7a 0%, #ff4e4e 100%);

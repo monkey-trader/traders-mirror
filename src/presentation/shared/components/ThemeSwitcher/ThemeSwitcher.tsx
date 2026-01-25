@@ -16,14 +16,14 @@ export type ThemeName = (typeof THEMES)[number];
 
 const SWATCH: Record<ThemeName, string> = {
   nightscope: 'linear-gradient(90deg,#58d68d,#00bcd4)',
-  warmledger: 'linear-gradient(90deg,#f7b267,#f26d3d)',
+  warmledger: 'linear-gradient(90deg, var(--color-primary), var(--color-primary))',
   datagrid: 'linear-gradient(90deg,#4fb3ff,#2b8bff)',
-  solarized: 'linear-gradient(90deg,#2aa198,#b58900)',
+  solarized: 'linear-gradient(90deg,#2aa198, var(--color-primary))',
   neon: 'linear-gradient(90deg,#ff2dd4,#00ffd5)',
   forest: 'linear-gradient(90deg,#79c267,#2e8b57)',
-  sunrise: 'linear-gradient(90deg,#ff7a59,#ffd166)',
+  sunrise: 'linear-gradient(90deg,#ff7a59, var(--color-primary))',
   mono: 'linear-gradient(90deg,#cfcfcf,#9a9a9a)',
-  aurora: 'linear-gradient(90deg,#8b5cf6,#3de7c9,#ffd27a)',
+  aurora: 'linear-gradient(90deg,#8b5cf6,#3de7c9, var(--color-primary))',
 };
 
 export function ThemeSwitcher() {

@@ -19,15 +19,15 @@
   outline: none;
 }
 
-.tag:focus {
+.tag:focus:not(.active) {
   outline: 2px solid var(--color-primary, #00bcd4);
   outline-offset: 2px;
 }
 
 .active {
   background: var(--glass);
-  color: #bfa100;
-  border: 1.2px solid #bfa100;
+  color: var(--color-primary);
+  border: 1.2px solid var(--color-primary);
   box-shadow: none;
 }
 
