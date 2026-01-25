@@ -39,6 +39,7 @@ export class Trade {
   public readonly userId?: string;
   public readonly entry?: FibLevel;
   public readonly confluence?: Confluence[];
+  public readonly isShortTerm?: boolean;
 
   constructor(
     id: TradeId,
@@ -65,7 +66,8 @@ export class Trade {
     analysisId?: AnalysisId,
     userId?: string,
     entry?: FibLevel,
-    confluence?: Confluence[]
+    confluence?: Confluence[],
+    isShortTerm?: boolean
   ) {
     this.id = id;
     this.symbol = symbol;
@@ -92,5 +94,6 @@ export class Trade {
     this.userId = userId;
     this.entry = entry;
     this.confluence = confluence;
+    this.isShortTerm = isShortTerm;
   }
 }

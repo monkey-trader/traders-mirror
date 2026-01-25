@@ -61,3 +61,16 @@
     padding: 0.2em 0.7em;
   }
 }
+
+/* compact variant used by NewTradeForm to make the buttons visually smaller */
+.compact .modalBtn {
+  padding: 4px 12px;
+  font-size: 0.9em;
+  border-radius: 10px;
+}
+
+.compact .chip,
+.compact .chipSelected {
+  font-size: 0.95em;
+  padding: 4px 12px;
+}

@@ -31,6 +31,7 @@ export type RepoTrade = {
   leverage?: number;
   analysisId?: string;
   userId: string;
+  isShortTerm?: boolean;
 };
 
 function isObject(value: unknown): value is Record<string, unknown> {
@@ -79,6 +80,7 @@ function toRepoTrade(obj: unknown, userId: string): RepoTrade {
       notes: o.notes as string | undefined,
       entry: o.entry as string | undefined,
       sl: typeof o.sl === 'number' ? (o.sl as number) : undefined,
+      isShortTerm: typeof o.isShortTerm === 'boolean' ? (o.isShortTerm as boolean) : undefined,
       slIsBE: typeof o.slIsBE === 'boolean' ? (o.slIsBE as boolean) : undefined,
       tp1: typeof o.tp1 === 'number' ? (o.tp1 as number) : undefined,
       tp2: typeof o.tp2 === 'number' ? (o.tp2 as number) : undefined,
@@ -111,6 +113,7 @@ function toRepoTrade(obj: unknown, userId: string): RepoTrade {
       notes: o.notes as string | undefined,
       entry: o.entry as string | undefined,
       sl: typeof o.sl === 'number' ? (o.sl as number) : undefined,
+      isShortTerm: typeof o.isShortTerm === 'boolean' ? (o.isShortTerm as boolean) : undefined,
       slIsBE: typeof o.slIsBE === 'boolean' ? (o.slIsBE as boolean) : undefined,
       tp1: typeof o.tp1 === 'number' ? (o.tp1 as number) : undefined,
       tp2: typeof o.tp2 === 'number' ? (o.tp2 as number) : undefined,
@@ -167,6 +170,7 @@ export class FirebaseTradeRepository implements TradeRepository {
     return inputs.map((rt) =>
       TradeFactory.create({
         id: rt.id,
+            isShortTerm: rt.isShortTerm,
         symbol: rt.symbol,
         confluence: rt.confluence,
         entryDate: rt.entryDate,

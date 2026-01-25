@@ -16,6 +16,7 @@ import { Confluence, ConfluencePrimitive } from '../valueObjects/Confluence';
 
 export type TradeInput = {
   id: string;
+  isShortTerm?: boolean;
   symbol: string;
   entryDate?: string;
   entry?: string;
@@ -78,13 +79,16 @@ export class TradeFactory {
         // convert primitives to VO instances
         Array.isArray(input.confluence)
           ? input.confluence.map((c: ConfluencePrimitive) => Confluence.fromPrimitive(c))
-          : undefined
+          : undefined,
+        // domain flag indicating short-term trade
+        input.isShortTerm === true ? true : undefined
     );
   }
 
   static toDTO(trade: Trade): TradeInput {
     return {
       id: trade.id.value,
+      isShortTerm: trade.isShortTerm ?? false,
       symbol: trade.symbol.value,
       // For presentation (inputs) provide a value suitable for <input type="datetime-local">
       entryDate: EntryDate.toInputValue(trade.entryDate.value),

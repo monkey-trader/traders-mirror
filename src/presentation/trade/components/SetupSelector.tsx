@@ -8,12 +8,14 @@ export type SetupSelectorProps = {
   selectedFibLevel: string | null;
   selectedConfluence: ConfluenceOption[];
   onChange: (fibLevel: string | null, confluence: ConfluenceOption[]) => void;
+  compact?: boolean;
 };
 
 export function SetupSelector({
   selectedFibLevel,
   selectedConfluence,
   onChange,
+  compact,
 }: SetupSelectorProps) {
   const [fibModalOpen, setFibModalOpen] = useState(false);
   const [confluenceModalOpen, setConfluenceModalOpen] = useState(false);
@@ -27,7 +29,7 @@ export function SetupSelector({
   }
 
   return (
-    <div className={styles.root}>
+    <div className={`${styles.root} ${compact ? styles.compact : ''}`}>
       <div className={styles.section}>
         <button type="button" className={styles.modalBtn} onClick={() => setFibModalOpen(true)}>
           <span role="img" aria-label="SK Entry" style={{ marginRight: 8 }}>

@@ -113,6 +113,38 @@
   color: var(--fg, #e6eef0);
 }
 
+/* Short-term switch row under Market select */
+.shortTermRow {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.shortTermControl {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.shortTermLabel {
+  font-size: 12px;
+  color: var(--muted, #9aa3a8);
+  font-weight: 600;
+}
+
+.shortTermHelper {
+  font-size: 11px;
+  color: var(--muted, #9aa3a8);
+}
+
+/* visually reduce the switch size without changing the Switch component */
+.switchWrapper {
+  display: inline-flex;
+  transform: scale(0.85);
+  transform-origin: left center;
+}
+
 @media (max-width: 700px) {
   .newTradeGrid {
     grid-template-columns: 1fr;

@@ -11,6 +11,7 @@ import { StatusSelect } from '@/presentation/shared/components/StatusSelect/Stat
 import styles from './NewTradeForm.module.css';
 import { SetupSelector } from '../SetupSelector';
 import type { ConfluenceOption } from '../ConfluenceModal';
+import { Switch } from '@/presentation/shared/components/Switch/Switch';
 
 export type NewTradeFormState = {
   symbol: string;
@@ -28,6 +29,7 @@ export type NewTradeFormState = {
   leverage?: number;
   margin?: number;
   market?: MarketValue;
+  isShortTerm?: boolean;
   analysisId?: string; // optional originating analysis id
   fibLevel?: string | null;
   confluence?: ConfluenceOption[];
@@ -207,6 +209,20 @@ export function NewTradeForm({
                     : undefined
                 }
               />
+              <div className={styles.shortTermRow}>
+                <div className={styles.shortTermControl}>
+                  <div className={styles.switchWrapper}>
+                    <Switch
+                      id="isShortTerm"
+                      checked={Boolean(form.isShortTerm)}
+                      onChange={(v) => onChangeForm({ isShortTerm: v })}
+                      ariaLabel="Short-term trade"
+                    />
+                  </div>
+                  <div className={styles.shortTermLabel}>Short-term</div>
+                </div>
+                <div className={styles.shortTermHelper}>no compounding</div>
+              </div>
               {formErrors.market && (touched.market || formSubmitted) && (
                 <div id="market-error" className={styles.fieldError}>
                   {formErrors.market}
@@ -254,6 +270,7 @@ export function NewTradeForm({
                 onChange={(fibLevel: string | null, confluence: ConfluenceOption[]) => {
                   onChangeForm({ fibLevel, confluence });
                 }}
+                compact
               />
             </div>
 

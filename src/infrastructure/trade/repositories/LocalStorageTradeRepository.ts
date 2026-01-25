@@ -32,6 +32,7 @@ export type RepoTrade = {
   leverage?: number;
   analysisId?: string; // optional link to analysis
   userId?: string;
+  isShortTerm?: boolean;
 };
 
 const STORAGE_KEY = 'mt_trades_v1';
@@ -426,6 +427,7 @@ export class LocalStorageTradeRepository implements TradeRepository {
         notes: o.notes as string | undefined,
         entry: o.entry as string | undefined,
         sl: typeof o.sl === 'number' ? (o.sl as number) : undefined,
+        isShortTerm: typeof o.isShortTerm === 'boolean' ? (o.isShortTerm as boolean) : undefined,
         slIsBE: typeof o.slIsBE === 'boolean' ? (o.slIsBE as boolean) : undefined,
         tp1: typeof o.tp1 === 'number' ? (o.tp1 as number) : undefined,
         tp2: typeof o.tp2 === 'number' ? (o.tp2 as number) : undefined,
@@ -458,6 +460,7 @@ export class LocalStorageTradeRepository implements TradeRepository {
         notes: o.notes as string | undefined,
         entry: o.entry as string | undefined,
         sl: typeof o.sl === 'number' ? (o.sl as number) : undefined,
+        isShortTerm: typeof o.isShortTerm === 'boolean' ? (o.isShortTerm as boolean) : undefined,
         slIsBE: typeof o.slIsBE === 'boolean' ? (o.slIsBE as boolean) : undefined,
         tp1: typeof o.tp1 === 'number' ? (o.tp1 as number) : undefined,
         tp2: typeof o.tp2 === 'number' ? (o.tp2 as number) : undefined,
@@ -516,6 +519,7 @@ export class LocalStorageTradeRepository implements TradeRepository {
     return this.trades.map((rt) => {
       const input = {
         id: rt.id,
+        isShortTerm: rt.isShortTerm,
         symbol: rt.symbol,
         entryDate: rt.entryDate,
         size: rt.size,
