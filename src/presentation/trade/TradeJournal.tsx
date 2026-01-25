@@ -27,6 +27,7 @@ import MobileNewTrade from './components/MobileNewTrade/MobileNewTrade';
 import { loadSettings } from '@/presentation/settings/settingsStorage';
 import MockLoaderModal from './components/MockLoaderModal/MockLoaderModal';
 import TradesPanel from './components/TradesPanel/TradesPanel';
+import TradeEditModal from './components/TradeEditModal/TradeEditModal';
 import { useTradesViewModel } from './hooks/useTradesViewModel';
 // ConfluenceWizard removed from TradeJournal; modal will host the wizard instead
 
@@ -128,6 +129,10 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
     updateTradeById,
   } = useTradesViewModel({ repoRef, analysisService, setLastStatus });
 
+  // edit modal state
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editingTrade, setEditingTrade] = useState<import('./types').TradeRow | null>(null);
+
   // Prefill state when opening Add Analysis from other parts of the app
   const [initialAnalysis, setInitialAnalysis] = useState<{
     symbol?: string;
@@ -162,6 +167,8 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
   const [tradeStatusFilter, setTradeStatusFilter] = useState<'ALL' | 'OPEN' | 'CLOSED' | 'FILLED'>(
     'ALL'
   );
+  // short-term filter (toggle: show only short-term trades)
+  const [shortTermOnly, setShortTermOnly] = useState<boolean>(false);
 
   // selected trade id for left-right layout
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -277,6 +284,7 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
       filtered = filtered.filter((t: TradeRow) => t.status === 'CLOSED');
     if (tradeStatusFilter === 'FILLED')
       filtered = filtered.filter((t: TradeRow) => t.status === 'FILLED');
+    if (shortTermOnly) filtered = filtered.filter((t: TradeRow) => t.isShortTerm === true);
     return filtered;
   })();
 
@@ -372,6 +380,14 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
     setTradesCardTab('list');
     setMarketFilter(s.market ?? 'All');
     setSelectedId(null);
+  };
+
+  const handleRequestEdit = (id: string) => {
+    const found = positions.find((p) => p.id === id) ?? null;
+    if (found) {
+      setEditingTrade(found);
+      setEditModalOpen(true);
+    }
   };
 
   // Listen for open-trade events from Analysis view to select the trade linked to an analysis
@@ -596,6 +612,8 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
                             setTradeStatusFilter={(s: 'ALL' | 'OPEN' | 'CLOSED' | 'FILLED') =>
                               setTradeStatusFilter(s)
                             }
+                            shortTermOnly={shortTermOnly}
+                            setShortTermOnly={setShortTermOnly}
                           />
                         ) : undefined
                       ) : (
@@ -613,6 +631,8 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
                           setTradeStatusFilter={(s: 'ALL' | 'OPEN' | 'CLOSED' | 'FILLED') =>
                             setTradeStatusFilter(s)
                           }
+                          shortTermOnly={shortTermOnly}
+                          setShortTermOnly={setShortTermOnly}
                         />
                       )
                     }
@@ -641,6 +661,7 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
                   compactGrid={compactGrid}
                   onInlineUpdate={handleInlineUpdate}
                   onRequestDelete={requestDelete}
+                  onRequestEdit={handleRequestEdit}
                 />
               ) : (
                 <Analysis
@@ -676,6 +697,21 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
         setPositions={setPositions}
         analysisService={analysisService}
       />
+
+      {/* Trade edit modal */}
+      {editModalOpen && (
+        <TradeEditModal
+          open={editModalOpen}
+          onClose={() => {
+            setEditModalOpen(false);
+            setEditingTrade(null);
+          }}
+          trade={editingTrade}
+          repoRef={repoRef}
+          setPositions={setPositions}
+          setMarketFilter={setMarketFilter}
+        />
+      )}
 
       {undoInfo && (
         <div className={styles.undoBanner}>

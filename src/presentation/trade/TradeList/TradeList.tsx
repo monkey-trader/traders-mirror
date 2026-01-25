@@ -10,6 +10,7 @@ export type TradeListItem = {
   status?: string;
   notes?: string;
   pnl?: number;
+  isShortTerm?: boolean;
   tp1?: number;
   tp2?: number;
   tp3?: number;
@@ -117,7 +118,8 @@ const buildSLMetric = (sl?: number, slIsBE?: boolean): MetricDisplay => {
       : 'negative'
     : undefined;
 
-  const value = slIsBE ? '0.0' : formatNumber(sl, 2);
+  // Preserve full precision for SL (do not round) so users see exact values.
+  const value = slIsBE ? '0.0' : (typeof sl === 'number' ? String(sl) : '-');
 
   return {
     label: 'SL',
@@ -255,6 +257,7 @@ export type TradeListProps = {
   onDelete?: (id: string) => void;
   onInlineUpdate?: (id: string, field: FocusField, value: number | string | undefined) => void;
   compactView?: boolean;
+  onEdit?: (id: string) => void;
 };
 
 export function TradeList({
@@ -271,6 +274,7 @@ export function TradeList({
   onClose,
   onDelete,
   onInlineUpdate,
+  onEdit,
 }: TradeListProps) {
   const metricClassName = (accent?: MetricAccent): string =>
     [
@@ -810,6 +814,11 @@ export function TradeList({
                     </svg>
                   </span>
                 )}
+                {t.isShortTerm && (
+                  <span className={styles.shortTermBadge} title="Short-term trade" aria-hidden>
+                    ST
+                  </span>
+                )}
                 {t.symbol}
               </div>
               <div
@@ -898,6 +907,26 @@ export function TradeList({
                         stroke="currentColor"
                         strokeWidth="1.9"
                         strokeLinecap="round"
+                      />
+                    </svg>
+                  }
+                />
+              )}
+              {onEdit && (
+                <IconButton
+                  ariaLabel={`Edit ${t.symbol}`}
+                  title="Edit trade"
+                  variant="ghost"
+                  className={styles.editBtn}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    onEdit(t.id);
+                  }}
+                  icon={
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+                      <path
+                        d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1.003 1.003 0 0 0 0-1.42l-2.34-2.34a1.003 1.003 0 0 0-1.42 0l-1.83 1.83 3.75 3.75 1.84-1.82z"
+                        fill="currentColor"
                       />
                     </svg>
                   }

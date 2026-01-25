@@ -26,4 +26,5 @@ export type TradeRow = {
   leverage?: number;
   userId?: string;
   confluence?: { timeframe?: string; type: string }[];
+  isShortTerm?: boolean;
 };

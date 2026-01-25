@@ -49,6 +49,14 @@ export type NewTradeFormProps = {
   onSubmit: (e?: React.FormEvent) => Promise<void> | void;
   onReset: () => void;
   setMarketFilter: (m: MarketValue | '') => void;
+  /** Optional title to show in the card (defaults to "New Trade") */
+  title?: string;
+  /** Hide the built-in submit button when embedding the form (e.g., edit modal) */
+  hideSubmit?: boolean;
+  /** Override submit button label */
+  submitLabel?: string;
+  /** Hide the built-in reset button */
+  hideReset?: boolean;
 };
 
 function CurrentPriceIndicator({ symbol, market }: { symbol?: string; market?: string | null }) {
@@ -131,7 +139,67 @@ export function NewTradeForm({
   onSubmit,
   onReset,
   setMarketFilter,
+  title = 'New Trade',
+  hideSubmit = false,
+  submitLabel,
+  hideReset = false,
 }: NewTradeFormProps) {
+  const [lastEdited, setLastEdited] = useState<string | null>(null);
+
+  // helper to normalize numbers
+  const safeNum = (v: number | undefined): number | undefined =>
+    typeof v === 'number' && Number.isFinite(v) ? v : undefined;
+
+  useEffect(() => {
+    // perform auto-calculation where `size` is treated as USD notional
+    const size = safeNum(form.size);
+    const margin = safeNum(form.margin);
+    const leverage = safeNum(form.leverage);
+
+    const setPatch = (patch: Partial<typeof form>) => {
+      // apply patch only if it changes something to avoid loops
+      const keys = Object.keys(patch) as (keyof typeof form)[];
+      const different = keys.some((k) => (form as any)[k] !== (patch as any)[k]);
+      if (different) onChangeForm(patch);
+    };
+
+    try {
+      if (lastEdited === 'margin') {
+        // margin changed: if leverage known -> size = margin * leverage
+        if (typeof margin === 'number' && typeof leverage === 'number') {
+          const calcSize = margin * leverage;
+          if (Number.isFinite(calcSize)) setPatch({ size: Number(calcSize.toFixed(2)) });
+        } else if (typeof margin === 'number' && typeof size === 'number') {
+          // margin+size known -> leverage = size / margin
+          const calcLev = size / margin;
+          if (Number.isFinite(calcLev)) setPatch({ leverage: Number(calcLev.toFixed(2)) });
+        }
+      } else if (lastEdited === 'size') {
+        // size changed: if margin known -> leverage = size / margin
+        if (typeof size === 'number' && typeof margin === 'number') {
+          const calcLev = size / margin;
+          if (Number.isFinite(calcLev)) setPatch({ leverage: Number(calcLev.toFixed(2)) });
+        } else if (typeof size === 'number' && typeof leverage === 'number') {
+          // size+leverage known -> margin = size / leverage
+          const calcMargin = size / leverage;
+          if (Number.isFinite(calcMargin)) setPatch({ margin: Number(calcMargin.toFixed(2)) });
+        }
+      } else if (lastEdited === 'leverage') {
+        // leverage changed: if margin known -> size = margin * leverage
+        if (typeof leverage === 'number' && typeof margin === 'number') {
+          const calcSize = margin * leverage;
+          if (Number.isFinite(calcSize)) setPatch({ size: Number(calcSize.toFixed(2)) });
+        } else if (typeof leverage === 'number' && typeof size === 'number') {
+          // leverage+size known -> margin = size / leverage
+          const calcMargin = size / leverage;
+          if (Number.isFinite(calcMargin)) setPatch({ margin: Number(calcMargin.toFixed(2)) });
+        }
+      }
+    } finally {
+      // clear lastEdited immediately after calculation to avoid loops
+      if (lastEdited) setLastEdited(null);
+    }
+  }, [form.margin, form.size, form.leverage, lastEdited]);
   const headerActions = form.analysisId ? (
     <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
       <span style={{ fontSize: 12, color: 'var(--muted)' }}>Prefilled from analysis</span>
@@ -163,7 +231,7 @@ export function NewTradeForm({
   ) : undefined;
 
   return (
-    <AddFormCard title="New Trade" actions={headerActions}>
+    <AddFormCard title={title} actions={headerActions}>
       <div className={styles.newTradeWrapper}>
         {debugUiEnabled && (lastStatus || Object.keys(formErrors).length > 0) && (
           <div className={styles.inlineStatus} style={{ margin: '8px 0', color: 'var(--muted)' }}>
@@ -187,7 +255,37 @@ export function NewTradeForm({
           </div>
         )}
 
-        <form key={formKey} className={styles.form} onSubmit={onSubmit}>
+        <form
+          key={formKey}
+          className={styles.form}
+          onSubmit={async (e: React.FormEvent) => {
+            e.preventDefault()
+            // ensure derived values are calculated even if user didn't blur fields
+            const size = safeNum(form.size)
+            const margin = safeNum(form.margin)
+            const leverage = safeNum(form.leverage)
+            const patch: Partial<typeof form> = {}
+            // Use USD notional relations: size = margin * leverage; leverage = size / margin; margin = size / leverage
+            if (typeof margin === 'number' && typeof leverage === 'number' && !size) {
+              const calcSize = margin * leverage
+              if (Number.isFinite(calcSize)) patch.size = Number(calcSize.toFixed(2))
+            }
+            if (typeof size === 'number' && typeof margin === 'number' && !leverage) {
+              const calcLev = size / margin
+              if (Number.isFinite(calcLev)) patch.leverage = Number(calcLev.toFixed(2))
+            }
+            if (typeof size === 'number' && typeof leverage === 'number' && !margin) {
+              const calcMargin = size / leverage
+              if (Number.isFinite(calcMargin)) patch.margin = Number(calcMargin.toFixed(2))
+            }
+            if (Object.keys(patch).length > 0) {
+              onChangeForm(patch)
+              // allow state to propagate before calling parent's onSubmit
+              await new Promise((r) => setTimeout(r, 0))
+            }
+            await onSubmit(e)
+          }}
+        >
           <input id="entryDate" type="hidden" value={form.entryDate} />
           <input id="analysisId" type="hidden" value={form.analysisId ?? ''} />
           <div className={styles.newTradeGrid}>
@@ -285,7 +383,10 @@ export function NewTradeForm({
                     price: e.target.value === '' ? undefined : Number(e.target.value),
                   })
                 }
-                onBlur={() => onBlurField('price')}
+                onBlur={() => {
+                  onBlurField('price');
+                  setLastEdited('price');
+                }}
                 hasError={Boolean(formErrors.price && (touched.price || formSubmitted))}
                 aria-describedby={
                   formErrors.price && (touched.price || formSubmitted) ? 'price-error' : undefined
@@ -311,7 +412,10 @@ export function NewTradeForm({
                     margin: e.target.value === '' ? undefined : Number(e.target.value),
                   })
                 }
-                onBlur={() => onBlurField('margin')}
+                onBlur={() => {
+                  onBlurField('margin');
+                  setLastEdited('margin');
+                }}
                 hasError={Boolean(formErrors.margin && (touched.margin || formSubmitted))}
                 aria-describedby={
                   formErrors.margin && (touched.margin || formSubmitted)
@@ -331,13 +435,16 @@ export function NewTradeForm({
                 id="leverage"
                 label="Leverage *"
                 type="number"
-                value={typeof form.leverage === 'number' ? String(form.leverage) : ''}
-                onChange={(e) =>
-                  onChangeForm({
-                    leverage: e.target.value === '' ? undefined : Number(e.target.value),
-                  })
-                }
-                onBlur={() => onBlurField('leverage')}
+                  value={typeof form.leverage === 'number' ? String(form.leverage) : ''}
+                  onChange={(e) =>
+                    onChangeForm({
+                      leverage: e.target.value === '' ? undefined : Number(e.target.value),
+                    })
+                  }
+                onBlur={() => {
+                  onBlurField('leverage');
+                  setLastEdited('leverage');
+                }}
                 hasError={Boolean(formErrors.leverage && (touched.leverage || formSubmitted))}
                 aria-describedby={
                   formErrors.leverage && (touched.leverage || formSubmitted)
@@ -357,11 +464,14 @@ export function NewTradeForm({
                 id="size"
                 label="Position Size *"
                 type="number"
-                value={typeof form.size === 'number' ? String(form.size) : ''}
-                onChange={(e) =>
-                  onChangeForm({ size: e.target.value === '' ? undefined : Number(e.target.value) })
-                }
-                onBlur={() => onBlurField('size')}
+                  value={typeof form.size === 'number' ? String(form.size) : ''}
+                  onChange={(e) =>
+                    onChangeForm({ size: e.target.value === '' ? undefined : Number(e.target.value) })
+                  }
+                onBlur={() => {
+                  onBlurField('size');
+                  setLastEdited('size');
+                }}
                 hasError={Boolean(formErrors.size && (touched.size || formSubmitted))}
                 aria-describedby={
                   formErrors.size && (touched.size || formSubmitted) ? 'size-error' : undefined
@@ -425,9 +535,7 @@ export function NewTradeForm({
                   type="number"
                   value={typeof form.tp1 === 'number' ? String(form.tp1) : ''}
                   onChange={(e) =>
-                    onChangeForm({
-                      tp1: e.target.value === '' ? undefined : Number(e.target.value),
-                    })
+                    onChangeForm({ tp1: e.target.value === '' ? undefined : Number(e.target.value) })
                   }
                   onBlur={() => onBlurField('tp1')}
                   hasError={Boolean(formErrors.tp1 && (touched.tp1 || formSubmitted))}
@@ -545,17 +653,21 @@ export function NewTradeForm({
               )}
             </div>
             <div className={styles.actions}>
-              <Button
-                variant="ghost"
-                onClick={onReset}
-                title="Reset form fields to defaults"
-                aria-label="Reset new trade form"
-              >
-                Reset
-              </Button>
-              <Button type="submit" variant="primary">
-                {form.analysisId ? 'Add (from Analysis)' : 'Add'}
-              </Button>
+              {!hideReset && (
+                <Button
+                  variant="ghost"
+                  onClick={onReset}
+                  title="Reset form fields to defaults"
+                  aria-label="Reset new trade form"
+                >
+                  Reset
+                </Button>
+              )}
+              {!hideSubmit && (
+                <Button type="submit" variant="primary">
+                  {submitLabel ?? (form.analysisId ? 'Add (from Analysis)' : 'Add')}
+                </Button>
+              )}
             </div>
           </div>
         </form>

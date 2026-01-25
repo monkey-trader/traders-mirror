@@ -24,6 +24,7 @@ type Props = {
   compactGrid: boolean;
   onInlineUpdate?: (id: string, field: FocusField, value: number | string | undefined) => void;
   onRequestDelete?: (id: string) => void;
+  onRequestEdit?: (id: string) => void;
 };
 
 export function TradesPanel({
@@ -35,6 +36,7 @@ export function TradesPanel({
   compactGrid,
   onInlineUpdate,
   onRequestDelete,
+  onRequestEdit,
 }: Props) {
   return (
     <div className={styles.leftPane}>
@@ -51,6 +53,7 @@ export function TradesPanel({
         onSetTPHit={(id, idx) => performTPHit(id, idx)}
         onInlineUpdate={onInlineUpdate}
         onDelete={onRequestDelete}
+        onEdit={onRequestEdit}
         compactView={compactGrid}
       />
     </div>

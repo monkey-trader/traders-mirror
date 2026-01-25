@@ -7,6 +7,8 @@ type Props = {
   setMarketFilter: (m: 'All' | 'Crypto' | 'Forex') => void;
   tradeStatusFilter?: 'ALL' | 'OPEN' | 'CLOSED' | 'FILLED';
   setTradeStatusFilter?: (s: 'ALL' | 'OPEN' | 'CLOSED' | 'FILLED') => void;
+  shortTermOnly?: boolean;
+  setShortTermOnly?: (v: boolean) => void;
 };
 
 export function CombinedFilterMenu({
@@ -14,6 +16,8 @@ export function CombinedFilterMenu({
   setMarketFilter,
   tradeStatusFilter = 'ALL',
   setTradeStatusFilter,
+  shortTermOnly = false,
+  setShortTermOnly,
 }: Props) {
   return (
     <div className={styles.container}>
@@ -46,6 +50,18 @@ export function CombinedFilterMenu({
               {m}
             </Button>
           ))}
+        </div>
+      </div>
+      <div className={styles.shortTermGroup}>
+        <span className={styles.label}>Short-term</span>
+        <div className={styles.pills}>
+          <Button
+            type="button"
+            variant={shortTermOnly ? 'primary' : 'ghost'}
+            onClick={() => setShortTermOnly?.(!shortTermOnly)}
+          >
+            Only
+          </Button>
         </div>
       </div>
     </div>

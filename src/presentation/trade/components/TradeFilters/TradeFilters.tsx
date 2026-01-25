@@ -6,6 +6,8 @@ export type TradeFiltersProps = {
   setMarketFilter: (m: 'All' | 'Crypto' | 'Forex') => void;
   tradeStatusFilter: 'ALL' | 'OPEN' | 'CLOSED' | 'FILLED';
   setTradeStatusFilter: (s: 'ALL' | 'OPEN' | 'CLOSED' | 'FILLED') => void;
+  shortTermOnly?: boolean;
+  setShortTermOnly?: (v: boolean) => void;
   tradesCount?: number;
   countLabel?: string;
 };
@@ -46,7 +48,9 @@ export function MarketFilters({
 export function StatusFilters({
   tradeStatusFilter,
   setTradeStatusFilter,
-}: Pick<TradeFiltersProps, 'tradeStatusFilter' | 'setTradeStatusFilter'>) {
+  shortTermOnly,
+  setShortTermOnly,
+}: Pick<TradeFiltersProps, 'tradeStatusFilter' | 'setTradeStatusFilter' | 'shortTermOnly' | 'setShortTermOnly'>) {
   return (
     <div className={styles.controls}>
       <Button
@@ -73,6 +77,12 @@ export function StatusFilters({
       >
         Filled
       </Button>
+        <Button
+          variant={shortTermOnly ? 'primary' : 'ghost'}
+          onClick={() => setShortTermOnly?.(!shortTermOnly)}
+        >
+          Short-term
+        </Button>
     </div>
   );
 }
