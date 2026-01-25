@@ -76,6 +76,43 @@
   letter-spacing: 0.01em;
 }
 
+.currentPrice {
+  margin-top: 6px;
+  font-size: 0.85em;
+  color: var(--muted, #9aa3a8);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* top-level utility classes used from the component via CSS modules */
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: linear-gradient(90deg, var(--accent, #2dd4bf), #10b981);
+  box-shadow: 0 0 6px rgba(16,185,129,0.12);
+}
+
+.priceValue {
+  font-weight: 600;
+  color: var(--fg, #e6eef0);
+}
+
+/* keep nested rule for backwards compatibility where needed */
+.currentPrice .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: linear-gradient(90deg, var(--accent, #2dd4bf), #10b981);
+  box-shadow: 0 0 6px rgba(16,185,129,0.12);
+}
+
+.currentPrice .priceValue {
+  font-weight: 600;
+  color: var(--fg, #e6eef0);
+}
+
 @media (max-width: 700px) {
   .newTradeGrid {
     grid-template-columns: 1fr;

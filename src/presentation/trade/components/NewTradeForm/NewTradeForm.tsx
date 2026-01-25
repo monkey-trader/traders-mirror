@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import AddFormCard from '@/presentation/shared/components/AddFormCard/AddFormCard';
 import { Button } from '@/presentation/shared/components/Button/Button';
 import { Input } from '@/presentation/shared/components/Input/Input';
+import SymbolAutocomplete from '@/presentation/shared/components/SymbolAutocomplete/SymbolAutocomplete';
 import { SideSelect, type SideValue } from '@/presentation/shared/components/SideSelect/SideSelect';
 import MarketSelect, {
   type MarketValue,
@@ -47,6 +48,73 @@ export type NewTradeFormProps = {
   onReset: () => void;
   setMarketFilter: (m: MarketValue | '') => void;
 };
+
+function CurrentPriceIndicator({ symbol, market }: { symbol?: string; market?: string | null }) {
+  const [price, setPrice] = useState<number | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [err, setErr] = useState<string | null>(null)
+  const debounceRef = useRef<number | null>(null)
+  const fetchIdRef = useRef(0)
+
+  useEffect(() => {
+    // only show for crypto market and when symbol looks present
+    if (!symbol || !market || market.toLowerCase() !== 'crypto') {
+      setPrice(null)
+      setLoading(false)
+      setErr(null)
+      return
+    }
+
+    if (debounceRef.current) window.clearTimeout(debounceRef.current)
+    debounceRef.current = window.setTimeout(async () => {
+      const myFetchId = ++fetchIdRef.current
+      setLoading(true)
+      setErr(null)
+      try {
+        const { getPriceService } = await import('@/infrastructure/price/priceSingleton')
+        const svc = getPriceService()
+        // debug: log requested symbol/market
+        // eslint-disable-next-line no-console
+        console.debug('[CurrentPriceIndicator] fetching price for', { symbol, market })
+        const res = await svc.getCryptoPrice(symbol, 'usd')
+        // eslint-disable-next-line no-console
+        console.debug('[CurrentPriceIndicator] price service res', res)
+        if (fetchIdRef.current === myFetchId) {
+          setPrice(res.price ?? null)
+        }
+      } catch (e: any) {
+        // eslint-disable-next-line no-console
+        console.debug('[CurrentPriceIndicator] price fetch error', e)
+        if (fetchIdRef.current === myFetchId) {
+          setErr('—')
+          setPrice(null)
+        }
+      } finally {
+        if (fetchIdRef.current === myFetchId) setLoading(false)
+      }
+    }, 500)
+
+    return () => {
+      if (debounceRef.current) window.clearTimeout(debounceRef.current)
+    }
+  }, [symbol, market])
+
+  if (!symbol || !market || market.toLowerCase() !== 'crypto') return null
+
+  const formatPrice = (p: number) => {
+    if (p >= 1) return p.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 2 })
+    // for tiny crypto values use up to 8 decimals
+    return p.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 8 })
+  }
+
+  return (
+    <div className={styles.currentPrice} aria-hidden>
+      <span className={styles.dot} />
+      <span className={styles.priceValue}>{loading ? '…' : price !== null ? formatPrice(price) : err ?? '—'}</span>
+      <span style={{ color: 'var(--muted)', fontSize: 12, marginLeft: 6 }}>current</span>
+    </div>
+  )
+}
 
 export function NewTradeForm({
   form,
@@ -147,19 +215,29 @@ export function NewTradeForm({
             </div>
 
             <div className={styles.newTradeField}>
-              <Input
-                id="symbol"
-                label="Symbol"
-                placeholder="e.g. BTC"
+              <label htmlFor="symbol">Symbol</label>
+              <SymbolAutocomplete
                 value={form.symbol}
-                onChange={(e) => onChangeForm({ symbol: e.target.value })}
-                onBlur={() => onBlurField('symbol')}
-                hasError={Boolean(formErrors.symbol && (touched.symbol || formSubmitted))}
-                aria-describedby={
-                  formErrors.symbol && (touched.symbol || formSubmitted)
-                    ? 'symbol-error'
-                    : undefined
-                }
+                placeholder="e.g. BTC"
+                id="symbol"
+                market={form.market ?? ''}
+                onChange={(v) => onChangeForm({ symbol: v })}
+                onSelect={async (s) => {
+                  // when a suggestion is chosen, set symbol and trigger blur
+                  onChangeForm({ symbol: s.symbol.toUpperCase() })
+                  onBlurField('symbol')
+                  // attempt to prefill price using the selected coin id via singleton
+                  try {
+                    const { getPriceService } = await import('@/infrastructure/price/priceSingleton')
+                    const svc = getPriceService()
+                    const res = await svc.getCryptoPrice(s.id, 'usd')
+                    if (res && typeof res.price === 'number' && !Number.isNaN(res.price)) {
+                      onChangeForm({ price: res.price })
+                    }
+                  } catch {
+                    // ignore price prefill failures
+                  }
+                }}
               />
               {formErrors.symbol && (touched.symbol || formSubmitted) && (
                 <div id="symbol-error" className={styles.fieldError}>
@@ -201,6 +279,8 @@ export function NewTradeForm({
                   {formErrors.price}
                 </div>
               )}
+              {/* Current price indicator (non-intrusive) */}
+              <CurrentPriceIndicator symbol={form.symbol} market={form.market} />
             </div>
 
             <div className={styles.newTradeField}>

@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useEffect, useRef } from 'react';
 import { EntryDate } from '@/domain/trade/valueObjects/EntryDate';
 import { TradeFactory } from '@/domain/trade/factories/TradeFactory';
 import { validateNewTrade } from '@/presentation/trade/validation';
@@ -11,6 +11,9 @@ import type { Trade } from '@/domain/trade/entities/Trade';
 import { TradeId } from '@/domain/trade/valueObjects/TradeId';
 import { AnalysisId } from '@/domain/trade/valueObjects/AnalysisId';
 import type { ConfluenceOption } from '@/presentation/trade/components/ConfluenceModal';
+import type { CryptoPrice } from '@/domain/price/interfaces/PriceRepository';
+import { PriceService } from '@/application/price/PriceService';
+import { CoinGeckoPriceRepository } from '@/infrastructure/price/repositories/CoinGeckoPriceRepository';
 
 export type NewTradeFormState = {
   symbol: string;
@@ -112,6 +115,42 @@ export function useNewTradeForm(options: {
     setFormKey((k) => k + 1);
   }, []);
 
+  // use app-wide price service singleton (lazy import below where needed)
+
+  // debounce prefill when symbol changes for Crypto market
+  const prefillTimerRef = useRef<number | null>(null);
+  useEffect(() => {
+    const shouldAttemptPrefill =
+      (form.market as MarketValue) === 'Crypto' &&
+      (form.symbol ?? '').trim().length >= 2 &&
+      (parseNumberField(form.price) === undefined || Number.isNaN(Number(form.price)));
+
+    if (!shouldAttemptPrefill) return;
+
+    if (prefillTimerRef.current) window.clearTimeout(prefillTimerRef.current);
+    prefillTimerRef.current = window.setTimeout(async () => {
+      try {
+        const { getPriceService } = await import('@/infrastructure/price/priceSingleton')
+        const svc = getPriceService()
+        const res: CryptoPrice = await svc.getCryptoPrice(form.symbol, 'usd')
+        if (res && typeof res.price === 'number' && !Number.isNaN(res.price)) {
+          setForm((prev) => ({ ...prev, price: res.price }));
+          setLastStatus?.(`prefilled price ${res.price} for ${form.symbol}`);
+        }
+      } catch (err) {
+        // ignore prefill errors
+      }
+    }, 500) as unknown as number;
+
+    return () => {
+      if (prefillTimerRef.current) {
+        window.clearTimeout(prefillTimerRef.current);
+        prefillTimerRef.current = null;
+      }
+    };
+    // only react to symbol/market changes
+  }, [form.symbol, form.market, parseNumberField, setLastStatus]);
+
   const handleAdd = useCallback(
     async (e?: React.FormEvent) => {
       if (e && typeof e.preventDefault === 'function') e.preventDefault();
@@ -147,12 +186,29 @@ export function useNewTradeForm(options: {
         return;
       }
 
+      // determine price: use provided price or try to fetch for Crypto
+      let priceToUse: number | undefined = parseNumberField(form.price) ?? undefined;
+      if ((form.market as MarketValue) === 'Crypto' && (priceToUse === undefined || Number.isNaN(priceToUse))) {
+        try {
+          const { getPriceService } = await import('@/infrastructure/price/priceSingleton')
+          const svc = getPriceService()
+          const result: CryptoPrice = await svc.getCryptoPrice(form.symbol || '', 'usd')
+          if (result && typeof result.price === 'number' && !Number.isNaN(result.price)) {
+            priceToUse = result.price
+            setLastStatus?.(`prefilled price ${priceToUse} from CoinGecko`)
+          }
+        } catch (err) {
+          // non-fatal: continue without fetched price
+          console.warn('prefill price failed', err)
+        }
+      }
+
       const newTrade: TradeRow = {
         id: TradeId.generate(),
         symbol: form.symbol,
         entryDate: form.entryDate,
         size: Number(form.size),
-        price: Number(form.price),
+        price: typeof priceToUse === 'number' ? priceToUse : Number(form.price),
         side: form.side as 'LONG' | 'SHORT',
         notes: form.notes || undefined,
         market: (form.market as Exclude<MarketValue, ''>) || 'Crypto',
