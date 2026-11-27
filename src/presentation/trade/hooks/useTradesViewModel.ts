@@ -15,6 +15,8 @@ type UseTradesViewModelParams = {
   tradeService?: TradeService;
   analysisService?: AnalysisService;
   setLastStatus?: (s: string | null) => void;
+  // optional provider that returns current market price for a symbol
+  priceProvider?: (symbol: string) => number | Promise<number>;
 };
 
 export function useTradesViewModel({
@@ -22,6 +24,7 @@ export function useTradesViewModel({
   tradeService,
   analysisService,
   setLastStatus,
+  priceProvider,
 }: UseTradesViewModelParams) {
   // reference analysisService to avoid unused param lint (it may be used later)
   void analysisService;
@@ -42,6 +45,30 @@ export function useTradesViewModel({
     } else {
       positionsRef.current = value;
       _setPositions(value);
+      // if a priceProvider is supplied, compute and annotate pnl asynchronously
+      if (priceProvider) {
+        void (async () => {
+          try {
+            const updated = await Promise.all(
+              value.map(async (p) => {
+                try {
+                  const cp = await priceProvider(p.symbol);
+                  // computePnL will be imported lazily here to avoid cycles
+                  const { computePnL } = await import('@/presentation/trade/utils/pnl');
+                  const pnl = computePnL(p.price, cp, p.size, (p.side as 'LONG' | 'SHORT') || 'LONG', p.leverage);
+                  return { ...p, pnl } as TradeRow;
+                } catch {
+                  return p;
+                }
+              })
+            );
+            positionsRef.current = updated;
+            _setPositions(updated);
+          } catch {
+            /* ignore pricing errors */
+          }
+        })();
+      }
     }
   }, []);
   const [undoInfo, setUndoInfo] = useState<{ id: string; prev: TradeRow } | null>(null);

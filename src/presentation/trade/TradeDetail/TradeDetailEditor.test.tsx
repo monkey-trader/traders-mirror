@@ -1,5 +1,6 @@
 // updated: touch to pick up latest changes
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi } from 'vitest';
 import { TradeDetailEditor } from './TradeDetailEditor';
 import type { TradeInput } from '@/domain/trade/factories/TradeFactory';
@@ -112,5 +113,18 @@ describe('TradeDetailEditor', () => {
     expect(onSave).not.toHaveBeenCalled();
     // validation message is in German: "Größe muss positiv sein"
     await waitFor(() => expect(screen.getByText(/Größe muss positiv sein/i)).toBeTruthy());
+  });
+
+  it('invokes onAction for dropdown items', async () => {
+    const onAction = vi.fn();
+    render(<TradeDetailEditor trade={exampleTrade} onAction={onAction} />);
+
+    const trigger = screen.getByRole('button', { name: /Open actions for/i });
+    fireEvent.click(trigger);
+
+    const toggleBtn = await screen.findByRole('menuitem', { name: /Toggle side for/i });
+    await userEvent.click(toggleBtn);
+
+    expect(onAction).toHaveBeenCalledWith('toggle-side', exampleTrade.id);
   });
 });

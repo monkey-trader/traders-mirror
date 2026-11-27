@@ -6,17 +6,20 @@ import TradesPanel from './TradesPanel';
 import type { TradeRow } from '../../types';
 
 vi.mock('../../TradeList/TradeList', () => ({
-  TradeList: (props: { trades: TradeRow[]; onSelect: (id: string) => void }) => {
-    const { trades, onSelect } = props;
+  TradeList: (props: {
+    trades: TradeRow[];
+    onSelect: (id: string) => void;
+    onAction?: (action: string, id: string) => void;
+  }) => {
     return (
       <div>
-        {trades.map((t: TradeRow) => (
-          <button key={t.id} onClick={() => onSelect(t.id)}>
+        {props.trades.map((t) => (
+          <div key={t.id} onClick={() => props.onSelect(t.id)}>
             {t.symbol}
-          </button>
+          </div>
         ))}
       </div>
-    );
+    )
   },
 }));
 
@@ -25,13 +28,15 @@ vi.mock('../../TradeDetail/TradeDetailEditor', () => ({
     trade?: TradeRow;
     onSave?: (t: unknown) => Promise<void> | void;
     onDelete?: (id: string) => Promise<void> | void;
+    onAction?: (action: string, id: string) => void;
   }) => {
-    const { trade, onSave, onDelete } = props;
+    const { trade, onSave, onDelete, onAction } = props;
     return (
       <div>
         <div>Editor: {trade?.symbol}</div>
         <button onClick={() => onSave?.(trade)}>save</button>
         <button onClick={() => onDelete?.(trade?.id ?? '')}>delete</button>
+        <button onClick={() => onAction?.('toggle-side', trade?.id ?? '')}>action</button>
       </div>
     );
   },
@@ -57,7 +62,6 @@ describe('TradesPanel', () => {
         tradeListItems={[baseTrade]}
         selectedId={baseTrade.id}
         onSelect={() => {}}
-        performAction={() => {}}
         compactGrid={true}
         compactEditorOpen={false}
         setCompactEditorOpen={setCompactEditorOpen}
@@ -81,7 +85,6 @@ describe('TradesPanel', () => {
         tradeListItems={[baseTrade]}
         selectedId={baseTrade.id}
         onSelect={() => {}}
-        performAction={() => {}}
         compactGrid={true}
         compactEditorOpen={true}
         setCompactEditorOpen={() => {}}

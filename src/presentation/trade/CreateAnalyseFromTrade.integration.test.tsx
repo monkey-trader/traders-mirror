@@ -23,14 +23,9 @@ describe('Create Analyse from Trade flow', () => {
     // wait for the component to mount and trades to render
     await screen.findByText(/Trading Journal/i);
 
-    // click the expand/details button for the first trade to open the detail view
-    const expandBtns = await screen.findAllByRole('button', { name: /Toggle details for/i });
-    const expandBtn = expandBtns[0];
-    fireEvent.click(expandBtn);
-
-    // After expanding, click the 'Show details' button to open the editor
-    const showDetails = await screen.findByText('Show details');
-    fireEvent.click(showDetails);
+    // select the first trade card to open the detail view
+    const cards = await screen.findAllByLabelText(/^Select /i);
+    fireEvent.click(cards[0]);
 
     // Click Create Analyse button in detail view
     const createBtn = await screen.findByText('Create Analyse');

@@ -25,6 +25,7 @@ import { loadSettings } from '@/presentation/settings/settingsStorage';
 import MockLoaderModal from './components/MockLoaderModal/MockLoaderModal';
 import TradesPanel from './components/TradesPanel/TradesPanel';
 import { useTradesViewModel } from './hooks/useTradesViewModel';
+import { getMarketPrice } from './services/priceProvider';
 import { TradeDetailEditor } from './TradeDetail/TradeDetailEditor';
 
 // Analysis link helpers
@@ -105,13 +106,12 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
     positions,
     setPositions,
     performAction,
-    performTPHit,
     handleEditorChange,
     handleEditorSave,
     undoInfo,
     handleUndo,
     updateTradeById,
-  } = useTradesViewModel({ repoRef, analysisService, setLastStatus });
+  } = useTradesViewModel({ repoRef, analysisService, setLastStatus, priceProvider: getMarketPrice });
 
   // Prefill state when opening Add Analysis from other parts of the app
   const [initialAnalysis, setInitialAnalysis] = useState<{
@@ -308,10 +308,21 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
   const [confirmAction, setConfirmAction] = useState<
     'close' | 'sl-be' | 'sl-hit' | 'toggle-side' | 'delete' | null
   >(null);
+  const [pendingDeleteSource, setPendingDeleteSource] = useState<'modal' | null>(null);
+
 
   const handleConfirm = () => {
     if (!confirmAction || !confirmTradeId) return;
     performAction(confirmAction, confirmTradeId);
+    if (confirmAction === 'delete') {
+      if (selectedId === confirmTradeId) {
+        setSelectedId(null);
+      }
+      if (pendingDeleteSource === 'modal') {
+        setDetailModalOpen(false);
+        setPendingDeleteSource(null);
+      }
+    }
     setConfirmOpen(false);
     setConfirmAction(null);
     setConfirmTradeId(null);
@@ -321,6 +332,7 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
     setConfirmOpen(false);
     setConfirmAction(null);
     setConfirmTradeId(null);
+    setPendingDeleteSource(null);
   };
 
   // helper: ISO string -> datetime-local format used by input[type=datetime-local]
@@ -435,7 +447,16 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
 
   // provide a request-based delete handler for the editor that shows a confirmation dialog.
   // the actual deletion is performed by `performAction('delete', id)` when the user confirms.
-  const requestDeleteFromEditor = (id: string): Promise<void> => {
+  const requestDeleteFromPanelEditor = (id: string): Promise<void> => {
+    setPendingDeleteSource(null);
+    setConfirmTradeId(id);
+    setConfirmAction('delete');
+    setConfirmOpen(true);
+    return Promise.resolve();
+  };
+
+  const requestDeleteFromModalEditor = (id: string): Promise<void> => {
+    setPendingDeleteSource('modal');
     setConfirmTradeId(id);
     setConfirmAction('delete');
     setConfirmOpen(true);
@@ -603,19 +624,19 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
                   onSelect={(id, focusField) => {
                     setSelectedId(id);
                     setSelectedFieldToFocus(focusField ?? null);
-                    if (!compactGrid) setDetailModalOpen(true);
+                    if (compactGrid) setCompactEditorOpen(true);
+                    else setDetailModalOpen(true);
                   }}
-                  performAction={performAction}
-                  performTPHit={performTPHit}
                   compactGrid={compactGrid}
                   compactEditorOpen={compactEditorOpen}
                   setCompactEditorOpen={setCompactEditorOpen}
                   selectedTrade={selectedTrade as unknown as TradeRow}
                   onEditorChange={handleEditorChange}
                   onEditorSave={handleEditorSave}
-                  onDeleteFromEditor={requestDeleteFromEditor}
+                  onDeleteFromEditor={requestDeleteFromPanelEditor}
                   selectedFieldToFocus={selectedFieldToFocus}
                   modalDetail={true}
+                  onAction={(action, id) => performAction(action, id)}
                 />
               ) : (
                 <Analysis onCreateTradeSuggestion={handleCreateTradeFromAnalysis} />
@@ -679,10 +700,10 @@ export function TradeJournal({ repo, forceCompact }: TradeJournalProps) {
                   setDetailModalOpen(false);
                 }}
                 onDelete={async (id: string) => {
-                  await requestDeleteFromEditor(id);
-                  setDetailModalOpen(false);
+                  await requestDeleteFromModalEditor(id);
                 }}
                 focusField={selectedFieldToFocus}
+                onAction={(action, id) => performAction(action, id)}
               />
             </div>
           </div>

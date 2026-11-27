@@ -5,36 +5,19 @@ import InMemoryTradeRepository from '@/infrastructure/trade/repositories/InMemor
 
 // Force compact mode by using forceCompact prop
 describe('TradeJournal compact editor toggle', () => {
-  it('shows compact summary and toggles editor when Show details clicked', async () => {
+  it('opens compact editor after selecting a trade and allows hiding it again', async () => {
     const repo = new InMemoryTradeRepository();
     render(<TradeJournal repo={repo} forceCompact />);
     await screen.findByText(/Trading Journal/i);
 
-    // Wait for PositionCard symbols to render (compact view uses PositionCard)
-    const symbols = await screen.findAllByText(/USD$/, {}, { timeout: 1000 });
-    expect(symbols.length).toBeGreaterThan(0);
+    const cards = await screen.findAllByLabelText(/^Select /i);
+    expect(cards.length).toBeGreaterThan(0);
+    fireEvent.click(cards[0]);
 
-    // Click the first PositionCard's expand button to select that trade (PositionCard exposes expand button)
-    const expandBtns = await screen.findAllByLabelText(/Toggle details for/i);
-    expect(expandBtns.length).toBeGreaterThan(0);
-    fireEvent.click(expandBtns[0]);
-
-    // Wait a tick to allow selection effect
-    await new Promise((r) => setTimeout(r, 10));
-
-    // Now the compact summary should show a Show details button
-    const show = await screen.findByRole('button', { name: /show details/i });
-    expect(show).toBeDefined();
-
-    // Click to open details
-    fireEvent.click(show);
-
-    // Save button in editor should be visible
     const save = await screen.findByRole('button', { name: /save now/i });
     expect(save).toBeDefined();
 
-    // Hide details
-    const hide = screen.getByRole('button', { name: /hide details/i });
+    const hide = await screen.findByRole('button', { name: /hide details/i });
     fireEvent.click(hide);
 
     expect(screen.queryByRole('button', { name: /save now/i })).toBeNull();

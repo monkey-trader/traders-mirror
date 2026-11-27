@@ -103,7 +103,7 @@ describe('TradeJournal actions (mobile add and delete/undo)', () => {
     await waitFor(() => expect(screen.getByText(/DELME/i)).toBeTruthy());
 
     // Select the item in the list by clicking the listitem button (non-compact view)
-    const listItem = screen.getByRole('listitem', { name: /Select DELME/i });
+    const listItem = screen.getByRole('listitem', { name: /^Select DELME$/i });
     fireEvent.click(listItem);
 
     // Click Delete button in the editor (right pane)
@@ -124,7 +124,7 @@ describe('TradeJournal actions (mobile add and delete/undo)', () => {
 
     // Item should be back in the list
     await waitFor(() =>
-      expect(screen.getByRole('listitem', { name: /Select DELME/i })).toBeTruthy()
+      expect(screen.getByRole('listitem', { name: /^Select DELME$/i })).toBeTruthy()
     );
   });
 });

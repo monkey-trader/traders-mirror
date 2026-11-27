@@ -23,6 +23,7 @@ export type TradeInput = {
   notes?: string;
   market?: string;
   margin?: number;
+  pnl?: number;
   sl?: number;
   slIsBE?: boolean;
   tp1?: number;
@@ -60,6 +61,7 @@ export class TradeFactory {
       typeof input.tp4 === 'number' ? new Price(input.tp4) : undefined,
       typeof input.leverage === 'number' ? new Leverage(input.leverage) : undefined,
       typeof input.margin === 'number' ? new Margin(input.margin) : undefined,
+      typeof input.pnl === 'number' ? input.pnl : undefined,
       input.analysisId ? new AnalysisId(input.analysisId) : undefined,
       input.userId
     );
@@ -78,6 +80,7 @@ export class TradeFactory {
       status: trade.status?.value ?? 'OPEN',
       notes: trade.notes?.value,
       market: trade.market.value,
+      pnl: typeof trade.pnl === 'number' ? trade.pnl : undefined,
       // Persist numeric 0.0 when SL is break-even so future features (fees, adjustments)
       // can operate on a numeric sentinel. Otherwise expose actual SL price.
       sl: trade.slIsBE === true ? 0.0 : trade.sl?.value,

@@ -23,6 +23,7 @@ export class Trade {
   public readonly market: Market;
   public readonly sl?: Price;
   public readonly slIsBE?: boolean;
+  public readonly pnl?: number;
   public readonly tp1?: Price;
   public readonly tp2?: Price;
   public readonly tp3?: Price;
@@ -50,6 +51,7 @@ export class Trade {
     tp4?: Price,
     leverage?: Leverage,
     margin?: Margin,
+    pnl?: number,
     analysisId?: AnalysisId,
     userId?: string
   ) {
@@ -70,6 +72,7 @@ export class Trade {
     this.tp4 = tp4;
     this.leverage = leverage;
     this.margin = margin;
+    this.pnl = pnl;
     this.analysisId = analysisId;
     this.userId = userId;
   }

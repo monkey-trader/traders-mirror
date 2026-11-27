@@ -1,314 +1,370 @@
 .list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 8px;
+  gap: var(--space-2, 8px);
+  padding: var(--space-2, 8px);
   max-height: 68vh;
   overflow: auto;
 }
 
-.item {
+.card {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 8px; /* reduced horizontal padding to show more content */
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.01), rgba(255, 255, 255, 0.006));
-  border: 1px solid rgba(255, 255, 255, 0.03);
-  border-radius: 8px;
+  flex-direction: column;
+  gap: var(--space-2, 8px);
+  padding: var(--space-3, 12px);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: radial-gradient(circle at top left, rgba(255, 255, 255, 0.05), rgba(12, 19, 34, 0.76));
+  box-shadow: 0 10px 32px rgba(8, 15, 30, 0.35);
   cursor: pointer;
-  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+  transition: border-color 120ms ease, transform 120ms ease, box-shadow 120ms ease;
 }
 
-/* allow the item to shrink instead of forcing horizontal scroll */
-.item {
-  min-width: 0;
-}
-
-.item:hover {
+.card:hover {
+  border-color: rgba(124, 92, 255, 0.6);
   transform: translateY(-1px);
-  /* reduce the shadow so it doesn't reach into the detail pane */
-  box-shadow: 0 6px 12px rgba(2, 8, 23, 0.28);
-  background: linear-gradient(180deg, rgba(34, 193, 195, 0.015), rgba(255, 255, 255, 0.006));
+  box-shadow: 0 14px 38px rgba(18, 24, 40, 0.45);
+}
+
+.cardCompact {
+  padding: var(--space-2, 8px);
+  gap: var(--space-2, 8px);
 }
 
 .selected {
-  border-color: rgba(124, 92, 255, 0.95);
-  /* stronger outer glow + thicker accent ring for clearer selection */
-  box-shadow: 0 8px 28px rgba(124, 92, 255, 0.18), 0 0 0 2px rgba(124, 92, 255, 0.22);
-  background: linear-gradient(90deg, rgba(124, 92, 255, 0.07), rgba(34, 193, 195, 0.025));
+  border-color: rgba(124, 92, 255, 0.9);
+  box-shadow: 0 0 0 2px rgba(124, 92, 255, 0.35);
 }
 
-.rowLeft {
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2, 8px);
+  flex-wrap: wrap;
+}
+
+.cardHeaderRight {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2, 8px);
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.titleBlock {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-}
-
-/* ensure left content can shrink/grow while right side (status/actions) keeps its width */
-.rowLeft {
-  flex: 1 1 auto;
+  gap: 2px;
 }
 
 .symbol {
   font-weight: 700;
-  color: var(--text);
+  font-size: var(--fs-md, 16px);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
-.meta {
-  font-size: 12px;
+.entryDate {
+  font-size: var(--fs-sm, 13px);
   color: var(--muted);
 }
 
-.rowRight {
+.badges {
   display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.cardActionDropdown {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.cardActionTrigger {
+  display: inline-flex;
   align-items: center;
   gap: 6px;
-  flex: 0 0 auto; /* prevent right-side (status/actions) from shrinking and hiding buttons */
-  flex-wrap: wrap; /* allow action buttons to wrap instead of overflowing */
-  justify-content: flex-end;
-}
-
-.analysisBtn {
-  height: 28px;
-  padding: 4px 10px;
-  border-radius: 6px;
-  color: var(--muted);
-}
-
-.analysisContent {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.analysisIcon {
-  width: 18px;
-  height: 18px;
-  display: inline-block;
-  flex: 0 0 18px;
-  color: var(--color-primary); /* use theme primary color */
-  opacity: 0.98;
-}
-
-.analysisLinkIcon {
-  width: 14px;
-  height: 14px;
-  display: inline-block;
-  flex: 0 0 14px;
-  color: var(--color-primary);
-  opacity: 0.98;
-}
-
-.analysisBtn {
-  background: rgba(255, 255, 255, 0.008);
-  border: 1px solid rgba(255, 255, 255, 0.02);
-  color: var(--color-primary);
-  transition: background 120ms ease, transform 120ms ease, box-shadow 120ms ease, color 120ms ease;
-}
-
-.slDisplay {
-  font-size: 12px;
-  color: var(--muted);
-  min-width: 72px;
-  text-align: right;
-}
-
-.slZero {
-  color: #4ade80; /* green-400 */
-}
-
-.slAlert {
-  color: #fb7185; /* red-400 */
-}
-
-/* horizontal scroll wrapper for TP buttons to keep UI usable on narrow screens */
-.tpButtons {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  flex-wrap: wrap; /* allow TP buttons to wrap to next line instead of horizontal scrolling */
-  max-width: none; /* use available space */
-  padding-bottom: 2px;
-}
-.tpButtons::-webkit-scrollbar {
-  height: 6px;
-}
-.tpButtons::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.04);
-  border-radius: 6px;
-}
-
-.analysisBtn:hover {
-  background: linear-gradient(180deg, rgba(37, 99, 235, 0.06), rgba(255, 255, 255, 0.01));
-  transform: translateY(-2px);
-  color: #2563eb;
-  box-shadow: 0 8px 22px rgba(37, 99, 235, 0.08);
-}
-
-.analysisBtn:active {
-  transform: translateY(0);
-}
-
-.side {
+  padding: 6px 12px;
   border-radius: 999px;
-  font-weight: 700;
-  font-size: 12px;
-  text-transform: uppercase;
-  /* base neutral appearance similar to SideSelect */
-  background: transparent;
-  color: var(--color-text);
-  border: 1px solid transparent;
-
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
-  width: 72px; /* fixed width for consistent layout */
-  height: 28px; /* align with SideSelect height */
-  padding: 4px 8px; /* similar breathing room */
-  text-align: center;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--text, #f8fafc);
+  font-size: var(--fs-xs, 12px);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 120ms ease, transform 120ms ease, box-shadow 120ms ease;
 }
 
-/* slightly narrower pills to gain horizontal space */
-.side {
-  width: 64px; /* reduced from 72 */
+.cardActionTrigger:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-1px);
 }
 
-/* Colored pill variants (light tint background + colored border/text) */
-.sideLong {
-  /* rgba(15,157,88,0.10) using --color-long-600 (#0F9D58) */
-  background: rgba(15, 157, 88, 0.1);
-  color: var(--color-long-600);
-  border: 1px solid rgba(15, 157, 88, 0.18);
-}
-
-.sideShort {
-  /* rgba(219,68,55,0.10) using --color-short-600 (#DB4437) */
-  background: rgba(219, 68, 55, 0.1);
-  color: var(--color-short-600);
-  border: 1px solid rgba(219, 68, 55, 0.18);
-}
-
-/* Compact variant for tighter layouts (matches SideSelect.selectCompact.colored) */
-.sideCompact {
-  min-width: 56px;
-  height: 24px;
-  padding: 2px 8px;
-  font-size: 12px;
-  font-weight: 700;
-}
-
-/* make badges automatically compact on small screens */
-@media (max-width: 420px) {
-  .side,
-  .status {
-    width: 56px;
-    height: 24px;
-    padding: 2px 8px;
-    font-size: 12px;
-  }
-}
-
-/* focus visible for keyboard users */
-.item:focus-visible {
-  outline: 3px solid rgba(124, 92, 255, 0.12);
+.cardActionTrigger:focus-visible {
+  outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
 
-/* scrollbar subtle */
+.cardActionTrigger[data-open='true'] {
+  background: rgba(90, 58, 252, 0.15);
+  box-shadow: 0 10px 25px rgba(90, 58, 252, 0.25);
+}
+
+.cardActionCaret {
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 4px solid rgba(255, 255, 255, 0.8);
+  transition: transform 120ms ease;
+}
+
+.cardActionTrigger[data-open='true'] .cardActionCaret {
+  transform: rotate(180deg);
+}
+
+.cardActionMenu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 200px;
+  background: rgba(6, 12, 24, 0.95);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 50;
+}
+
+.cardActionItem {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: none;
+  background: transparent;
+  color: var(--text, #f8fafc);
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: var(--fs-xs, 12px);
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.cardActionItem:hover,
+.cardActionItem:focus-visible {
+  background: rgba(124, 92, 255, 0.18);
+  color: #fff;
+}
+
+.cardActionDanger {
+  color: var(--danger, #ff6b6b);
+}
+
+.badge {
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: var(--fs-xs, 12px);
+  text-transform: uppercase;
+  font-weight: 700;
+  border: 1px solid transparent;
+}
+
+.badgeLong {
+  background: rgba(15, 157, 88, 0.2);
+  color: var(--color-long-600);
+  border-color: rgba(15, 157, 88, 0.45);
+}
+
+.badgeShort {
+  background: rgba(219, 68, 55, 0.2);
+  color: var(--color-short-600);
+  border-color: rgba(219, 68, 55, 0.45);
+}
+
+.statusOPEN {
+  background: rgba(34, 197, 94, 0.12);
+  color: #4ade80;
+  border-color: rgba(34, 197, 94, 0.32);
+}
+
+.statusCLOSED {
+  background: rgba(148, 163, 184, 0.12);
+  color: #cbd5f5;
+  border-color: rgba(148, 163, 184, 0.28);
+}
+
+.statusFILLED {
+  background: rgba(59, 130, 246, 0.12);
+  color: #60a5fa;
+  border-color: rgba(59, 130, 246, 0.35);
+}
+
+.marketBadge {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--muted);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.metaRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2, 8px);
+  align-items: center;
+}
+
+.pnlChip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: var(--fs-sm, 13px);
+  border: 1px solid transparent;
+}
+
+.pnlPositive {
+  background: rgba(34, 197, 94, 0.12);
+  color: #4ade80;
+  border-color: rgba(34, 197, 94, 0.32);
+}
+
+.pnlNegative {
+  background: rgba(239, 68, 68, 0.12);
+  color: #f87171;
+  border-color: rgba(239, 68, 68, 0.32);
+}
+
+.pnlNeutral {
+  background: rgba(148, 163, 184, 0.12);
+  color: var(--muted);
+  border-color: rgba(148, 163, 184, 0.24);
+}
+
+.pnlValue {
+  font-size: var(--fs-md, 16px);
+}
+
+.metricsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--space-2, 8px);
+}
+
+.metric {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.metricLabel {
+  font-size: var(--fs-xs, 12px);
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.metricValue {
+  font-size: var(--fs-sm, 14px);
+  font-weight: 600;
+}
+
+.targetsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.targetBadge,
+.slBadge {
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: var(--fs-xs, 12px);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--muted);
+}
+
+.notes {
+  font-size: var(--fs-sm, 14px);
+  line-height: 1.6;
+  color: var(--text, #f8fafc);
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.cardFooter {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.analysisButton {
+  font-size: var(--fs-sm, 13px);
+}
+
+.empty {
+  padding: var(--space-4, 24px);
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  text-align: center;
+  color: var(--muted);
+}
+
+.emptyTitle {
+  font-size: var(--fs-md, 16px);
+  font-weight: 600;
+}
+
+.emptyHint {
+  font-size: var(--fs-sm, 13px);
+  margin-top: var(--space-1, 4px);
+}
+
+.card:focus-visible {
+  outline: 3px solid rgba(124, 92, 255, 0.35);
+  outline-offset: 2px;
+}
+
 .list::-webkit-scrollbar {
   width: 8px;
 }
+
 .list::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.08);
   border-radius: 6px;
 }
 
-.status {
-  border-radius: 999px;
-  font-weight: 700;
-  font-size: 12px;
-  text-transform: uppercase;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 64px; /* slightly reduced to match side */
-  height: 28px;
-  padding: 4px 8px;
-  box-sizing: border-box;
-  text-align: center;
-  white-space: nowrap;
-}
-
-.statusOpen {
-  background: rgba(110, 231, 183, 0.08);
-  color: #69f0ae;
-  border: 1px solid rgba(110, 231, 183, 0.14);
-}
-
-.statusClosed {
-  background: rgba(255, 255, 255, 0.02);
-  color: var(--muted);
-  border: 1px solid rgba(255, 255, 255, 0.04);
-}
-
-.statusFilled {
-  background: rgba(96, 165, 250, 0.06);
-  color: #60a5fa;
-  border: 1px solid rgba(96, 165, 250, 0.08);
+.list[data-compact='true'] .card {
+  padding: var(--space-2, 8px);
 }
 
 @media (max-width: 720px) {
   .list {
-    padding: var(--space-2, 8px);
-    max-height: 50vh;
-  }
-  .item {
-    padding: 8px;
-    gap: 8px;
-  }
-  .rowRight {
-    gap: 6px;
-  }
-  .symbol {
-    font-size: var(--fs-sm, 14px);
-  }
-  .meta {
-    font-size: var(--fs-xs, 13px);
+    max-height: 54vh;
   }
 }
 
-@media (max-width: 420px) {
-  .item {
+@media (max-width: 520px) {
+  .cardHeader {
     flex-direction: column;
-    align-items: flex-start;
-    padding: 10px;
   }
-  .rowRight {
+  .cardHeaderRight {
     width: 100%;
-    display: flex;
     justify-content: space-between;
   }
-  .side,
-  .status {
-    width: auto;
-    height: auto;
-    padding: 6px 8px;
+  .cardFooter {
+    justify-content: flex-start;
   }
-  .symbol {
-    font-size: var(--fs-sm, 14px);
-  }
-  .meta {
-    font-size: var(--fs-xs, 13px);
+  .metricsGrid {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   }
 }
-
-/* compact list modifier that pages can add when they want tighter spacing */
-.compact .item {
-  padding: 6px;
-}
-
-/* Removed hard-coded blue override so theme variable controls analysis icon color. */

@@ -2,6 +2,7 @@ import React from 'react';
 import { Button } from '@/presentation/shared/components/Button/Button';
 import { TradeList } from '../../TradeList/TradeList';
 import { TradeDetailEditor } from '../../TradeDetail/TradeDetailEditor';
+import type { TradeQuickAction } from '../../TradeDetail/TradeDetailEditor';
 import styles from '../../TradeJournal.module.css';
 import type { TradeRow } from '../../types';
 import type { TradeInput } from '@/domain/trade/factories/TradeFactory';
@@ -11,11 +12,6 @@ type Props = {
   selectedId: string | null;
   // onSelect may optionally request a specific field to focus in the detail editor
   onSelect: (id: string, focusField?: string) => void;
-  performAction: (
-    action: 'toggle-side' | 'sl-be' | 'sl-hit' | 'close' | 'delete',
-    id: string
-  ) => void;
-  performTPHit: (id: string, tpIndex: 1 | 2 | 3 | 4) => void;
   compactGrid: boolean;
   compactEditorOpen: boolean;
   setCompactEditorOpen: (v: boolean) => void;
@@ -36,14 +32,13 @@ type Props = {
   selectedFieldToFocus?: string | null;
   // when true the detail view is expected to be shown in a modal by the parent
   modalDetail?: boolean;
+  onAction?: (action: TradeQuickAction, id: string) => void;
 };
 
 export function TradesPanel({
   tradeListItems,
   selectedId,
   onSelect,
-  performAction,
-  performTPHit,
   compactGrid,
   compactEditorOpen,
   setCompactEditorOpen,
@@ -53,6 +48,7 @@ export function TradesPanel({
   onDeleteFromEditor,
   selectedFieldToFocus,
   modalDetail = false,
+  onAction,
 }: Props) {
   // Return only the inner panes — the parent should render the outer .listAndDetailWrap
   return (
@@ -63,12 +59,8 @@ export function TradesPanel({
             trades={tradeListItems}
             selectedId={selectedId}
             onSelect={onSelect}
-            onToggleSide={(id) => performAction('toggle-side', id)}
-            onSetSLtoBE={(id) => performAction('sl-be', id)}
-            onSetSLHit={(id) => performAction('sl-hit', id)}
-            onClose={(id) => performAction('close', id)}
-            onSetTPHit={(id, idx) => performTPHit(id, idx)}
             compactView={compactGrid}
+            onAction={onAction}
           />
           <div className={styles.spacer12} />
           {selectedTrade ? (
@@ -86,6 +78,7 @@ export function TradesPanel({
                   onDelete={onDeleteFromEditor}
                   compactView={compactGrid}
                   focusField={selectedFieldToFocus}
+                  onAction={onAction}
                 />
               </div>
             ) : (
@@ -121,12 +114,8 @@ export function TradesPanel({
               trades={tradeListItems}
               selectedId={selectedId}
               onSelect={onSelect}
-              onToggleSide={(id) => performAction('toggle-side', id)}
-              onSetSLtoBE={(id) => performAction('sl-be', id)}
-              onSetSLHit={(id) => performAction('sl-hit', id)}
-              onClose={(id) => performAction('close', id)}
-              onSetTPHit={(id, idx) => performTPHit(id, idx)}
               compactView={compactGrid}
+              onAction={onAction}
             />
           </div>
 
@@ -138,6 +127,7 @@ export function TradesPanel({
                 onSave={onEditorSave}
                 onDelete={onDeleteFromEditor}
                 focusField={selectedFieldToFocus}
+                onAction={onAction}
               />
             </div>
           )}

@@ -5,6 +5,12 @@
 - Design-Tokens für Abstände und Layout werden weiterhin verwendet.
 - Tests für Compact-View und mobile Darstellung sind vorhanden.
 
+## Update 20.02.2026
+- `TradeList` nutzt wieder eine datenorientierte Kartenansicht. Die Liste respektiert `compactView` über `data-compact="true"` und reduziert dann Padding/Spacing (Tokens `--space-2/3`).
+- Alle Badges (Side/Status/Market) verwenden Pillen mit Farbtokens (`--color-long-600`, `--color-short-600`).
+- PnL-Chips besitzen positive/negative/neutral Zustände und bleiben im Compact-Layout inline-stacked.
+- Targets und Notizen werden als gestapelte Pills/Blöcke gerendert, wodurch keine Icons mehr nötig sind.
+
 ---
 
 (Weitere Details siehe Hauptdokumentation und Komponenten-Diagramme)

@@ -3,6 +3,17 @@ import { describe, it, expect } from 'vitest';
 import { TradeJournal } from './TradeJournal';
 import InMemoryTradeRepository from '@/infrastructure/trade/repositories/InMemoryTradeRepository';
 
+async function findEditorActionTrigger(symbol: string) {
+  const triggers = await screen.findAllByRole('button', {
+    name: new RegExp(`Open actions for ${symbol}`, 'i'),
+  });
+  return (
+    triggers.find((btn) =>
+      (btn.getAttribute('aria-controls') ?? '').startsWith('trade-quick-actions-')
+    ) ?? triggers[0]
+  );
+}
+
 // Integration test for the full Trading Journal screen (desktop & compact)
 describe('TradeJournal Integration', () => {
   it('allows creating, editing, filtering, and deleting trades (desktop)', async () => {
@@ -39,58 +50,10 @@ describe('TradeJournal Integration', () => {
     // Es gibt mehrere mögliche EURUSD entries in mock data, prüfe, dass unser neuen Symbol sichtbar ist
     expect(screen.getAllByText(newSymbol).length).toBeGreaterThan(0);
 
-    // Select the trade using multiple strategies to support desktop and compact layouts:
-    // 1) explicit `Select <symbol>` button (non-compact)
-    // 2) PositionCard expand/toggle button `Toggle details for <symbol>` (compact)
-    // 3) fallback: click the listitem that contains the symbol
-    const selectBtn = screen.queryByRole('button', {
-      name: new RegExp(`^Select ${newSymbol}$`, 'i'),
-    });
-    if (selectBtn) {
-      fireEvent.click(selectBtn);
-    } else {
-      // Prefer selecting inside the trade list to avoid matching the NewTrade form
-      const tradeList = screen.getByRole('list');
-      // support both listitem (desktop) and group (compact) containers
-      const listItems = within(tradeList).queryAllByRole('listitem');
-      const groupItems = within(tradeList).queryAllByRole('group');
-      const containers = [...listItems, ...groupItems];
-      let clicked = false;
-      for (const container of containers) {
-        if (within(container).queryByText(newSymbol)) {
-          // try to find a local toggle/expand button inside this container
-          const localToggles = within(container).queryAllByLabelText(
-            new RegExp(`Toggle details for ${newSymbol}`, 'i')
-          );
-          if (localToggles.length > 0) {
-            fireEvent.click(localToggles[0]);
-            clicked = true;
-            break;
-          }
-          // else click the container itself (if it's an interactive element)
-          if (container.tagName === 'BUTTON' || container.getAttribute('role') === 'listitem') {
-            fireEvent.click(container);
-            clicked = true;
-            break;
-          }
-        }
-      }
-      // Fallback: if none found inside list, try a global toggle
-      if (!clicked) {
-        const globalToggles = screen.queryAllByLabelText(
-          new RegExp(`Toggle details for ${newSymbol}`, 'i')
-        );
-        if (globalToggles.length > 0) {
-          fireEvent.click(globalToggles[0]);
-          clicked = true;
-        }
-      }
-      expect(clicked).toBe(true);
-    }
-
-    // If compact summary was shown, click the 'Show details' button to render the full editor
-    const showDetailsBtn = screen.queryByRole('button', { name: /show details/i });
-    if (showDetailsBtn) fireEvent.click(showDetailsBtn);
+    const selectCards = await screen.findAllByLabelText(
+      new RegExp(`^Select ${newSymbol}$`, 'i')
+    );
+    fireEvent.click(selectCards[0]);
 
     // Now the editor should be visible in the right pane — find the Price input by aria-label
     // Use findByLabelText which waits for the element to appear
@@ -107,7 +70,7 @@ describe('TradeJournal Integration', () => {
     await screen.findByDisplayValue('1.120');
 
     // Filter by status
-    fireEvent.click(screen.getByRole('button', { name: /Open/i }));
+    fireEvent.click(screen.getByRole('button', { name: /^Open$/i }));
     // After filtering, ensure our unique symbol still appears
     expect((await screen.findAllByText(newSymbol)).length).toBeGreaterThan(0);
 
@@ -146,11 +109,9 @@ describe('TradeJournal Integration', () => {
     // Es gibt mehrere GBPUSD, daher explizit alle prüfen
     expect(screen.getAllByText('GBPUSD').length).toBeGreaterThan(0);
 
-    // Expand details in compact mode
-    const expandBtns = await screen.findAllByLabelText(/Toggle details for/i);
-    fireEvent.click(expandBtns[0]);
-    const show = await screen.findByRole('button', { name: /show details/i });
-    fireEvent.click(show);
+    // Expand details in compact mode by selecting the card (auto-opens editor)
+    const selectCompact = await screen.findAllByLabelText(/^Select GBPUSD$/i);
+    fireEvent.click(selectCompact[0]);
     const save = await screen.findByRole('button', { name: /save now/i });
     expect(save).toBeDefined();
   });
@@ -199,8 +160,12 @@ describe('TradeJournal Integration', () => {
       fireEvent.submit(form);
     });
     await screen.findByText('UNDOUSD');
-    // Delete: Suche nach Close-Button für UNDOUSD
-    const closeBtn = screen.getByLabelText('Filled UNDOUSD');
+    const selectUndo = await screen.findByLabelText(/^Select UNDOUSD$/i);
+    fireEvent.click(selectUndo);
+    // Delete: Öffne Action-Dropdown und löse Filled-Aktion aus
+    const actionsTrigger = await findEditorActionTrigger('UNDOUSD');
+    fireEvent.click(actionsTrigger);
+    const closeBtn = await screen.findByRole('menuitem', { name: /Filled UNDOUSD/i });
     fireEvent.click(closeBtn);
     // Undo-Banner sollte erscheinen
     // Nutze findAllByRole für Undo-Button und klicke das erste Element (case-insensitive, englisch)
@@ -208,7 +173,8 @@ describe('TradeJournal Integration', () => {
     expect(undoBtns.length).toBeGreaterThan(0);
     fireEvent.click(undoBtns[0]);
     // Trade sollte wieder erscheinen
-    expect(await screen.findByText('UNDOUSD')).toBeDefined();
+    const restoredCards = await screen.findAllByLabelText(/^Select UNDOUSD$/i);
+    expect(restoredCards.length).toBeGreaterThan(0);
   });
 
   it('prefills new trade form from analysis tab', async () => {

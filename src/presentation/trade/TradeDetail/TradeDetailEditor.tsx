@@ -12,6 +12,8 @@ import {
 } from '@/presentation/shared/components/StatusSelect/StatusSelect';
 // no direct analysis factory usage here; creation delegated to TradeJournal via event
 
+export type TradeQuickAction = 'toggle-side' | 'sl-be' | 'sl-hit' | 'close';
+
 export type TradeDetailEditorProps = {
   trade: TradeInput | null;
   onChange?: (t: TradeInput) => void;
@@ -19,6 +21,7 @@ export type TradeDetailEditorProps = {
   onDelete?: (id: string) => Promise<void>;
   compactView?: boolean;
   focusField?: string | null;
+  onAction?: (action: TradeQuickAction, id: string) => void;
 };
 
 export function TradeDetailEditor({
@@ -28,6 +31,7 @@ export function TradeDetailEditor({
   onDelete,
   compactView = false,
   focusField,
+  onAction,
 }: TradeDetailEditorProps) {
   const [local, setLocal] = useState<TradeInput | null>(trade);
   const [errors, setErrors] = useState<Record<string, string | undefined>>({});
@@ -44,6 +48,12 @@ export function TradeDetailEditor({
   const tp4Ref = useRef<HTMLInputElement | null>(null);
   const marginRef = useRef<HTMLInputElement | null>(null);
   const leverageRef = useRef<HTMLInputElement | null>(null);
+  const [actionMenuOpen, setActionMenuOpen] = useState(false);
+  const actionDropdownRef = useRef<HTMLDivElement | null>(null);
+  const actionMenuId = useMemo(
+    () => (local ? `trade-quick-actions-${local.id}` : undefined),
+    [local?.id]
+  );
 
   // (No local analysis creation here) — creation is delegated to TradeJournal via event
 
@@ -54,6 +64,10 @@ export function TradeDetailEditor({
     setErrors({});
     setStatus('idle');
   }, [trade]);
+
+  useEffect(() => {
+    setActionMenuOpen(false);
+  }, [trade?.id]);
 
   // Keep an immutable snapshot of the trade as it was when loaded into the editor.
   // This avoids a race where parent onChange updates the canonical trade object
@@ -70,6 +84,27 @@ export function TradeDetailEditor({
     if (!isDirty) return;
     onChange(local);
   }, [local, onChange]);
+
+  useEffect(() => {
+    if (!actionMenuOpen) return;
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!actionDropdownRef.current) return;
+      if (!actionDropdownRef.current.contains(event.target as Node)) {
+        setActionMenuOpen(false);
+      }
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setActionMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [actionMenuOpen]);
 
   // focus requested field when asked
   useEffect(() => {
@@ -112,6 +147,12 @@ export function TradeDetailEditor({
       return true;
     }
   }, [local, /* initialTradeRef is stable */ hasValidationErrors]);
+
+  const handleQuickAction = (action: TradeQuickAction) => {
+    if (!local || !onAction) return;
+    onAction(action, local.id);
+    setActionMenuOpen(false);
+  };
 
   if (!local)
     return (
@@ -285,6 +326,71 @@ export function TradeDetailEditor({
             : ''}
         </div>
       </div>
+
+      {onAction && local ? (
+        <div className={styles.actionDropdown} ref={actionDropdownRef}>
+          <button
+            type="button"
+            className={styles.actionDropdownTrigger}
+            aria-haspopup="menu"
+            aria-expanded={actionMenuOpen}
+            aria-controls={actionMenuId}
+            aria-label={`Open actions for ${local.symbol}`}
+            data-open={actionMenuOpen ? 'true' : 'false'}
+            onClick={() => setActionMenuOpen((prev) => !prev)}
+          >
+            <span>Actions</span>
+            <span className={styles.actionDropdownCaret} aria-hidden="true" />
+          </button>
+          {actionMenuOpen ? (
+            <div
+              className={styles.actionDropdownMenu}
+              role="menu"
+              id={actionMenuId}
+              aria-label={`Quick actions for ${local.symbol}`}
+            >
+              <button
+                type="button"
+                role="menuitem"
+                className={styles.actionDropdownItem}
+                aria-label={`Toggle side for ${local.symbol}`}
+                onClick={() => handleQuickAction('toggle-side')}
+              >
+                Toggle side
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                className={styles.actionDropdownItem}
+                aria-label={`Set SL to BE for ${local.symbol}`}
+                onClick={() => handleQuickAction('sl-be')}
+              >
+                SL → B/E
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                className={styles.actionDropdownItem}
+                aria-label={`Set SL hit for ${local.symbol}`}
+                onClick={() => handleQuickAction('sl-hit')}
+              >
+                Mark SL hit
+              </button>
+              <button
+                type="button"
+                role="menuitem"
+                className={[styles.actionDropdownItem, styles.actionDropdownDanger]
+                  .filter(Boolean)
+                  .join(' ')}
+                aria-label={`Filled ${local.symbol}`}
+                onClick={() => handleQuickAction('close')}
+              >
+                Mark filled
+              </button>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
 
       <div className={styles.form}>
         <label className={styles.label}>Symbol</label>

@@ -7,10 +7,13 @@ import type { TradeListItem } from './TradeList';
 const sampleTrade: TradeListItem = {
   id: 't1',
   symbol: 'ABC',
+  market: 'Crypto',
   entryDate: new Date().toISOString(),
   size: 1,
   price: 1,
   side: 'LONG',
+  status: 'OPEN',
+  pnl: 0,
   analysisId: 'a1',
 };
 
