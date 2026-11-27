@@ -4,6 +4,8 @@ import LocalStorageTradeRepository from '@/infrastructure/trade/repositories/Loc
 import { Settings } from '@/presentation/settings/Settings';
 import { Layout } from '@/presentation/shared/components/Layout/Layout';
 import { Analysis } from '@/presentation/analysis/Analysis';
+import { useAuth } from '@/presentation/auth/AuthProvider';
+import { LoginRequired } from '@/presentation/auth/LoginRequired';
 
 function App() {
   useEffect(() => {
@@ -26,9 +28,14 @@ function App() {
 
   const isSettings = route.startsWith('#/settings');
   const isAnalysis = route.startsWith('#/analysis');
+  const { user, loading } = useAuth();
 
   let mainContent: React.ReactNode;
-  if (isSettings) {
+  if (loading) {
+    mainContent = <LoginRequired loading />;
+  } else if (!user) {
+    mainContent = <LoginRequired />;
+  } else if (isSettings) {
     mainContent = <Settings />;
   } else if (isAnalysis) {
     mainContent = <Analysis />;

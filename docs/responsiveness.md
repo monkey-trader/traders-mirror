@@ -40,5 +40,8 @@ Examples
 Docs
 - For each new component add a short `docs/<component>.md` entry describing the compact behavior and which tokens it uses.
 
+Update 09.01.2026
+- `LoginRequired` (presentation/auth): Centered card that uses spacing tokens (`--space-4/5/6`) and adapts paddings on small screens via media query. No `compactView` prop needed as it is inherently minimal and mobile-friendly.
+
 Maintenance
 - Keep this document updated as new tokens or breakpoints are introduced.

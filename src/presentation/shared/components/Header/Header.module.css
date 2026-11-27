@@ -37,6 +37,96 @@
   gap: 8px;
 }
 
+/* Auth controls */
+.authWrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.authBtn {
+  border: none;
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.login {
+  background: linear-gradient(180deg, #ffd27a 0%, #ffb84e 100%);
+  color: #1a1400;
+}
+.logout {
+  background: linear-gradient(180deg, #ff7a7a 0%, #ff4e4e 100%);
+  color: #1a0000;
+}
+.authBtn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.authError {
+  background: rgba(255, 84, 84, 0.12);
+  border: 1px solid rgba(255, 84, 84, 0.35);
+  color: #ffb7b7;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+.userBadge {
+  position: relative;
+}
+.userBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 10px;
+}
+.userBtn:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+.avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.avatarFallback {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--muted);
+  font-weight: 800;
+}
+.userName {
+  max-width: 160px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.userMenu {
+  position: absolute;
+  right: 0;
+  top: 44px;
+  display: none;
+  background: var(--card-bg-solid, rgba(10, 12, 15, 1));
+  border-radius: 10px;
+  box-shadow: var(--shadow-1, 0 10px 30px rgba(0, 0, 0, 0.6));
+  padding: 8px;
+  z-index: 3200;
+}
+.userMenuOpen {
+  display: block;
+}
+
 .hamburger {
   display: none;
   background: transparent;

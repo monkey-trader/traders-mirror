@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import styles from './Header.module.css';
+import { useAuth } from '@/presentation/auth/AuthProvider';
 
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -106,7 +107,79 @@ export function Header() {
         </a>
       </div>
 
-      <div className={styles.controls}>{/* Theme toggles moved to Settings page */}</div>
+      <div className={styles.controls}>
+        <AuthControls />
+      </div>
     </header>
+  );
+}
+
+function AuthControls() {
+  const { user, loading, error, signIn, signOut, clearError } = useAuth();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    function onDocClick(e: MouseEvent) {
+      const target = e.target as Node | null;
+      if (!menuOpen) return;
+      if (menuRef.current && menuRef.current.contains(target)) return;
+      setMenuOpen(false);
+    }
+    document.addEventListener('mousedown', onDocClick);
+    return () => document.removeEventListener('mousedown', onDocClick);
+  }, [menuOpen]);
+
+  // Show a compact banner for auth error; allow dismiss
+  const showError = !!error;
+
+  return (
+    <div className={styles.authWrap}>
+      {showError && (
+        <div role="alert" className={styles.authError} onAnimationEnd={clearError}>
+          {error}
+        </div>
+      )}
+      {user ? (
+        <div className={styles.userBadge} ref={menuRef}>
+          <button
+            type="button"
+            className={styles.userBtn}
+            aria-haspopup="menu"
+            aria-expanded={menuOpen}
+            onClick={() => setMenuOpen((v) => !v)}
+          >
+            {user.photoURL ? (
+              <img src={user.photoURL} alt="avatar" className={styles.avatar} />
+            ) : (
+              <div className={styles.avatarFallback} aria-hidden>{user.displayName?.[0] || 'U'}</div>
+            )}
+            <span className={styles.userName}>{user.displayName || user.email || 'User'}</span>
+          </button>
+          <div className={`${styles.userMenu} ${menuOpen ? styles.userMenuOpen : ''}`} role="menu">
+            <button
+              type="button"
+              className={`${styles.authBtn} ${styles.logout}`}
+              onClick={() => {
+                setMenuOpen(false);
+                void signOut();
+              }}
+              disabled={loading}
+            >
+              Logout
+            </button>
+          </div>
+        </div>
+      ) : (
+        <button
+          type="button"
+          className={`${styles.authBtn} ${styles.login}`}
+          onClick={() => void signIn()}
+          disabled={loading}
+        >
+          {loading ? 'Signing in…' : 'Login mit Google'}
+        </button>
+      )}
+    </div>
   );
 }

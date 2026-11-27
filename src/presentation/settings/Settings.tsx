@@ -244,23 +244,31 @@ function StorageControls() {
 }
 
 export function Settings({ compactView }: { compactView?: boolean }) {
-  const readEnvString = (key: string): string | undefined => {
-    let viteVal: string | undefined;
-    if (typeof import.meta !== 'undefined') {
-      const envObj = (import.meta as unknown as { env?: Record<string, string | boolean | undefined> }).env;
-      const raw = envObj ? envObj[key] : undefined;
-      if (typeof raw === 'string') viteVal = raw;
-      if (typeof raw === 'boolean') viteVal = raw ? 'true' : 'false';
-    }
-    const craVal = typeof process !== 'undefined' ? process.env?.[key] : undefined;
-    const val = viteVal ?? craVal;
-    return typeof val === 'string' && val.length > 0 ? val : undefined;
-  };
+  // Read build metadata from Vite and CRA envs.
+  // IMPORTANT: For CRA, use literal property access so values are inlined at build time.
+  const viteEnv = (typeof import.meta !== 'undefined'
+    ? ((import.meta as unknown as { env?: Record<string, string | boolean | undefined> }).env || {})
+    : {}) as Record<string, string | boolean | undefined>;
 
-  const buildBranch = readEnvString('VITE_BUILD_BRANCH') || readEnvString('REACT_APP_BUILD_BRANCH');
-  const buildSha = readEnvString('VITE_BUILD_SHA') || readEnvString('REACT_APP_BUILD_SHA');
-  const buildTag = readEnvString('VITE_BUILD_TAG') || readEnvString('REACT_APP_BUILD_TAG');
-  const buildTime = readEnvString('VITE_BUILD_TIME') || readEnvString('REACT_APP_BUILD_TIME');
+  const viteBranch = typeof viteEnv.VITE_BUILD_BRANCH === 'string' ? viteEnv.VITE_BUILD_BRANCH : undefined;
+  const viteSha = typeof viteEnv.VITE_BUILD_SHA === 'string' ? viteEnv.VITE_BUILD_SHA : undefined;
+  const viteTag = typeof viteEnv.VITE_BUILD_TAG === 'string' ? viteEnv.VITE_BUILD_TAG : undefined;
+  const viteTime = typeof viteEnv.VITE_BUILD_TIME === 'string' ? viteEnv.VITE_BUILD_TIME : undefined;
+
+  const craBranch =
+    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+    (typeof process !== 'undefined' && process.env && process.env.REACT_APP_BUILD_BRANCH) || undefined;
+  const craSha =
+    (typeof process !== 'undefined' && process.env && process.env.REACT_APP_BUILD_SHA) || undefined;
+  const craTag =
+    (typeof process !== 'undefined' && process.env && process.env.REACT_APP_BUILD_TAG) || undefined;
+  const craTime =
+    (typeof process !== 'undefined' && process.env && process.env.REACT_APP_BUILD_TIME) || undefined;
+
+  const buildBranch = viteBranch || craBranch;
+  const buildSha = viteSha || craSha;
+  const buildTag = viteTag || craTag;
+  const buildTime = viteTime || craTime;
 
   return (
     <div

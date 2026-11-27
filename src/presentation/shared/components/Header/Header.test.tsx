@@ -1,10 +1,15 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { Header } from './Header';
+import { AuthProvider } from '@/presentation/auth/AuthProvider';
 
 describe('Header component', () => {
   it('toggles mobile nav when hamburger clicked and focuses first link', () => {
-    render(<Header />);
+    render(
+      <AuthProvider>
+        <Header />
+      </AuthProvider>
+    );
 
     const btn = screen.getByRole('button', { name: /Open menu/i });
     expect(btn).toBeTruthy();
@@ -31,7 +36,11 @@ describe('Header component', () => {
   });
 
   it('closes mobile nav when backdrop clicked', () => {
-    const { container } = render(<Header />);
+    const { container } = render(
+      <AuthProvider>
+        <Header />
+      </AuthProvider>
+    );
     const btn = screen.getByRole('button', { name: /Open menu/i });
     fireEvent.click(btn);
     const mobileNav = screen.getByRole('menu');
@@ -49,7 +58,11 @@ describe('Header component', () => {
   });
 
   it('locks body scroll while mobile nav open and restores on close', () => {
-    render(<Header />);
+    render(
+      <AuthProvider>
+        <Header />
+      </AuthProvider>
+    );
     const btn = screen.getByRole('button', { name: /Open menu/i });
 
     // open
@@ -63,7 +76,11 @@ describe('Header component', () => {
   });
 
   it('clicking a mobile nav menu item closes the menu and clicking outside closes as well', () => {
-    render(<Header />);
+    render(
+      <AuthProvider>
+        <Header />
+      </AuthProvider>
+    );
     const btn = screen.getByRole('button', { name: /Open menu/i });
     fireEvent.click(btn);
     const mobileNav = screen.getByRole('menu');
@@ -82,7 +99,11 @@ describe('Header component', () => {
   });
 
   it('does not close when clicking inside mobile nav', () => {
-    render(<Header />);
+    render(
+      <AuthProvider>
+        <Header />
+      </AuthProvider>
+    );
     const btn = screen.getByRole('button', { name: /Open menu/i });
     fireEvent.click(btn);
     const mobileNav = screen.getByRole('menu');
